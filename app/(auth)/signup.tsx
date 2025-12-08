@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Mail, Lock, User } from 'lucide-react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -12,23 +12,41 @@ export default function Signup() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<'user' | 'therapist'>('user');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     async function signUpWithEmail() {
         setLoading(true);
         try {
+            // 1. Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-            // Update user profile with name
-            await updateProfile(userCredential.user, {
+            // 2. Update Profile (Display Name)
+            await updateProfile(user, {
                 displayName: name
+            });
+
+            // 3. Create User Document in Firestore
+            const { doc, setDoc } = await import('firebase/firestore');
+            const { db } = await import('../../lib/firebase');
+
+            await setDoc(doc(db, 'users', user.uid), {
+                uid: user.uid,
+                email: user.email,
+                displayName: name,
+                createdAt: new Date().toISOString(),
+                provider: 'email',
+                role: role, // 'user' or 'therapist'
+                isPremium: false,
             });
 
             Alert.alert('Success', 'Account created! Signing you in...');
             // Firebase automatically signs in after creation
             router.replace('/');
         } catch (error: any) {
+            console.error("Signup Error:", error);
             Alert.alert('Error', error.message);
         } finally {
             setLoading(false);
@@ -49,6 +67,24 @@ export default function Signup() {
                 <View style={styles.form}>
                     <Text style={styles.title}>Create Account</Text>
                     <Text style={styles.subtitle}>Join the BE333 Community</Text>
+
+                    <View style={styles.roleContainer}>
+                        <Text style={styles.label}>I am a:</Text>
+                        <View style={styles.roleButtons}>
+                            <TouchableOpacity
+                                style={[styles.roleBtn, role === 'user' && styles.roleBtnActive]}
+                                onPress={() => setRole('user')}
+                            >
+                                <Text style={[styles.roleText, role === 'user' && styles.roleTextActive]}>Member</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.roleBtn, role === 'therapist' && styles.roleBtnActive]}
+                                onPress={() => setRole('therapist')}
+                            >
+                                <Text style={[styles.roleText, role === 'therapist' && styles.roleTextActive]}>Therapist</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
                     <Input
                         placeholder="Full Name"
@@ -143,4 +179,38 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 14,
     },
+    roleContainer: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 14,
+        color: Colors.textSecondary,
+        marginBottom: 8,
+        marginLeft: 4,
+    },
+    roleButtons: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    roleBtn: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        backgroundColor: Colors.surface,
+        alignItems: 'center',
+    },
+    roleBtnActive: {
+        borderColor: Colors.secondary,
+        backgroundColor: 'rgba(255, 215, 0, 0.1)', // Gold tint
+    },
+    roleText: {
+        color: Colors.textSecondary,
+        fontWeight: '600',
+    },
+    roleTextActive: {
+        color: Colors.secondary,
+        fontWeight: 'bold',
+    }
 });

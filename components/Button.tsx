@@ -1,15 +1,16 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, TouchableOpacityProps, View } from 'react-native';
 import { Colors } from '../constants/Colors';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
     variant?: 'primary' | 'secondary' | 'outline';
     loading?: boolean;
-    textStyle?: any; // Using any to avoid importing StyleProp/TextStyle for brevity, or can import
+    textStyle?: any;
+    icon?: any; // LucideIcon
 }
 
-export function Button({ title, variant = 'primary', loading, style, textStyle, ...props }: ButtonProps) {
+export function Button({ title, variant = 'primary', loading, icon: Icon, style, textStyle, ...props }: ButtonProps) {
     const getBackgroundColor = () => {
         if (props.disabled) return '#ccc';
         switch (variant) {
@@ -44,7 +45,10 @@ export function Button({ title, variant = 'primary', loading, style, textStyle, 
             {loading ? (
                 <ActivityIndicator color={getTextColor()} />
             ) : (
-                <Text style={[styles.text, { color: getTextColor() }, textStyle]}>{title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {Icon && <Icon size={20} color={getTextColor()} style={{ marginRight: 8 }} />}
+                    <Text style={[styles.text, { color: getTextColor() }, textStyle]}>{title}</Text>
+                </View>
             )}
         </TouchableOpacity>
     );

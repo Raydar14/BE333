@@ -1,33 +1,33 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Image, StyleSheet, Animated, Easing } from 'react-native';
 
 type BreathingCircleProps = {
     isActive: boolean;
 };
 
 export function BreathingCircle({ isActive }: BreathingCircleProps) {
-    const scale = useRef(new Animated.Value(1)).current;
-    const glowOpacity = useRef(new Animated.Value(0)).current;
+    const lotusScale = useRef(new Animated.Value(1.0)).current;
+    const glowOpacity = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         if (!isActive) {
-            scale.setValue(1);
-            glowOpacity.setValue(0);
+            lotusScale.setValue(1.0);
+            glowOpacity.setValue(1);
             return;
         }
 
         const breathingCycle = () => {
             Animated.sequence([
-                // EXHALE: Circle SHRINKS dramatically (6.5 seconds) - Breathe OUT, leaves rise
+                // EXHALE: Lotus contracts (6.5 seconds) - breath goes OUT
                 Animated.parallel([
-                    Animated.timing(scale, {
-                        toValue: 0.75, // 25% SMALLER - dramatic contraction
+                    Animated.timing(lotusScale, {
+                        toValue: 0.4, // Small
                         duration: 6500,
-                        easing: Easing.inOut(Easing.ease),
+                        easing: Easing.bezier(0.4, 0, 0.2, 1),
                         useNativeDriver: true,
                     }),
                     Animated.timing(glowOpacity, {
-                        toValue: 0.9, // STRONG glow
+                        toValue: 0.5,
                         duration: 6500,
                         easing: Easing.inOut(Easing.ease),
                         useNativeDriver: true,
@@ -35,16 +35,16 @@ export function BreathingCircle({ isActive }: BreathingCircleProps) {
                 ]),
                 // Pause (0.5 seconds)
                 Animated.delay(500),
-                // INHALE: Circle EXPANDS dramatically (3.5 seconds) - Breathe IN, leaves fall
+                // INHALE: Lotus expands (3.5 seconds) - breath comes IN, belly fills
                 Animated.parallel([
-                    Animated.timing(scale, {
-                        toValue: 1.30, // 30% BIGGER - dramatic expansion
+                    Animated.timing(lotusScale, {
+                        toValue: 1.0, // Full size
                         duration: 3500,
-                        easing: Easing.inOut(Easing.ease),
+                        easing: Easing.bezier(0.4, 0, 0.2, 1),
                         useNativeDriver: true,
                     }),
                     Animated.timing(glowOpacity, {
-                        toValue: 0.5, // Softer glow during inhale
+                        toValue: 1,
                         duration: 3500,
                         easing: Easing.inOut(Easing.ease),
                         useNativeDriver: true,
@@ -58,7 +58,7 @@ export function BreathingCircle({ isActive }: BreathingCircleProps) {
         breathingCycle();
 
         return () => {
-            scale.stopAnimation();
+            lotusScale.stopAnimation();
             glowOpacity.stopAnimation();
         };
     }, [isActive]);
@@ -67,76 +67,41 @@ export function BreathingCircle({ isActive }: BreathingCircleProps) {
 
     return (
         <View style={styles.container} pointerEvents="none">
-            {/* Outer glowing circle - slightly bigger, moves with breathing */}
+            {/* Gold lotus image - represents diaphragm/belly */}
             <Animated.View
                 style={[
-                    styles.outerCircle,
-                    {
-                        opacity: glowOpacity.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 0.6],
-                        }),
-                        transform: [{
-                            scale: scale.interpolate({
-                                inputRange: [0.75, 1.30],
-                                outputRange: [0.78, 1.35], // Slightly bigger than main circle
-                            })
-                        }],
-                        shadowColor: '#4A9977',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0.6,
-                        shadowRadius: 40,
-                        elevation: 15,
-                    },
-                ]}
-            />
-
-            {/* Main breathing circle */}
-            <Animated.View
-                style={[
-                    styles.breathingCircle,
+                    styles.lotusContainer,
                     {
                         opacity: glowOpacity,
-                        transform: [{ scale }],
-                        shadowColor: '#4A9977',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: glowOpacity.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 0.8],
-                        }),
-                        shadowRadius: scale.interpolate({
-                            inputRange: [0.75, 1.30],
-                            outputRange: [20, 50], // MUCH more dramatic glow range
-                        }),
-                        elevation: 20,
-                    },
+                        transform: [{ scale: lotusScale }],
+                    }
                 ]}
-            />
+            >
+                <Image
+                    source={require('../assets/images/lotus.png')}
+                    style={styles.lotusImage}
+                    resizeMode="contain"
+                />
+            </Animated.View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        position: 'absolute',
-        width: 280,
-        height: 280,
+        width: 400,
+        height: 400,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    breathingCircle: {
-        width: 280,
-        height: 280,
-        borderRadius: 140,
-        borderWidth: 3,
-        borderColor: '#4A9977',
+    lotusContainer: {
+        width: 400,
+        height: 400,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    outerCircle: {
-        position: 'absolute',
-        width: 300,
-        height: 300,
-        borderRadius: 150,
-        borderWidth: 2,
-        borderColor: '#4A9977',
+    lotusImage: {
+        width: 400,
+        height: 400,
     },
 });

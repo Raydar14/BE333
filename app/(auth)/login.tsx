@@ -56,6 +56,24 @@ export default function Login() {
         }
     }
 
+    async function handleForgotPassword() {
+        if (!email) {
+            Alert.alert('Email Required', 'Please enter your email address first to reset your password.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { sendPasswordResetEmail } = await import('firebase/auth');
+            await sendPasswordResetEmail(auth, email);
+            Alert.alert('Email Sent', 'Check your email for a link to reset your password.');
+        } catch (error: any) {
+            Alert.alert('Error', error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     async function signInWithGoogle() {
         if (Platform.OS !== 'web') {
             Alert.alert('Not Supported', 'Google Sign-In is currently only supported on Web.');
@@ -172,6 +190,12 @@ export default function Login() {
                                 loading={loading}
                                 style={styles.button}
                             />
+                            <TouchableOpacity
+                                onPress={handleForgotPassword}
+                                style={styles.forgotPasswordContainer}
+                            >
+                                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                            </TouchableOpacity>
                         </>
                     ) : (
                         <>
@@ -340,6 +364,15 @@ const styles = StyleSheet.create({
     link: {
         color: Colors.secondary,
         fontWeight: 'bold',
+        fontSize: 14,
+    },
+    forgotPasswordContainer: {
+        alignItems: 'center',
+        marginTop: 15,
+    },
+    forgotPasswordText: {
+        color: Colors.secondary,
+        textDecorationLine: 'underline',
         fontSize: 14,
     },
 });

@@ -30,6 +30,7 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     const [tier, setTier] = useState<SubscriptionTier>('free');
     const [loading, setLoading] = useState(true);
     const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
+    const [isConfigured, setIsConfigured] = useState(false);
 
     // Initialize RevenueCat
     useEffect(() => {
@@ -38,26 +39,39 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
 
     // Update user when auth changes
     useEffect(() => {
+        if (!isConfigured) return; // Guard: Wait for init
+
         if (user) {
-            Purchases.logIn(user.uid);
-            loadCustomerInfo();
+            Purchases.logIn(user.uid).then(() => loadCustomerInfo());
         } else {
-            Purchases.logOut();
-            setTier('free');
+            Purchases.logOut().then(() => setTier('free'));
         }
-    }, [user]);
+    }, [user, isConfigured]);
 
     async function initializePurchases() {
+        if (Platform.OS === 'web') {
+            // RevenueCat React Native SDK does not support Web.
+            // We disable it for web previews.
+            console.log('RevenueCat disabled on Web');
+            setLoading(false);
+            return;
+        }
+
         try {
             // TODO: Replace with your actual RevenueCat API keys
             const apiKey = Platform.select({
                 ios: 'YOUR_IOS_API_KEY',
-                android: 'test_wqHEDBDuKdaCOMDOrvtsceuIsDh',
+                android: 'google_test_api_key', // Use a dummy or real key
             });
 
-            if (!apiKey) return;
+            if (!apiKey) {
+                console.log('No RevenueCat API Key');
+                setLoading(false);
+                return;
+            }
 
-            Purchases.configure({ apiKey });
+            await Purchases.configure({ apiKey });
+            setIsConfigured(true);
 
             // Load offerings
             const offerings = await Purchases.getOfferings();
@@ -74,6 +88,7 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function loadCustomerInfo() {
+        if (!isConfigured) return;
         try {
             const customerInfo = await Purchases.getCustomerInfo();
             updateTierFromCustomerInfo(customerInfo);
@@ -96,6 +111,10 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function purchasePackage(packageId: string) {
+        if (!isConfigured) {
+            console.warn('Purchases not configured');
+            return;
+        }
         try {
             if (!offerings) return;
 
@@ -118,6 +137,7 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function restorePurchases() {
+        if (!isConfigured) return;
         try {
             const customerInfo = await Purchases.restorePurchases();
             updateTierFromCustomerInfo(customerInfo);

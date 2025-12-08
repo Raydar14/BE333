@@ -16,89 +16,103 @@ export default function Settings() {
     const durationMins = Math.floor(timerDuration / 60);
 
     return (
-        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
+            <ScrollView contentContainerStyle={styles.container}>
 
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <ArrowLeft size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
-            </View>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <ArrowLeft size={24} color={colors.primary} />
+                    </TouchableOpacity>
+                    <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
+                    <TouchableOpacity onPress={() => router.push('/')} style={{ marginLeft: 'auto' }}>
+                        <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '600' }}>Done</Text>
+                    </TouchableOpacity>
+                </View>
 
-            {/* Timer Settings (Pro) */}
-            <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Timer Duration</Text>
-                <ProFeatureLock label="Pro Feature">
-                    <View style={styles.settingRow}>
-                        <Text style={[styles.label, { color: colors.text }]}>Duration (Minutes):</Text>
-                        <View style={styles.durationControls}>
-                            <TouchableOpacity
-                                onPress={() => setTimerDuration(Math.max(60, timerDuration - 60))}
-                                style={[styles.controlButton, { borderColor: colors.primary }]}
-                            >
-                                <Text style={{ color: colors.primary }}>-</Text>
-                            </TouchableOpacity>
-
-                            <Text style={[styles.value, { color: colors.text }]}>{durationMins} min</Text>
-
-                            <TouchableOpacity
-                                onPress={() => setTimerDuration(timerDuration + 60)}
-                                style={[styles.controlButton, { borderColor: colors.primary }]}
-                            >
-                                <Text style={{ color: colors.primary }}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </ProFeatureLock>
-            </View>
-
-            {/* Habit Stacking */}
-            <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Habit Stacking</Text>
-                <Text style={[styles.hint, { color: colors.textSecondary }]}>
-                    "After I [CURRENT HABIT], I will [NEW HABIT]."
-                </Text>
-                <ProFeatureLock label="Pro Feature">
-                    <Text style={[styles.label, { color: colors.text, marginTop: 10 }]}>My Cue (After I...)</Text>
-                    <TextInput
-                        style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-                        placeholder="e.g., brush my teeth"
-                        placeholderTextColor={colors.textSecondary}
-                        value={habitCue}
-                        onChangeText={setHabitCue}
-                    />
-                </ProFeatureLock>
-            </View>
-
-            {/* Theme Settings (Pro) */}
-            <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>App Theme</Text>
-                <ProFeatureLock label="Pro Feature">
-                    <View style={styles.colorRow}>
-                        <Text style={[styles.label, { color: colors.text }]}>Primary Color:</Text>
-                        <View style={{ flexDirection: 'row', gap: 10 }}>
-                            {['#1A4331', '#007AFF', '#FF3B30'].map(c => (
+                {/* Timer Settings (Pro) */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Timer Duration</Text>
+                    <ProFeatureLock label="Pro Feature">
+                        <View style={styles.settingRow}>
+                            <Text style={[styles.label, { color: colors.text }]}>Duration (Minutes):</Text>
+                            <View style={styles.durationControls}>
                                 <TouchableOpacity
-                                    key={c}
-                                    style={[styles.colorDot, { backgroundColor: c, borderWidth: colors.primary === c ? 2 : 0 }]}
-                                    onPress={() => setPrimaryColor(c)}
-                                />
-                            ))}
-                        </View>
-                    </View>
-                    <Button title="Reset Theme" onPress={resetTheme} variant="outline" style={{ marginTop: 10 }} />
-                </ProFeatureLock>
-            </View>
+                                    onPress={() => setTimerDuration(Math.max(60, timerDuration - 60))}
+                                    style={[styles.controlButton, { borderColor: colors.primary }]}
+                                >
+                                    <Text style={{ color: colors.primary }}>-</Text>
+                                </TouchableOpacity>
 
-        </ScrollView>
+                                <Text style={[styles.value, { color: colors.text }]}>{durationMins} min</Text>
+
+                                <TouchableOpacity
+                                    onPress={() => setTimerDuration(timerDuration + 60)}
+                                    style={[styles.controlButton, { borderColor: colors.primary }]}
+                                >
+                                    <Text style={{ color: colors.primary }}>+</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ProFeatureLock>
+                </View>
+
+                {/* Habit Stacking */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Habit Stacking</Text>
+                    <ProFeatureLock label="Pro Feature">
+                        <Text style={[styles.label, { color: colors.text, marginTop: 10 }]}>My Cue (After I...)</Text>
+                        <TextInput
+                            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+                            placeholder="e.g., brush my teeth"
+                            placeholderTextColor={colors.textSecondary}
+                            value={habitCue}
+                            onChangeText={setHabitCue}
+                        />
+                    </ProFeatureLock>
+                </View>
+
+                {/* Theme Settings (Pro) */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>App Theme</Text>
+                    <ProFeatureLock label="Pro Feature">
+                        <View style={styles.colorRow}>
+                            <Text style={[styles.label, { color: colors.text }]}>Primary Color:</Text>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                {['#1A4331', '#007AFF', '#FF3B30'].map(c => (
+                                    <TouchableOpacity
+                                        key={c}
+                                        style={[styles.colorDot, { backgroundColor: c, borderWidth: colors.primary === c ? 2 : 0 }]}
+                                        onPress={() => setPrimaryColor(c)}
+                                    />
+                                ))}
+                            </View>
+                        </View>
+                        <Button title="Reset Theme" onPress={resetTheme} variant="outline" style={{ marginTop: 10 }} />
+                    </ProFeatureLock>
+                </View>
+
+                <Button
+                    title="Return to Timer"
+                    onPress={() => router.push('/')}
+                    style={{ marginTop: 20, marginBottom: 40 }}
+                />
+
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flexGrow: 1,
         padding: 20,
         paddingTop: 60,
+        maxWidth: 400,
+        alignSelf: 'center',
+        width: '100%',
     },
     header: {
         flexDirection: 'row',
@@ -171,5 +185,4 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         borderColor: '#000',
     }
-
 });

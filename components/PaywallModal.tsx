@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Linking } from 'react-native';
 import { X } from 'lucide-react-native';
 import { usePurchase } from '../contexts/PurchaseContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -28,7 +28,13 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
         }
     }
 
-    if (loading || !offerings) {
+    const handleStripeRedirect = () => {
+        // TODO: Replace with your actual Stripe Payment Link
+        Linking.openURL('https://buy.stripe.com/test_placeholder');
+        onClose();
+    };
+
+    if (loading || (!offerings && Platform.OS !== 'web')) {
         return (
             <Modal visible={visible} transparent animationType="slide">
                 <View style={[styles.container, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
@@ -102,63 +108,81 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
 
                         {/* Pricing Options */}
                         <View style={styles.pricingContainer}>
-                            {selectedTier === 'user' ? (
-                                <>
-                                    <PricingCard
-                                        title="Monthly"
-                                        price="$3.33"
-                                        period="/month"
-                                        onPress={() => handlePurchase('user_monthly')}
-                                        colors={colors}
-                                        loading={purchasing}
+                            {Platform.OS === 'web' ? (
+                                <View style={{ alignItems: 'center', padding: 20 }}>
+                                    <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginBottom: 20 }}>
+                                        Securely subscribe via Stripe to unlock Pro features on the web.
+                                    </Text>
+                                    <Button
+                                        title={`Subscribe as ${selectedTier === 'user' ? 'User' : 'Therapist'}`}
+                                        onPress={handleStripeRedirect}
+                                        style={{ width: '100%' }}
                                     />
-                                    <PricingCard
-                                        title="Yearly"
-                                        price="$33"
-                                        period="/year"
-                                        badge="Save 17%"
-                                        onPress={() => handlePurchase('user_yearly')}
-                                        colors={colors}
-                                        loading={purchasing}
-                                    />
-                                    <PricingCard
-                                        title="Lifetime"
-                                        price="$99"
-                                        period="one-time"
-                                        badge="Best Value"
-                                        onPress={() => handlePurchase('user_lifetime')}
-                                        colors={colors}
-                                        loading={purchasing}
-                                    />
-                                </>
+                                    <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 10 }}>
+                                        Redirects to Stripe Secure Checkout
+                                    </Text>
+                                </View>
                             ) : (
                                 <>
-                                    <PricingCard
-                                        title="Monthly"
-                                        price="$9.99"
-                                        period="/month"
-                                        onPress={() => handlePurchase('therapist_monthly')}
-                                        colors={colors}
-                                        loading={purchasing}
-                                    />
-                                    <PricingCard
-                                        title="Yearly"
-                                        price="$111"
-                                        period="/year"
-                                        badge="Save 8%"
-                                        onPress={() => handlePurchase('therapist_yearly')}
-                                        colors={colors}
-                                        loading={purchasing}
-                                    />
-                                    <PricingCard
-                                        title="Lifetime"
-                                        price="$333"
-                                        period="one-time"
-                                        badge="Professional"
-                                        onPress={() => handlePurchase('therapist_lifetime')}
-                                        colors={colors}
-                                        loading={purchasing}
-                                    />
+                                    {selectedTier === 'user' ? (
+                                        <>
+                                            <PricingCard
+                                                title="Monthly"
+                                                price="$3.33"
+                                                period="/month"
+                                                onPress={() => handlePurchase('user_monthly')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                            <PricingCard
+                                                title="Yearly"
+                                                price="$33"
+                                                period="/year"
+                                                badge="Save 17%"
+                                                onPress={() => handlePurchase('user_yearly')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                            <PricingCard
+                                                title="Lifetime"
+                                                price="$99"
+                                                period="one-time"
+                                                badge="Best Value"
+                                                onPress={() => handlePurchase('user_lifetime')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <PricingCard
+                                                title="Monthly"
+                                                price="$9.99"
+                                                period="/month"
+                                                onPress={() => handlePurchase('therapist_monthly')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                            <PricingCard
+                                                title="Yearly"
+                                                price="$111"
+                                                period="/year"
+                                                badge="Save 8%"
+                                                onPress={() => handlePurchase('therapist_yearly')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                            <PricingCard
+                                                title="Lifetime"
+                                                price="$333"
+                                                period="one-time"
+                                                badge="Professional"
+                                                onPress={() => handlePurchase('therapist_lifetime')}
+                                                colors={colors}
+                                                loading={purchasing}
+                                            />
+                                        </>
+                                    )}
                                 </>
                             )}
                         </View>
