@@ -1,17 +1,25 @@
-import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity } from 'react-native';
-import { Settings as SettingsIcon, UserCircle, LogIn } from 'lucide-react-native';
+import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Settings as SettingsIcon, UserCircle, LogIn, Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
-import { useBePractice } from '../hooks/useBePractice'; // [NEW]
-import { Button } from '../components/Button';
+import { useBePractice } from '../hooks/useBePractice';
+import { useBiofeedback } from '../contexts/BiofeedbackContext';
+import { PremiumButton } from '../components/PremiumButton';
 import { ShimmerButton } from '../components/ShimmerButton';
 import { GuestBanner } from '../components/GuestBanner';
 import { BreathingLeaves } from '../components/BreathingLeaves';
 import { BreathingCircle } from '../components/BreathingCircle';
+import { PetalAwardModal } from '../components/PetalAwardModal';
+
+import { BiofeedbackIndicator } from '../components/BiofeedbackIndicator';
+import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
+import { DeviceScanner } from '../components/DeviceScanner';
+import { SessionSummary } from '../services/BiofeedbackService';
 import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -20,7 +28,7 @@ import { collection, addDoc } from 'firebase/firestore';
 export default function Home() {
     const { user, loading } = useAuth();
     const { colors } = useTheme();
-    const { timerDuration } = useSettings();
+    const { timerDuration, showNatureVisuals, showBreathingGuide } = useSettings();
     const router = useRouter();
 
     useProtectedRoute();
@@ -29,6 +37,17 @@ export default function Home() {
     const [isActive, setIsActive] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Biofeedback state
+    const {
+        isConnected: isBiofeedbackConnected,
+        startSessionTracking,
+        stopSessionTracking,
+        currentReading
+    } = useBiofeedback();
+    const [biofeedbackSummary, setBiofeedbackSummary] = useState<SessionSummary | null>(null);
+    const [showDeviceScanner, setShowDeviceScanner] = useState(false);
+    const [showPetalAward, setShowPetalAward] = useState(false);
 
     useEffect(() => {
         return () => {
@@ -71,26 +90,53 @@ export default function Home() {
         };
     }, [isActive, timeLeft]);
 
-    const { registerPause } = useBePractice();
+    const { registerPause, stats } = useBePractice();
 
     async function handleComplete() {
         setIsActive(false);
         setIsCompleted(true);
         Vibration.vibrate();
 
+        // Stop biofeedback tracking and get summary
+        let bioSummary: SessionSummary | null = null;
+        if (isBiofeedbackConnected) {
+            bioSummary = stopSessionTracking();
+            setBiofeedbackSummary(bioSummary);
+        }
+
         // Log Session if User
         if (user) {
             try {
                 const userId = user.uid;
 
-                await addDoc(collection(db, 'sessions'), {
+                // Build session data with optional biofeedback
+                const sessionData: any = {
                     user_id: userId,
                     duration_seconds: timerDuration,
                     completed_at: new Date()
-                });
+                };
+
+                // Add biofeedback data if available
+                if (bioSummary) {
+                    sessionData.biofeedback = {
+                        startHR: bioSummary.startReading.hr,
+                        endHR: bioSummary.endReading.hr,
+                        startHRV: bioSummary.startReading.hrv,
+                        endHRV: bioSummary.endReading.hrv,
+                        avgHR: bioSummary.avgHr,
+                        avgHRV: bioSummary.avgHrv,
+                        hrChange: bioSummary.hrChange,
+                        hrvChange: bioSummary.hrvChange,
+                    };
+                }
+
+                await addDoc(collection(db, 'sessions'), sessionData);
 
                 // Update BE Practice Stats
-                await registerPause();
+                const { petalAwarded } = await registerPause();
+                if (petalAwarded) {
+                    setShowPetalAward(true);
+                }
 
             } catch (e) {
                 console.error('Exception logging session:', e);
@@ -104,8 +150,16 @@ export default function Home() {
             setIsCompleted(false);
             setTimeLeft(timerDuration);
             setIsActive(false);
+            setBiofeedbackSummary(null);
         } else {
-            setIsActive(!isActive);
+            const newActive = !isActive;
+            setIsActive(newActive);
+
+            // Start/stop biofeedback tracking
+            if (newActive && isBiofeedbackConnected && timeLeft === timerDuration) {
+                // Starting fresh - begin tracking
+                startSessionTracking();
+            }
         }
     };
 
@@ -113,6 +167,10 @@ export default function Home() {
         setIsActive(false);
         setIsCompleted(false);
         setTimeLeft(timerDuration);
+        setBiofeedbackSummary(null);
+        if (isBiofeedbackConnected) {
+            stopSessionTracking();
+        }
     };
 
     const formatTime = (seconds: number) => {
@@ -126,129 +184,225 @@ export default function Home() {
 
     // ... (in component)
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={styles.headerControls}>
-                <TouchableOpacity onPress={() => router.push('/settings')} style={styles.headerButton}>
-                    <SettingsIcon size={24} color={colors.textSecondary} />
-                </TouchableOpacity>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 40 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-                <TouchableOpacity
-                    onPress={() => user ? router.push('/dashboard') : router.push('/(auth)/login')}
-                    style={styles.headerButton}
-                >
-                    {user ? (
-                        <UserCircle size={24} color={colors.textSecondary} />
-                    ) : (
-                        <LogIn size={24} color={colors.textSecondary} />
-                    )}
-                </TouchableOpacity>
-            </View>
+                    {/* Header Controls: Properly stacked now (Icons -> Lotus -> Catchphrase) */}
+                    <View style={styles.headerControls}>
+                        <TouchableOpacity onPress={() => router.push('/settings')} style={styles.headerButton}>
+                            <SettingsIcon size={24} color={colors.textSecondary} />
+                        </TouchableOpacity>
 
-            {!user && <GuestBanner />}
+                        {/* Biofeedback device button */}
+                        <TouchableOpacity
+                            onPress={() => setShowDeviceScanner(true)}
+                            style={[styles.headerButton, isBiofeedbackConnected && styles.headerButtonActive]}
+                        >
+                            <Heart
+                                size={24}
+                                color={isBiofeedbackConnected ? '#FF6B6B' : colors.textSecondary}
+                                fill={isBiofeedbackConnected ? '#FF6B6B' : 'transparent'}
+                            />
+                        </TouchableOpacity>
 
-            {/* Breathing leaves animation */}
-            <BreathingLeaves isActive={isActive} />
-
-            <View style={styles.content}>
-                <Image
-                    source={require('../assets/images/logo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
-
-                <Text style={[styles.tagline, { color: colors.textLight }]}>Pause. Breathe. Be333</Text>
-
-                <View style={styles.timerContainer}>
-                    <View style={[styles.timerCircle, {
-                        borderColor: isActive ? '#4A9977' : (isCompleted ? '#4CAF50' : colors.textSecondary),
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        shadowColor: isActive ? '#4A9977' : 'transparent',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: isActive ? 0.9 : 0,
-                        shadowRadius: isActive ? 30 : 0,
-                        elevation: isActive ? 25 : 0,
-                    }]}>
-                        {/* Timer text at top */}
-                        <View style={styles.timerTextTop}>
-                            <Text style={[styles.timerText, { color: colors.textLight }]}>
-                                {isCompleted ? "Done!" : formatTime(timeLeft)}
-                            </Text>
-                            {!isCompleted && !isActive && (
-                                <Text style={[styles.timerSubtext, { color: colors.textSecondary }]}>
-                                    3 minutes * 3Xs a day
-                                </Text>
+                        <TouchableOpacity
+                            onPress={() => user ? router.push('/dashboard') : router.push('/(auth)/login')}
+                            style={styles.headerButton}
+                        >
+                            {user ? (
+                                <UserCircle size={24} color={colors.textSecondary} />
+                            ) : (
+                                <LogIn size={24} color={colors.textSecondary} />
                             )}
-                        </View>
-
-                        {/* Lotus centered */}
-                        <View style={styles.lotusInCircle}>
-                            <BreathingCircle isActive={isActive} />
-                        </View>
+                        </TouchableOpacity>
                     </View>
-                </View>
 
-                {/* Temporary Onboarding Test Button */}
-                <TouchableOpacity onPress={() => router.push('/onboarding')} style={{ marginTop: 20 }}>
-                    <Text style={{ color: colors.textSecondary, textDecorationLine: 'underline' }}>
-                        (Test Onboarding)
-                    </Text>
-                </TouchableOpacity>
+                    {!user && <GuestBanner />}
 
-                <View style={styles.actions}>
-                    <Button
-                        title={isCompleted ? "Start New Session" : (isActive ? "Pause" : (timeLeft < timerDuration ? "Resume" : "Start Timer"))}
-                        onPress={toggleTimer}
-                        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-                    />
-
-                    {isCompleted && (
-                        <ShimmerButton
-                            title="Stack a Habit (+3 min)"
-                            onPress={() => router.push('/habit-stack/selection')}
-                            style={styles.secondaryButton}
+                    {/* Breathing leaves animation - Needs relative positioning or different handling if it was absolute full screen */}
+                    {/* We'll wrap it in a container if it needs to be behind everything, or keep it as is if it's absolute */}
+                    {/* BreathingLeaves is usually absolute. Let's ensure it doesn't block interactions or get cut off. 
+                        Usually it's fine as absolute background. */}
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../assets/images/logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
                         />
+                        <Text style={[styles.tagline, { color: colors.textLight }]}>Pause. Breathe. Be333</Text>
+                    </View>
+
+                    {/* Breathing Leaves (Background) */}
+                    {showNatureVisuals && (
+                        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                            <BreathingLeaves isActive={isActive} />
+                        </View>
                     )}
 
-                    {!isCompleted && timeLeft < timerDuration && (
-                        <Button
-                            title="Reset"
-                            variant="outline"
-                            onPress={resetTimer}
-                            style={[styles.secondaryButton, { borderColor: colors.textSecondary }]}
-                            textStyle={{ color: colors.textSecondary }}
-                        />
-                    )}
 
-                    <Button
-                        title="Dashboard"
-                        variant="secondary"
-                        onPress={() => router.push('/dashboard')}
-                        style={[styles.secondaryButton, { backgroundColor: colors.secondary }]}
-                        textStyle={{ color: colors.primary }}
+                    <View style={styles.content}>
+
+                        <View style={styles.timerContainer}>
+                            <View style={[styles.timerCircle, {
+                                borderColor: isActive ? '#4A9977' : (isCompleted ? '#4CAF50' : colors.textSecondary),
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                shadowColor: isActive ? '#4A9977' : 'transparent',
+                                shadowOffset: { width: 0, height: 0 },
+                                shadowOpacity: isActive ? 0.9 : 0,
+                                shadowRadius: isActive ? 30 : 0,
+                                elevation: isActive ? 25 : 0,
+                            }]}>
+                                {/* Timer text at top */}
+                                <View style={styles.timerTextTop}>
+                                    <Text style={[styles.timerText, { color: colors.textLight }]}>
+                                        {isCompleted ? "Done!" : formatTime(timeLeft)}
+                                    </Text>
+                                    {!isCompleted && !isActive && (
+                                        <Text style={[styles.timerSubtext, { color: colors.textSecondary }]}>
+                                            3mins × 3×Day × 3wks
+                                        </Text>
+                                    )}
+                                </View>
+
+                                {/* Lotus centered */}
+                                <View style={styles.lotusInCircle}>
+                                    <BreathingCircle
+                                        isActive={isActive}
+                                        showGuide={showBreathingGuide}
+                                        showNature={showNatureVisuals}
+                                        isMinuteMark={isActive && timeLeft > 0 && timeLeft % 60 === 0}
+                                    />
+                                </View>
+
+                                {/* Inner Circle Glow Overlay */}
+                                <View pointerEvents="none" style={styles.innerGlow} />
+                            </View>
+
+                        </View>
+
+                        {/* Control Button - Moved Clearly Below Visuals */}
+                        <View style={styles.controlsContainer}>
+                            <TouchableOpacity
+                                onPress={toggleTimer}
+                                style={styles.mainControlCircle}
+                                activeOpacity={0.7}
+                            >
+                                <View style={styles.controlIconContainer}>
+                                    {isActive ? (
+                                        // Pause Icon
+                                        <View style={{ flexDirection: 'row', gap: 6 }}>
+                                            <View style={styles.pauseBar} />
+                                            <View style={styles.pauseBar} />
+                                        </View>
+                                    ) : (
+                                        // Play Triangle / Start Text
+                                        timeLeft < timerDuration ? (
+                                            <View style={styles.playTriangle} />
+                                        ) : (
+                                            <Text style={styles.miniButtonText}>START</Text>
+                                        )
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Temporary Onboarding Test Button */}
+                        <TouchableOpacity onPress={() => router.push('/onboarding')} style={{ marginTop: 20 }}>
+                            <Text style={{ color: colors.textSecondary, textDecorationLine: 'underline' }}>
+                                (Test Onboarding)
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.actions}>
+                            {/* Primary Start Button removed from here, moved to circle */}
+
+
+                            {isCompleted && (
+                                <ShimmerButton
+                                    title="Stack a Habit (+3 min)"
+                                    onPress={() => router.push('/habit-stack/selection')}
+                                    style={styles.secondaryButton}
+                                />
+                            )}
+
+                            {!isCompleted && timeLeft < timerDuration && (
+                                <PremiumButton
+                                    title="Reset"
+                                    variant="outline"
+                                    onPress={resetTimer}
+                                    style={styles.secondaryButton}
+                                    textStyle={{ color: colors.textSecondary }}
+                                />
+                            )}
+
+                            <PremiumButton
+                                title="Dashboard"
+                                variant="primary" // Gradient Green
+                                onPress={() => router.push('/dashboard')}
+                                style={styles.secondaryButton}
+                            />
+                        </View>
+
+                        {/* Biofeedback post-session summary */}
+                        {isCompleted && biofeedbackSummary && (
+                            <BiofeedbackSummary
+                                summary={biofeedbackSummary}
+                                durationSeconds={timerDuration}
+                            />
+                        )}
+                    </View>
+
+                    {/* Device Scanner Modal */}
+                    <DeviceScanner
+                        visible={showDeviceScanner}
+                        onClose={() => setShowDeviceScanner(false)}
+                    />
+
+                    <PetalAwardModal
+                        visible={showPetalAward}
+                        onClose={() => setShowPetalAward(false)}
+                        dayOfPractice={stats?.dayOfPractice || 0}
+                        bloomDays={stats?.bloomDays || 0}
                     />
                 </View>
-            </View>
-        </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        paddingTop: 50,
+        width: '100%',
+        maxWidth: 500, // Increased max width
+        alignSelf: 'center',
+        paddingHorizontal: 20,
     },
     headerControls: {
-        position: 'absolute',
-        top: 50,
-        right: 20,
-        zIndex: 10,
+        width: '100%',
         flexDirection: 'row',
+        justifyContent: 'flex-end', // Right align icons
         gap: 15,
+        marginBottom: 10,
+        marginTop: 10,
+        zIndex: 50,
     },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+        zIndex: 20,
+    },
+    // ... existing headerButton styles ...
     headerButton: {
         padding: 8,
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 20,
+    },
+    headerButtonActive: {
+        backgroundColor: 'rgba(255, 107, 107, 0.2)',
     },
     settingsButton: {
         paddingVertical: 5,
@@ -256,35 +410,49 @@ const styles = StyleSheet.create({
         minWidth: 0,
     },
     content: {
-        flex: 1,
+        width: '100%',
         alignItems: 'center',
-        padding: 20,
-        justifyContent: 'center',
     },
     logo: {
-        width: 127,
-        height: 82,
-        marginBottom: 15,
+        width: 140,
+        height: 100,
+        marginBottom: 5,
+        resizeMode: 'contain',
     },
     tagline: {
         fontSize: 16,
         fontWeight: '300',
-        marginBottom: 50,
+        marginBottom: 10,
         letterSpacing: 1,
         opacity: 0.9,
     },
     timerContainer: {
         alignItems: 'center',
-        marginBottom: 30,
+        marginVertical: 20, // Vertical spacing
     },
     timerCircle: {
         width: 280,
         height: 280,
         borderRadius: 140,
-        borderWidth: 4,
+        borderWidth: 6, // Thicker border
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 15,
+        shadowColor: "#4A9977",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+        elevation: 15,
+    },
+    innerGlow: {
+        ...StyleSheet.absoluteFillObject,
+        borderRadius: 140,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.1)',
+        shadowColor: "#FFF",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
     lotusInCircle: {
         position: 'absolute',
@@ -296,9 +464,62 @@ const styles = StyleSheet.create({
     },
     timerTextTop: {
         position: 'absolute',
-        top: 25,
+        top: 40, // Moved down slightly to make room
         alignItems: 'center',
         zIndex: 10,
+    },
+    controlsContainer: {
+        marginTop: 60, // Clear the overflowing Lotus (Lotus extends ~140px below 280px circle, so we need space)
+        marginBottom: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 100,
+    },
+    mainControlCircle: {
+        width: 70, // Slightly larger target
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: 'rgba(255,255,255,0.1)', // Subtle background
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 6,
+    },
+    controlIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    miniButtonText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1.5,
+    },
+    pauseBar: {
+        width: 6,
+        height: 22,
+        backgroundColor: '#FFF',
+        borderRadius: 3,
+    },
+    playTriangle: {
+        width: 0,
+        height: 0,
+        backgroundColor: 'transparent',
+        borderStyle: 'solid',
+        borderLeftWidth: 18,
+        borderRightWidth: 0,
+        borderBottomWidth: 11,
+        borderTopWidth: 11,
+        borderLeftColor: '#FFF',
+        borderRightColor: 'transparent',
+        borderBottomColor: 'transparent',
+        borderTopColor: 'transparent',
+        marginLeft: 5,
     },
     timerText: {
         fontSize: 48,
@@ -311,6 +532,7 @@ const styles = StyleSheet.create({
         fontWeight: '300',
         opacity: 0.7,
     },
+    // Removed old circle styles
     actions: {
         width: '100%',
         maxWidth: 400,
@@ -351,5 +573,40 @@ const styles = StyleSheet.create({
     },
     actionButton: {
         marginBottom: 10,
+    },
+    stackSection: {
+        width: '100%',
+        marginBottom: 20,
+    },
+    stackTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#DAA520', // Gold title
+        marginBottom: 10,
+        marginLeft: 5,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    stackRow: {
+        gap: 10,
+        paddingHorizontal: 5,
+    },
+    stackOption: {
+        backgroundColor: '#1A4331',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 4,
+    },
+    stackOptionText: {
+        color: '#FFF',
+        fontWeight: '600',
+        fontSize: 14,
     },
 });

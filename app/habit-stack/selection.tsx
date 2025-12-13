@@ -41,6 +41,12 @@ export default function HabitSelectionScreen() {
     return (
         <View style={styles.wrapper}>
             <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.navBar}>
+                    <TouchableOpacity onPress={() => router.push('/dashboard')}>
+                        <Text style={styles.homeLink}>Home</Text>
+                    </TouchableOpacity>
+                </View>
+
                 <Text style={styles.header}>Stack a Positive Habit</Text>
                 <Text style={styles.subHeader}>Extend your mindfulness practice.</Text>
 
@@ -133,10 +139,20 @@ const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
         padding: 20,
-        paddingTop: 60,
+        paddingTop: 20,
         maxWidth: 400,
         alignSelf: 'center',
         width: '100%',
+    },
+    navBar: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginBottom: 20,
+    },
+    homeLink: {
+        fontSize: 16,
+        color: Colors.textSecondary,
+        fontWeight: 'bold',
     },
     header: {
         fontSize: 28,

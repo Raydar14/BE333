@@ -32,9 +32,17 @@ type SettingsContextType = {
     setNotificationMethod: (method: NotificationMethod) => void;
 
     // Snooze
-    snoozeUntil: number | null; // Unix timestamp when snooze expires, or null
+    snoozeUntil: number | null;
     isSnoozed: boolean;
     setSnoozeUntil: (until: number | null) => void;
+
+    // Breathing Guide
+    showBreathingGuide: boolean;
+    setShowBreathingGuide: (show: boolean) => void;
+
+    // Nature/Flower Visuals
+    showNatureVisuals: boolean; // Controls the Lotus + Flowers
+    setShowNatureVisuals: (show: boolean) => void;
 };
 
 const defaultHabitLinks: HabitLinks = {
@@ -55,6 +63,10 @@ const SettingsContext = createContext<SettingsContextType>({
     snoozeUntil: null,
     isSnoozed: false,
     setSnoozeUntil: () => { },
+    showBreathingGuide: true,
+    setShowBreathingGuide: () => { },
+    showNatureVisuals: true,
+    setShowNatureVisuals: () => { },
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -65,6 +77,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [habitLinks, setHabitLinks] = useState<HabitLinks>(defaultHabitLinks);
     const [notificationMethod, setNotificationMethodState] = useState<NotificationMethod>('push');
     const [snoozeUntil, setSnoozeUntilState] = useState<number | null>(null);
+    const [showBreathingGuide, setShowBreathingGuideState] = useState(true);
+    const [showNatureVisuals, setShowNatureVisualsState] = useState(true);
 
     // Computed: are we currently snoozed?
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
@@ -97,6 +111,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 if (val > Date.now()) setSnoozeUntilState(val);
                 else await AsyncStorage.removeItem('snoozeUntil');
             }
+
+            // Load Breathing Guide
+            const savedGuide = await AsyncStorage.getItem('showBreathingGuide');
+            if (savedGuide !== null) setShowBreathingGuideState(JSON.parse(savedGuide));
+
+            // Load Nature Visuals
+            const savedNature = await AsyncStorage.getItem('showNatureVisuals');
+            if (savedNature !== null) setShowNatureVisualsState(JSON.parse(savedNature));
 
         } catch (e) {
             console.error('Failed to load settings', e);
@@ -133,6 +155,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const setShowBreathingGuide = async (show: boolean) => {
+        setShowBreathingGuideState(show);
+        await AsyncStorage.setItem('showBreathingGuide', JSON.stringify(show));
+    };
+
+    const setShowNatureVisuals = async (show: boolean) => {
+        setShowNatureVisualsState(show);
+        await AsyncStorage.setItem('showNatureVisuals', JSON.stringify(show));
+    };
+
     return (
         <SettingsContext.Provider value={{
             timerDuration,
@@ -145,7 +177,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             setNotificationMethod,
             snoozeUntil,
             isSnoozed,
-            setSnoozeUntil
+            setSnoozeUntil,
+            showBreathingGuide,
+            setShowBreathingGuide,
+            showNatureVisuals,
+            setShowNatureVisuals
         }}>
             {children}
         </SettingsContext.Provider>

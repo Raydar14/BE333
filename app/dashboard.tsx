@@ -1,21 +1,25 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { Colors } from '../constants/Colors';
 import { Button } from '../components/Button';
+import { PremiumButton } from '../components/PremiumButton';
 import { ProFeatureLock } from '../components/ProFeatureLock';
 import { useBePractice } from '../hooks/useBePractice';
 import { useBeBuddy } from '../hooks/useBeBuddy';
 import { LotusBloomMap } from '../components/LotusBloomMap';
 import { BuddyBoard } from '../components/BuddyBoard';
+import { TrendChart } from '../components/TrendChart';
+import { GuideSection } from '../components/GuideSection';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'expo-router';
 import { usePurchase } from '../contexts/PurchaseContext';
+import { Users, Trophy } from 'lucide-react-native';
 
 export default function Dashboard() {
     const { user } = useAuth();
-    const { stats, loading: practiceLoading } = useBePractice();
+    const { stats, loading: practiceLoading, startNewPractice } = useBePractice();
     const { buddyState, buddyStats } = useBeBuddy();
     const { isPro } = usePurchase();
     const router = useRouter();
@@ -39,56 +43,52 @@ export default function Dashboard() {
     return (
         <View style={styles.wrapper}>
             <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.title}>Your Dashboard</Text>
+                <Text style={styles.headerTitle}>Practice Hub</Text>
 
-                {/* Resting Ritual State */}
+                {/* 1. Golden Lotus Showcase */}
+                <View style={styles.lotusShowcase}>
+                    <Text style={styles.lotusTitle}>Day {stats.dayOfPractice} of 21</Text>
+                    {/* The Map visualizes the Lotus */}
+                    <LotusBloomMap bloomDays={stats.bloomDays} />
+                    <Text style={styles.lotusSubtitle}>{stats.bloomDays} Pause Petals Collected</Text>
+                </View>
+
+                {/* 2. Trends Section */}
+                {!isResting && (
+                    <View style={styles.section}>
+                        <TrendChart
+                            currentPauses={stats.currentPauses}
+                            history={stats.recentHistory || []}
+                        />
+                    </View>
+                )}
+
+                {/* Resting Ritual Card (Cycle Failed State) */}
                 {isResting && (
                     <View style={[styles.section, styles.restingCard]}>
-                        <Text style={styles.restingTitle}>Reset & Rest Ritual</Text>
+                        <Text style={styles.restingTitle}>Cycle Interrupted</Text>
                         <Text style={styles.restingBody}>
-                            You've used your 3rd streak break. BE333 has activated a gentle 3-day rest for you.
-                            Take this time to recharge. We'll begin a new practice together soon.
+                            You've missed 3 sessions. It happens to the best of us!
+                            {"\n"}Ready to begin a fresh 21-day journey?
                         </Text>
+                        <PremiumButton
+                            title="Start New Cycle"
+                            variant="primary"
+                            onPress={startNewPractice}
+                            style={{ marginTop: 20, width: '100%' }}
+                        />
                     </View>
                 )}
 
-                {/* Active Practice Section */}
-                {!isResting && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>21-Day BE Practice</Text>
-                        <Text style={styles.sectionSubtitle}>Day {stats.dayOfPractice} of 21</Text>
-
-                        {/* Lotus Map */}
-                        <LotusBloomMap bloomDays={stats.bloomDays} />
-
-                        {/* Today's Progress */}
-                        <View style={styles.statsContainer}>
-                            <View style={styles.statCard}>
-                                <Text style={styles.statValue}>{stats.currentPauses} / {targetPauses}</Text>
-                                <Text style={styles.statLabel}>Today's Pauses</Text>
-                                {stats.currentPauses >= targetPauses && (
-                                    <Text style={styles.statSubLabel}>Bloom Day Complete!</Text>
-                                )}
-                            </View>
-
-                            {/* Streak Breaks */}
-                            <View style={styles.statCard}>
-                                <Text style={[styles.statValue, { color: stats.streakBreaksUsed >= 2 ? Colors.warning : Colors.secondary }]}>
-                                    {isPro ? '∞' : `${stats.streakBreaksUsed} / 3`}
-                                </Text>
-                                <Text style={styles.statLabel}>Streak Breaks</Text>
-                                <Text style={styles.statSubLabel}>{isPro ? 'Pro Protected' : 'Avoid reaching 3'}</Text>
-                            </View>
-                        </View>
+                {/* 3. Challenge Section */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeaderRow}>
+                        <Trophy size={20} color="#FFD700" />
+                        <Text style={styles.sectionTitle}>Challenge Level</Text>
                     </View>
-                )}
 
-                {/* BE Buddy Challenge Section */}
-                {!isResting && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>BE Buddy Challenge</Text>
-
-                        {buddyState && buddyState.active ? (
+                    {buddyState && buddyState.active ? (
+                        <View>
                             <BuddyBoard
                                 myPetals={stats.bloomDays}
                                 buddyPetals={buddyStats?.bloomDays || 0}
@@ -98,47 +98,47 @@ export default function Dashboard() {
                                 }}
                                 buddyName={buddyState.buddyName}
                             />
-                        ) : (
-                            <View style={styles.inviteCard}>
-                                <Text style={styles.inviteText}>
-                                    Accountability is powerful. Invite a friend to join you in a 21-Day Challenge.
-                                </Text>
-                                <Button
-                                    title="Invite a BE Buddy"
-                                    onPress={() => router.push('/social/invite')}
-                                    variant="secondary"
-                                    style={{ marginTop: 10 }}
-                                />
-                            </View>
-                        )}
-                    </View>
-                )}
-
-                {/* Lifetime Stats (Pro) */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Lifetime Stats</Text>
-                    <ProFeatureLock label="Pro Feature">
-                        <View style={styles.statsContainer}>
-                            <View style={styles.statCard}>
-                                <Text style={styles.statValue}>--</Text>
-                                <Text style={styles.statLabel}>Total Sessions</Text>
-                            </View>
-                            <View style={styles.statCard}>
-                                <Text style={styles.statValue}>--</Text>
-                                <Text style={styles.statLabel}>Longest Flow</Text>
+                            <View style={styles.challengeStats}>
+                                <Text style={styles.statLine}>Current Streak: <Text style={{ fontWeight: 'bold', color: Colors.primary }}>{stats.streakBreaksUsed === 0 ? 'Perfect' : 'Active'}</Text></Text>
                             </View>
                         </View>
-                    </ProFeatureLock>
+                    ) : (
+                        <View style={styles.inviteCard}>
+                            <Users size={32} color={Colors.textSecondary} style={{ marginBottom: 10 }} />
+                            <Text style={styles.inviteTitle}>Buddy Challenge</Text>
+                            <Text style={styles.inviteText}>
+                                Accountability doubles your success rate. Invite a friend to a 21-Day connection.
+                            </Text>
+                            <PremiumButton
+                                title="Invite a Friend"
+                                onPress={() => router.push('/social/invite')}
+                                variant="outline"
+                                style={{ marginTop: 10, width: '100%' }}
+                            />
+                            <Text style={styles.pendingText}>0 Pending Invites</Text>
+                        </View>
+                    )}
                 </View>
 
-                <Button
+                {/* 4. Guide Section */}
+                <View style={styles.section}>
+                    <GuideSection />
+                </View>
+
+                {/* Footer Actions */}
+                <PremiumButton
                     title="Return to Timer"
                     onPress={() => router.push('/')}
                     variant="secondary"
-                    style={{ marginTop: 20 }}
+                    style={{ marginBottom: 15 }}
                 />
 
-                <Button title="Sign Out" onPress={handleSignOut} variant="ghost" style={{ marginTop: 10, marginBottom: 30 }} />
+                <Button
+                    title="Sign Out"
+                    onPress={handleSignOut}
+                    variant="ghost"
+                    textStyle={{ color: Colors.textSecondary }}
+                />
             </ScrollView>
         </View>
     );
@@ -152,64 +152,47 @@ const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
         padding: 20,
-        paddingTop: 60,
+        paddingTop: 50,
         maxWidth: 400,
         alignSelf: 'center',
         width: '100%',
     },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: Colors.primary,
-        marginBottom: 30,
-        textAlign: 'center',
-    },
-    section: {
-        marginBottom: 30,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: Colors.text,
-        marginBottom: 5,
-    },
-    sectionSubtitle: {
-        fontSize: 14,
-        color: Colors.textSecondary,
-        marginBottom: 15,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        gap: 15,
-    },
-    statCard: {
-        flex: 1,
-        backgroundColor: Colors.surface,
-        padding: 15,
-        borderRadius: 12,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: Colors.border,
-    },
-    statValue: {
+    headerTitle: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: Colors.secondary,
-    },
-    statLabel: {
-        fontSize: 14,
         color: Colors.text,
-        fontWeight: '600',
-        marginTop: 5,
         textAlign: 'center',
+        marginBottom: 20,
     },
-    statSubLabel: {
-        fontSize: 10,
+    lotusShowcase: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    lotusTitle: {
+        fontSize: 18,
+        color: Colors.primary,
+        fontWeight: '600',
+        marginBottom: 10,
+    },
+    lotusSubtitle: {
+        fontSize: 14,
         color: Colors.textSecondary,
-        textAlign: 'center',
-        marginTop: 2,
+        marginTop: 10,
+    },
+    section: {
+        marginBottom: 25,
+    },
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 10,
+        paddingLeft: 5,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: Colors.text,
     },
     restingCard: {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -234,13 +217,36 @@ const styles = StyleSheet.create({
     inviteCard: {
         backgroundColor: Colors.surface,
         padding: 20,
-        borderRadius: 12,
+        borderRadius: 16,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    inviteTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: Colors.text,
+        marginBottom: 5,
     },
     inviteText: {
         color: Colors.textSecondary,
         textAlign: 'center',
         marginBottom: 15,
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    pendingText: {
+        fontSize: 12,
+        color: Colors.textSecondary,
+        marginTop: 10,
+        fontStyle: 'italic',
+    },
+    challengeStats: {
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    statLine: {
+        color: Colors.text,
         fontSize: 14,
     }
 });

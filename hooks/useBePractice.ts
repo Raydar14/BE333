@@ -13,6 +13,9 @@ export interface BePracticeStats {
     currentPauses: number; // Pauses completed TODAY (0-3)
     streakBreaksUsed: number; // Rest days used (0-3)
 
+    // History for 3-Day Trend
+    recentHistory: { date: string; pauses: number }[];
+
     lastActiveDate: string; // YYYY-MM-DD to track daily resets
     resetRitualStartDate?: string | null; // If in resting state
 }
@@ -24,6 +27,7 @@ const DEFAULT_STATS: BePracticeStats = {
     bloomDays: 0,
     currentPauses: 0,
     streakBreaksUsed: 0,
+    recentHistory: [],
     lastActiveDate: new Date().toISOString().split('T')[0],
     resetRitualStartDate: null,
 };
@@ -83,6 +87,18 @@ export function useBePractice() {
         const diffTime = Math.abs(todayObj.getTime() - lastDateObj.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+        // Update History: Push yesterday's final state
+        let updatedHistory = [...(currentStats.recentHistory || [])];
+        // If we missed days, we might want to fill them with 0, but for "Last 3 Days of active use" vs "Last 3 calendar days":
+        // Requirements say "trend", usually implies calendar days.
+        // Simple approach: Add the *last active* day's result to history
+        updatedHistory.push({ date: lastActive, pauses: currentStats.currentPauses });
+
+        // Keep only last 3
+        if (updatedHistory.length > 3) {
+            updatedHistory = updatedHistory.slice(updatedHistory.length - 3);
+        }
+
         let addedStrikes = 0;
 
         // Check yesterday's completeness
@@ -91,7 +107,19 @@ export function useBePractice() {
         if (currentStats.currentPauses < targetPauses) {
             addedStrikes += 1;
         }
-        addedStrikes += (diffDays - 1);
+        // Penalize for completely missed days in between
+        if (diffDays > 1) {
+            addedStrikes += (diffDays - 1);
+            // Optionally backfill missed days as 0 in history
+            for (let i = 1; i < diffDays; i++) {
+                const missedDate = new Date(lastDateObj);
+                missedDate.setDate(missedDate.getDate() + i);
+                updatedHistory.push({ date: missedDate.toISOString().split('T')[0], pauses: 0 });
+            }
+            if (updatedHistory.length > 3) {
+                updatedHistory = updatedHistory.slice(updatedHistory.length - 3);
+            }
+        }
 
         newStreakBreaks += addedStrikes;
 
@@ -110,6 +138,7 @@ export function useBePractice() {
             currentPauses: 0, // Reset for today
             lastActiveDate: today,
             streakBreaksUsed: newStreakBreaks,
+            recentHistory: updatedHistory,
             practiceState: newState,
             resetRitualStartDate: resetDate,
         };
@@ -122,24 +151,30 @@ export function useBePractice() {
         await updateDoc(userRef, { bePractice: updatedStats });
     };
 
-    const registerPause = async () => {
-        if (!user || !stats || stats.practiceState !== 'active') return;
+    const registerPause = async (): Promise<{ petalAwarded: boolean }> => {
+        if (!user || !stats || stats.practiceState !== 'active') return { petalAwarded: false };
 
         const newPauses = stats.currentPauses + 1;
 
         // PRO RULE: Bloom Logic
         const targetPauses = isPro ? 2 : 3;
         let newBloomDays = stats.bloomDays;
+        let petalAwarded = false;
 
         if (newPauses === targetPauses) {
             newBloomDays += 1;
+            petalAwarded = true;
         }
 
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, {
             'bePractice.currentPauses': newPauses,
             'bePractice.bloomDays': newBloomDays
+            // We don't strictly need to update 'recentHistory' here because that stores *past* days. 
+            // Today is 'currentPauses'.
         });
+
+        return { petalAwarded };
     };
 
     const startNewPractice = async () => {

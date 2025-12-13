@@ -4,7 +4,7 @@ import { Colors } from '../constants/Colors';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
-    variant?: 'primary' | 'secondary' | 'outline';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
     loading?: boolean;
     textStyle?: any;
     icon?: any; // LucideIcon
@@ -17,6 +17,7 @@ export function Button({ title, variant = 'primary', loading, icon: Icon, style,
             case 'primary': return Colors.primary;
             case 'secondary': return Colors.secondary;
             case 'outline': return 'transparent';
+            case 'ghost': return 'transparent';
             default: return Colors.primary;
         }
     };
@@ -27,6 +28,7 @@ export function Button({ title, variant = 'primary', loading, icon: Icon, style,
             case 'primary': return '#fff';
             case 'secondary': return Colors.primary; // Dark green text on gold button
             case 'outline': return Colors.primary;
+            case 'ghost': return Colors.textSecondary;
             default: return '#fff';
         }
     };
@@ -37,6 +39,7 @@ export function Button({ title, variant = 'primary', loading, icon: Icon, style,
                 styles.container,
                 { backgroundColor: getBackgroundColor() },
                 variant === 'outline' && styles.outline,
+                variant === 'ghost' && styles.ghost,
                 style,
             ]}
             disabled={loading || props.disabled}
@@ -78,5 +81,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         letterSpacing: 0.5,
+    },
+    ghost: {
+        shadowColor: 'transparent',
+        elevation: 0,
+        backgroundColor: 'transparent',
     },
 });

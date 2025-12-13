@@ -36,9 +36,15 @@ export function ShimmerButton({ title, loading, icon: Icon, style, textStyle, ..
             disabled={loading || props.disabled}
             {...props}
         >
-            {/* Gold background */}
+            {/* Gold background Gradient */}
             <View style={styles.gradientContainer}>
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: '#D4AF37' }]} />
+                <LinearGradient
+                    colors={['#FFD700', '#DAA520', '#B8860B', '#DAA520']} // Multi-stop gold metal gradient
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                />
+
                 {/* Shimmer overlay */}
                 <Animated.View
                     style={[
@@ -46,7 +52,12 @@ export function ShimmerButton({ title, loading, icon: Icon, style, textStyle, ..
                         { transform: [{ translateX }] }
                     ]}
                 >
-                    <View style={styles.shimmerGradient} />
+                    <LinearGradient
+                        colors={['transparent', 'rgba(255,255,255,0.8)', 'transparent']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.shimmerGradient}
+                    />
                 </Animated.View>
             </View>
 
@@ -71,40 +82,46 @@ export function ShimmerButton({ title, loading, icon: Icon, style, textStyle, ..
 const styles = StyleSheet.create({
     container: {
         position: 'relative',
-        borderRadius: 25,
+        borderRadius: 30,
         overflow: 'hidden',
-        marginVertical: 8,
-        shadowColor: '#D4AF37',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: 8,
+        marginVertical: 12,
+        shadowColor: '#DAA520', // Gold shadow
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 12, // Stronger elevation
+        transform: [{ scale: 1.0 }], // Placeholder in case we want press animation later
     },
     gradientContainer: {
         ...StyleSheet.absoluteFillObject,
-        overflow: 'hidden',
     },
     shimmer: {
         position: 'absolute',
-        top: 0,
-        bottom: 0,
-        width: 100,
+        top: -50, // Extend to cover rotation
+        bottom: -50,
+        width: 150, // Wider shimmer
+        opacity: 0.9,
     },
     shimmerGradient: {
         flex: 1,
-        backgroundColor: 'rgba(255, 248, 220, 0.6)', // Lighter gold/cream shimmer
-        transform: [{ skewX: '-20deg' }],
+        backgroundColor: '#FFF', // Bright white shine
+        opacity: 0.5,
+        transform: [{ skewX: '-30deg' }],
     },
     content: {
-        padding: 16,
+        paddingVertical: 18,
+        paddingHorizontal: 24,
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: 'transparent',
+        zIndex: 10,
     },
     text: {
-        fontSize: 16,
-        fontWeight: '600',
-        letterSpacing: 0.5,
-        color: Colors.primary, // Dark green text on gold
+        fontSize: 18,
+        fontWeight: '800', // Extra bold
+        letterSpacing: 1,
+        color: '#1A4331', // Deep green on gold
+        textTransform: 'uppercase',
     },
     goldBorder: {
         position: 'absolute',
@@ -112,8 +129,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        borderRadius: 25,
-        borderWidth: 2,
-        borderColor: '#D4AF37',
+        borderRadius: 30,
+        borderWidth: 1.5,
+        borderColor: '#FFF8DC', // Cornsilk/Light gold highlight border
+        opacity: 0.5,
     },
 });
