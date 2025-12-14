@@ -57,6 +57,22 @@ type SettingsContextType = {
     // Social Links
     socialLinks: SocialLinks;
     updateSocialLink: (platform: keyof SocialLinks, handle: string) => void;
+
+    // Breathing Pattern
+    breathingPattern: '4-1-6' | '3-1-5';
+    setBreathingPattern: (pattern: '4-1-6' | '3-1-5') => void;
+
+    // DEEP3 Start
+    deep3Enabled: boolean;
+    setDeep3Enabled: (enabled: boolean) => void;
+    deep3Duration: number; // 15 or 20
+    setDeep3Duration: (duration: number) => void;
+
+    // Visual Options
+    showBreathingLotus: boolean;
+    setShowBreathingLotus: (show: boolean) => void;
+    bellyVisualGender: 'male' | 'female';
+    setBellyVisualGender: (gender: 'male' | 'female') => void;
 };
 
 const defaultHabitLinks: HabitLinks = {
@@ -87,6 +103,17 @@ const SettingsContext = createContext<SettingsContextType>({
     setTimerMode: () => { },
     socialLinks: {},
     updateSocialLink: () => { },
+    breathingPattern: '4-1-6',
+    setBreathingPattern: () => { },
+    deep3Enabled: true,
+    setDeep3Enabled: () => { },
+    deep3Duration: 15,
+    setDeep3Duration: () => { },
+
+    showBreathingLotus: false,
+    setShowBreathingLotus: () => { },
+    bellyVisualGender: 'female',
+    setBellyVisualGender: () => { },
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -102,6 +129,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [showHabitStacking, setShowHabitStackingState] = useState(true);
     const [timerMode, setTimerModeState] = useState<'countdown' | 'open'>('countdown');
     const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
+    const [breathingPattern, setBreathingPatternState] = useState<'4-1-6' | '3-1-5'>('4-1-6');
+    const [deep3Enabled, setDeep3EnabledState] = useState(true);
+    const [deep3Duration, setDeep3DurationState] = useState(15);
+    const [showBreathingLotus, setShowBreathingLotusState] = useState(false);
+    const [bellyVisualGender, setBellyVisualGenderState] = useState<'male' | 'female'>('female');
 
     // Computed: are we currently snoozed?
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
@@ -152,6 +184,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             // Load Social Links
             const savedSocials = await AsyncStorage.getItem('socialLinks');
             if (savedSocials) setSocialLinks(JSON.parse(savedSocials));
+
+            // Load Breathing Settings
+            const savedPattern = await AsyncStorage.getItem('breathingPattern');
+            if (savedPattern) setBreathingPatternState(savedPattern as '4-1-6' | '3-1-5');
+
+            const savedDeep3 = await AsyncStorage.getItem('deep3Enabled');
+            if (savedDeep3 !== null) setDeep3EnabledState(JSON.parse(savedDeep3));
+
+            const savedDeep3Dur = await AsyncStorage.getItem('deep3Duration');
+            if (savedDeep3Dur) setDeep3DurationState(parseInt(savedDeep3Dur));
+
+            // Load Visual Options
+            const savedLotus = await AsyncStorage.getItem('showBreathingLotus');
+            if (savedLotus !== null) setShowBreathingLotusState(JSON.parse(savedLotus));
+
+            const savedGender = await AsyncStorage.getItem('bellyVisualGender');
+            if (savedGender) setBellyVisualGenderState(savedGender as 'male' | 'female');
 
         } catch (e) {
             console.error('Failed to load settings', e);
@@ -214,6 +263,31 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem('socialLinks', JSON.stringify(newLinks));
     };
 
+    const setBreathingPattern = async (pattern: '4-1-6' | '3-1-5') => {
+        setBreathingPatternState(pattern);
+        await AsyncStorage.setItem('breathingPattern', pattern);
+    };
+
+    const setDeep3Enabled = async (enabled: boolean) => {
+        setDeep3EnabledState(enabled);
+        await AsyncStorage.setItem('deep3Enabled', JSON.stringify(enabled));
+    };
+
+    const setDeep3Duration = async (duration: number) => {
+        setDeep3DurationState(duration);
+        await AsyncStorage.setItem('deep3Duration', duration.toString());
+    };
+
+    const setShowBreathingLotus = async (show: boolean) => {
+        setShowBreathingLotusState(show);
+        await AsyncStorage.setItem('showBreathingLotus', JSON.stringify(show));
+    };
+
+    const setBellyVisualGender = async (gender: 'male' | 'female') => {
+        setBellyVisualGenderState(gender);
+        await AsyncStorage.setItem('bellyVisualGender', gender);
+    };
+
     return (
         <SettingsContext.Provider value={{
             timerDuration,
@@ -236,7 +310,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             timerMode,
             setTimerMode,
             socialLinks,
-            updateSocialLink
+            updateSocialLink,
+            breathingPattern,
+            setBreathingPattern,
+            deep3Enabled,
+            setDeep3Enabled,
+            deep3Duration,
+            setDeep3Duration,
+            showBreathingLotus,
+            setShowBreathingLotus,
+            bellyVisualGender,
+            setBellyVisualGender
         }}>
             {children}
         </SettingsContext.Provider>

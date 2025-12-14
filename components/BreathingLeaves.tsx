@@ -1,216 +1,226 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing, Image } from 'react-native';
-import Svg, { Path, LinearGradient, Stop, Defs } from 'react-native-svg';
+import { View, StyleSheet, Animated, Easing, Dimensions } from 'react-native';
+import Svg, { Path, G } from 'react-native-svg';
+
+const { width, height } = Dimensions.get('window');
 
 type BreathingLeavesProps = {
     isActive: boolean;
+    phase: 'deep3' | 'inhale' | 'pause' | 'exhale' | 'idle';
 };
 
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
+// 21 items total: 14 leaves, 7 flowers
+const ITEM_COUNT = 21;
 
-export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
-    // 6 Items: All Flowers/Leaves (using image assets for consistency)
-    const leaves = Array(6).fill(0).map(() => ({
-        y: useRef(new Animated.Value(0)).current,
-        x: useRef(new Animated.Value(0)).current,
-        rotation: useRef(new Animated.Value(0)).current,
-        opacity: useRef(new Animated.Value(0)).current,
-        scale: useRef(new Animated.Value(0.8)).current,
-    }));
+// SVG Icons to replace PNGs and fix background artifacts
+const LeafIcon = () => (
+    <Svg width="35" height="35" viewBox="0 0 24 24" fill="none">
+        <Path d="M12 2L12.5 2.5C12.5 2.5 17 8 17 12C17 16 14 20 12 22C10 20 7 16 7 12C7 8 11.5 2.5 11.5 2.5L12 2Z" fill="#8FBC8F" opacity="0.8" />
+        <Path d="M12 22V8" stroke="#556B2F" strokeWidth="0.5" strokeLinecap="round" />
+        <Path d="M12 16L9 14" stroke="#556B2F" strokeWidth="0.5" strokeLinecap="round" />
+        <Path d="M12 14L15 12" stroke="#556B2F" strokeWidth="0.5" strokeLinecap="round" />
+        <Path d="M12 12L9 10" stroke="#556B2F" strokeWidth="0.5" strokeLinecap="round" />
+    </Svg>
+);
 
-    // Track timeouts to clear them on unmount/inactive
-    const timeouts = useRef<NodeJS.Timeout[]>([]);
+const FlowerIcon = () => (
+    <Svg width="45" height="45" viewBox="0 0 100 100" fill="none">
+        {/* Back Petals - Soft Golds/Whites */}
+        <Path d="M20,60 Q10,40 30,30 Q50,60 50,80 Q30,80 20,60" fill="#FFF8E0" stroke="#E1B725" strokeWidth="1" />
+        <Path d="M80,60 Q90,40 70,30 Q50,60 50,80 Q70,80 80,60" fill="#FFF8E0" stroke="#E1B725" strokeWidth="1" />
 
+        {/* Middle Petals - White with Gold Tips */}
+        <Path d="M30,55 Q25,35 40,25 Q50,55 50,85" fill="#FFFFFF" stroke="#D4AF37" strokeWidth="1" />
+        <Path d="M70,55 Q75,35 60,25 Q50,55 50,85" fill="#FFFFFF" stroke="#D4AF37" strokeWidth="1" />
+
+        {/* Center Petal - Pure White with detailed tip */}
+        <Path d="M50,90 Q35,60 50,10 Q65,60 50,90" fill="#FFFFFF" stroke="#E1B725" strokeWidth="1.5" />
+    </Svg>
+);
+
+export function BreathingLeaves({ isActive, phase }: BreathingLeavesProps) {
+    // Generate items once with fully randomized properties to avoid "lines"
+    const items = useRef(Array(ITEM_COUNT).fill(0).map((_, i) => ({
+        // Animation Values
+        y: new Animated.Value(0),
+        x: new Animated.Value(0),
+        opacity: new Animated.Value(0),
+        scale: new Animated.Value(0.4 + Math.random() * 0.4), // Random size
+        rotateZ: new Animated.Value(Math.random()), // Random start rotation
+        rotateX: new Animated.Value(0),
+
+        // Position & Identity
+        isFlower: i % 3 === 0,
+        initialLeft: Math.random() * 90 + 5, // Random 5% to 95%
+        initialBottom: Math.random() * 100, // Random vertical staggered start
+
+        // Physics randomization
+        swaySpeed: 2500 + Math.random() * 2000,
+        swayAmp: 15 + Math.random() * 30,
+        driftDelay: Math.random() * 4000, // Large random delay to break synchronization
+        driftDuration: 5000 + Math.random() * 3000, // Random travel times
+    }))).current;
+
+    // Effect 1: Handle Drifting Loops (Sway, Spin) - Runs ONCE on Active
     useEffect(() => {
-        if (!isActive) {
-            // Reset everything
-            leaves.forEach(leaf => {
-                leaf.y.setValue(0);
-                leaf.x.setValue(0);
-                leaf.rotation.setValue(0);
-                leaf.opacity.setValue(0);
-                leaf.scale.setValue(0.8);
+        if (isActive) {
+            // Start Drifting
+            items.forEach(item => {
+                // Horizontal Sway
+                Animated.loop(
+                    Animated.sequence([
+                        Animated.timing(item.x, {
+                            toValue: item.swayAmp,
+                            duration: item.swaySpeed,
+                            easing: Easing.inOut(Easing.sin),
+                            useNativeDriver: true // Native driver supported on web for these? Yes usually.
+                        }),
+                        Animated.timing(item.x, {
+                            toValue: -item.swayAmp,
+                            duration: item.swaySpeed,
+                            easing: Easing.inOut(Easing.sin),
+                            useNativeDriver: true
+                        })
+                    ])
+                ).start();
+
+                // Rotation
+                Animated.loop(
+                    Animated.timing(item.rotateZ, {
+                        toValue: 1,
+                        duration: item.swaySpeed * 4,
+                        easing: Easing.linear,
+                        useNativeDriver: true
+                    })
+                ).start();
+
+                // Tumble
+                Animated.loop(
+                    Animated.sequence([
+                        Animated.timing(item.rotateX, {
+                            toValue: 1,
+                            duration: item.swaySpeed * 2,
+                            easing: Easing.inOut(Easing.quad),
+                            useNativeDriver: true
+                        }),
+                        Animated.timing(item.rotateX, {
+                            toValue: 0,
+                            duration: item.swaySpeed * 2,
+                            easing: Easing.inOut(Easing.quad),
+                            useNativeDriver: true
+                        })
+                    ])
+                ).start();
             });
-            // Clear any pending timeouts
-            timeouts.current.forEach(t => clearTimeout(t));
-            timeouts.current = [];
-            return;
         }
 
-        // Swirl paths for 6 items
-        const swirlPaths = [
-            { phase1: 65, phase2: -45, phase3: 30 },
-            { phase1: -50, phase2: 40, phase3: -15 },
-            { phase1: 55, phase2: -40, phase3: 35 },
-            { phase1: -65, phase2: 60, phase3: -30 },
-            { phase1: 45, phase2: -35, phase3: 20 },
-            { phase1: -70, phase2: 50, phase3: -25 },
-        ];
-
-        leaves.forEach((leaf, index) => {
-            const swirl = swirlPaths[index];
-            const BREATH_CYCLE_MS = 11500; // ~11.5s per breath
-            const REPEAT_DELAY = BREATH_CYCLE_MS * 2;
-
-            const breathingCycle = () => {
-                Animated.sequence([
-                    // Fade in (0.5s)
-                    Animated.timing(leaf.opacity, {
-                        toValue: 0.9,
-                        duration: 500,
-                        useNativeDriver: true,
-                    }),
-                    // EXHALE: Float UP with SWIRLING motion and SHRINK (6.5 seconds)
-                    Animated.parallel([
-                        Animated.timing(leaf.y, {
-                            toValue: -750,
-                            duration: 6500,
-                            easing: Easing.bezier(0.4, 0.0, 0.6, 1.0),
-                            useNativeDriver: true,
-                        }),
-                        Animated.sequence([
-                            Animated.timing(leaf.x, {
-                                toValue: swirl.phase1,
-                                duration: 2000,
-                                easing: Easing.linear,
-                                useNativeDriver: true,
-                            }),
-                            Animated.timing(leaf.x, {
-                                toValue: swirl.phase2,
-                                duration: 2500,
-                                easing: Easing.linear,
-                                useNativeDriver: true,
-                            }),
-                            Animated.timing(leaf.x, {
-                                toValue: swirl.phase3,
-                                duration: 2000,
-                                easing: Easing.linear,
-                                useNativeDriver: true,
-                            }),
-                        ]),
-                        // Gentle rocking rotation
-                        Animated.timing(leaf.rotation, {
-                            toValue: (index % 2 === 0) ? 15 : -15,
-                            duration: 6500,
-                            easing: Easing.inOut(Easing.ease),
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(leaf.scale, {
-                            toValue: 0.5,
-                            duration: 6500,
-                            easing: Easing.bezier(0.4, 0.0, 0.6, 1.0),
-                            useNativeDriver: true,
-                        }),
-                    ]),
-                    // INHALE: Float DOWN with reverse swirl and GROW (4.0 seconds)
-                    Animated.parallel([
-                        Animated.timing(leaf.y, {
-                            toValue: 0,
-                            duration: 4000,
-                            easing: Easing.bezier(0.4, 0.0, 0.2, 1.0),
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(leaf.x, {
-                            toValue: 0,
-                            duration: 4000,
-                            easing: Easing.bezier(0.33, 0, 0.67, 1),
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(leaf.rotation, {
-                            toValue: 0,
-                            duration: 4000,
-                            easing: Easing.inOut(Easing.ease),
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(leaf.scale, {
-                            toValue: 0.8,
-                            duration: 4000,
-                            easing: Easing.bezier(0.4, 0.0, 0.2, 1.0),
-                            useNativeDriver: true,
-                        }),
-                    ]),
-                    // Fade out (0.5s)
-                    Animated.timing(leaf.opacity, {
-                        toValue: 0,
-                        duration: 500,
-                        useNativeDriver: true,
-                    }),
-                    // WAIT for 2 full breath cycles before reappearing
-                    Animated.delay(REPEAT_DELAY)
-                ]).start((finished) => {
-                    if (finished.finished) {
-                        leaf.y.setValue(0);
-                        leaf.x.setValue(0);
-                        leaf.rotation.setValue(0);
-                        leaf.scale.setValue(0.8);
-                        breathingCycle();
-                    }
-                });
-            };
-
-            // Start delay only on first run to stagger
-            const timer = setTimeout(() => breathingCycle(), index * 600);
-            timeouts.current.push(timer);
-        });
-
         return () => {
-            // Stop all animations
-            leaves.forEach(leaf => {
-                leaf.y.stopAnimation();
-                leaf.x.stopAnimation();
-                leaf.rotation.stopAnimation();
-                leaf.opacity.stopAnimation();
-                leaf.scale.stopAnimation();
-            });
-            // Clear timeouts
-            timeouts.current.forEach(t => clearTimeout(t));
-            timeouts.current = [];
+            // Cleanup on Unmount or Inactive
+            if (!isActive) {
+                items.forEach(item => {
+                    item.x.stopAnimation();
+                    item.y.stopAnimation();
+                    item.rotateZ.stopAnimation();
+                    item.rotateX.stopAnimation();
+                    item.scale.stopAnimation();
+                    item.opacity.stopAnimation();
+
+                    // Reset values to cleaner state
+                    item.x.setValue(0);
+                    item.y.setValue(0);
+                    item.opacity.setValue(0);
+                });
+            }
         };
     }, [isActive]);
 
+    // Effect 2: Handle Phase Transitions (Float Up / Down) - Runs on Phase Change
+    useEffect(() => {
+        if (!isActive) return;
+
+        const floatUp = () => {
+            items.forEach((item) => {
+                // Animate Y position - One shot, not looped
+                Animated.parallel([
+                    Animated.timing(item.y, {
+                        toValue: -height * 0.9 - (Math.random() * 100), // Go well off screen
+                        duration: item.driftDuration,
+                        easing: Easing.out(Easing.cubic),
+                        useNativeDriver: true,
+                        delay: Math.random() * 500 // Small random start jitter
+                    }),
+                    Animated.timing(item.opacity, {
+                        toValue: 0.9,
+                        duration: 800,
+                        useNativeDriver: true
+                    })
+                ]).start();
+            });
+        };
+
+        const floatDown = () => {
+            items.forEach((item) => {
+                Animated.parallel([
+                    Animated.timing(item.y, {
+                        toValue: 0, // Back to bottom/start
+                        duration: item.driftDuration * 0.8, // Slightly faster down?
+                        easing: Easing.inOut(Easing.cubic),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(item.opacity, {
+                        toValue: 0.5,
+                        duration: 800,
+                        useNativeDriver: true
+                    })
+                ]).start();
+            });
+        };
+
+        if (phase === 'exhale') {
+            floatUp();
+        } else if (phase === 'inhale') {
+            floatDown();
+        } else if (phase === 'deep3') {
+            items.forEach(item => {
+                Animated.timing(item.opacity, { toValue: 0.6, duration: 1000, useNativeDriver: true }).start();
+            });
+        }
+    }, [isActive, phase]);
+
     if (!isActive) return null;
-
-    // 6 starting positions across the screen
-    const startPositions = [15, 30, 45, 60, 75, 90];
-
-    const flowerImages = [
-        require('../assets/images/flower_floating_1.png'),
-        require('../assets/images/flower_floating_2.png'),
-    ];
 
     return (
         <View style={styles.container} pointerEvents="none">
-            {leaves.map((leaf, index) => (
+            {items.map((item, index) => (
                 <Animated.View
                     key={index}
                     style={[
-                        styles.leafWrapper,
+                        styles.item,
                         {
-                            left: `${startPositions[index]}%`,
-                            opacity: leaf.opacity,
+                            left: `${item.initialLeft}%`, // Use random start pos
+                            bottom: item.initialBottom, // Use random start height offset
+                            opacity: item.opacity,
                             transform: [
-                                { translateY: leaf.y },
-                                { translateX: leaf.x },
+                                { translateY: item.y },
+                                { translateX: item.x },
                                 {
-                                    rotate: leaf.rotation.interpolate({
-                                        inputRange: [-360, 0, 360],
-                                        outputRange: ['-360deg', '0deg', '360deg']
+                                    rotateZ: item.rotateZ.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: ['0deg', '360deg']
                                     })
                                 },
-                                { scale: leaf.scale },
-                            ],
-                        },
+                                {
+                                    rotateX: item.rotateX.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: ['0deg', '180deg']
+                                    })
+                                },
+                                { scale: item.scale }
+                            ]
+                        }
                     ]}
                 >
-                    <Image
-                        source={flowerImages[index % 2]} // Alternate between the two flower images
-                        style={{
-                            width: 60, // Standardize size
-                            height: 60,
-                            opacity: 0.95,
-                        }}
-                        resizeMode="contain"
-                    />
+                    {item.isFlower ? <FlowerIcon /> : <LeafIcon />}
                 </Animated.View>
             ))}
         </View>
@@ -220,10 +230,9 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
 const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        zIndex: 1,
+        zIndex: 5,
     },
-    leafWrapper: {
+    item: {
         position: 'absolute',
-        bottom: 80,
-    },
+    }
 });

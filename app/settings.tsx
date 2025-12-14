@@ -117,6 +117,74 @@ export default function Settings() {
                     </View>
                 </View>
 
+                {/* Breathing Logic Settings (NEW) */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Breathing Logic</Text>
+
+                    {/* Pattern Selection */}
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Breathing Ratio</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                {useSettings().breathingPattern === '4-1-6' ? '4s In - 1s Pause - 6s Out' : '3s In - 1s Pause - 5s Out'}
+                            </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 5 }}>
+                            <TouchableOpacity
+                                onPress={() => useSettings().setBreathingPattern('4-1-6')}
+                                style={[styles.optionButton, useSettings().breathingPattern === '4-1-6' && { backgroundColor: colors.primary }]}
+                            >
+                                <Text style={[styles.optionText, { color: useSettings().breathingPattern === '4-1-6' ? '#fff' : colors.text }]}>4-1-6</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => useSettings().setBreathingPattern('3-1-5')}
+                                style={[styles.optionButton, useSettings().breathingPattern === '3-1-5' && { backgroundColor: colors.primary }]}
+                            >
+                                <Text style={[styles.optionText, { color: useSettings().breathingPattern === '3-1-5' ? '#fff' : colors.text }]}>3-1-5</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* DEEP3 Toggle */}
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Start with DEEP3</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                3 Deep full body sighs before timing starts
+                            </Text>
+                        </View>
+                        <Switch
+                            value={useSettings().deep3Enabled}
+                            onValueChange={useSettings().setDeep3Enabled}
+                            trackColor={{ false: "#767577", true: colors.primary }}
+                            thumbColor={useSettings().deep3Enabled ? "#fff" : "#f4f3f4"}
+                        />
+                    </View>
+
+                    {/* DEEP3 Duration */}
+                    {useSettings().deep3Enabled && (
+                        <View style={styles.settingRow}>
+                            <View style={{ flex: 1, paddingRight: 10 }}>
+                                <Text style={[styles.label, { color: colors.text }]}>DEEP3 Duration</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', gap: 5 }}>
+                                <TouchableOpacity
+                                    onPress={() => useSettings().setDeep3Duration(15)}
+                                    style={[styles.optionButton, useSettings().deep3Duration === 15 && { backgroundColor: colors.primary }]}
+                                >
+                                    <Text style={[styles.optionText, { color: useSettings().deep3Duration === 15 ? '#fff' : colors.text }]}>15s</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => useSettings().setDeep3Duration(20)}
+                                    style={[styles.optionButton, useSettings().deep3Duration === 20 && { backgroundColor: colors.primary }]}
+                                >
+                                    <Text style={[styles.optionText, { color: useSettings().deep3Duration === 20 ? '#fff' : colors.text }]}>20s</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
+                </View>
+
                 {/* Biofeedback Settings */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>Biofeedback</Text>

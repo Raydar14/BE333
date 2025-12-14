@@ -211,9 +211,9 @@ export default function OnboardingSetup() {
                 </View>
 
                 <View style={styles.sectionsContainer}>
-                    {renderSection('morning', 'Rise', Sun, 'Coffee', '#FFD700')} {/* Gold Sun */}
-                    {renderSection('midday', 'Rest', Coffee, 'Lunch', '#FF8C00')} {/* Orange Coffee */}
-                    {renderSection('evening', 'Relax', Moon, 'Dinner', '#FFD700')} {/* Yellow Moon */}
+                    {renderSection('morning', 'Rise', Sun, 'Coffee', '#FFA500')} {/* Orange Sun */}
+                    {renderSection('midday', 'Reset', Coffee, 'Lunch', '#FF8C00')} {/* Orange Coffee */}
+                    {renderSection('evening', 'Rest', Moon, 'Dinner', '#FFD700')} {/* Yellow Moon */}
                 </View>
 
                 <ShimmerButton

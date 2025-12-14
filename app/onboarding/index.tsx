@@ -38,7 +38,7 @@ export default function OnboardingIntro() {
                                 style={styles.logo}
                                 resizeMode="contain"
                             />
-                            <BreathingLeaves isActive={true} />
+                            <BreathingLeaves isActive={true} phase="idle" />
                         </View>
 
                         <Text style={[styles.title, { color: colors.primary }]}>Welcome to BE.</Text>
@@ -54,30 +54,30 @@ export default function OnboardingIntro() {
                         {/* Detailed Habit Descriptions */}
                         <View style={styles.habitList}>
                             <View style={styles.habitItem}>
-                                <Text style={[styles.habitTitle, { color: colors.text }]}>☀️ Rise: Anchoring Energy</Text>
-                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
+                                <Text style={[styles.habitTitle, { color: '#FFD700' }]}>☀️ Rise: Anchoring Energy</Text>
+                                <Text style={[styles.habitDesc, { color: '#004d40' }]}>
                                     "Sets the tone" and roots the habit before daily stress begins. It leverages the clarity you have when you first wake up.
                                 </Text>
                             </View>
 
                             <View style={styles.habitItem}>
-                                <Text style={[styles.habitTitle, { color: colors.text }]}>🌤️ Rest: Preventing the Slump</Text>
-                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
-                                    Serves as a deliberate Rest or recharge point, breaking up the longest work or activity block and helping you overcome the typical afternoon energy dip.
+                                <Text style={[styles.habitTitle, { color: '#FFD700' }]}>🌤️ Reset: Preventing the Slump</Text>
+                                <Text style={[styles.habitDesc, { color: '#004d40' }]}>
+                                    Serves as a deliberate Reset or recharge point, breaking up the longest work or activity block and helping you overcome the typical afternoon energy dip.
                                 </Text>
                             </View>
 
                             <View style={styles.habitItem}>
-                                <Text style={[styles.habitTitle, { color: colors.text }]}>🌙 Relax: Unwind</Text>
-                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
-                                    Creates a vital separation between the day's activity and sleep. It uses Relax time to promote reflection and better rest, making winding down easier.
+                                <Text style={[styles.habitTitle, { color: '#FFD700' }]}>🌙 Rest: Unwind</Text>
+                                <Text style={[styles.habitDesc, { color: '#004d40' }]}>
+                                    Creates a vital separation between the day's activity and sleep. It uses Rest time to promote reflection and better rest, making winding down easier.
                                 </Text>
                             </View>
                         </View>
 
                         {/* Sample Plan Section */}
                         <View style={styles.samplePlanContainer}>
-                            <Text style={[styles.sampleTitle, { color: colors.primary }]}>Sample Plan:</Text>
+                            <Text style={[styles.sampleTitle, { color: '#FFD700' }]}>Sample Plan:</Text>
                             <View style={styles.sampleRow}>
                                 <Text style={styles.sampleIcon}>☀️</Text>
                                 <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
@@ -87,13 +87,13 @@ export default function OnboardingIntro() {
                             <View style={styles.sampleRow}>
                                 <Text style={styles.sampleIcon}>🌤️</Text>
                                 <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
-                                    <Text style={{ fontWeight: 'bold' }}>Rest:</Text> Before Lunch break (12pm)
+                                    <Text style={{ fontWeight: 'bold' }}>Reset:</Text> Before Lunch break (12pm)
                                 </Text>
                             </View>
                             <View style={styles.sampleRow}>
                                 <Text style={styles.sampleIcon}>🌙</Text>
                                 <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
-                                    <Text style={{ fontWeight: 'bold' }}>Relax:</Text> After eating dinner (7pm)
+                                    <Text style={{ fontWeight: 'bold' }}>Rest:</Text> After eating dinner (7pm)
                                 </Text>
                             </View>
                         </View>

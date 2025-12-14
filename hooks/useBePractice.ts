@@ -127,11 +127,11 @@ export function useBePractice() {
         let resetDate = currentStats.resetRitualStartDate;
 
         // PRO RULE: Unlimited Resets / No Loss
-        // If Pro, we NEVER enter 'resting_ritual' even if 3 strikes.
-        if (!userIsPro && newStreakBreaks >= 3 && currentStats.practiceState === 'active') {
-            newState = 'resting_ritual';
-            resetDate = new Date().toISOString();
-        }
+        // We no longer force 'resting_ritual' even if 3 strikes.
+        // if (!userIsPro && newStreakBreaks >= 3 && currentStats.practiceState === 'active') {
+        //    newState = 'resting_ritual';
+        //    resetDate = new Date().toISOString();
+        // }
 
         const updatedStats: BePracticeStats = {
             ...currentStats,
