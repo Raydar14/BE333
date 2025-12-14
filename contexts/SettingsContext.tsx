@@ -15,6 +15,12 @@ export interface HabitLinks {
     evening: HabitLinkConfig;
 }
 
+export interface SocialLinks {
+    tiktok?: string;
+    facebook?: string;
+    instagram?: string;
+}
+
 export type NotificationMethod = 'push' | 'sms' | 'email' | 'none';
 
 type SettingsContextType = {
@@ -22,6 +28,10 @@ type SettingsContextType = {
     setTimerDuration: (duration: number) => void;
     habitCue: string;
     setHabitCue: (cue: string) => void;
+    showHabitStacking: boolean;
+    setShowHabitStacking: (show: boolean) => void;
+    timerMode: 'countdown' | 'open';
+    setTimerMode: (mode: 'countdown' | 'open') => void;
 
     // Habit Links
     habitLinks: HabitLinks;
@@ -43,6 +53,10 @@ type SettingsContextType = {
     // Nature/Flower Visuals
     showNatureVisuals: boolean; // Controls the Lotus + Flowers
     setShowNatureVisuals: (show: boolean) => void;
+
+    // Social Links
+    socialLinks: SocialLinks;
+    updateSocialLink: (platform: keyof SocialLinks, handle: string) => void;
 };
 
 const defaultHabitLinks: HabitLinks = {
@@ -67,6 +81,12 @@ const SettingsContext = createContext<SettingsContextType>({
     setShowBreathingGuide: () => { },
     showNatureVisuals: true,
     setShowNatureVisuals: () => { },
+    showHabitStacking: true,
+    setShowHabitStacking: () => { },
+    timerMode: 'countdown',
+    setTimerMode: () => { },
+    socialLinks: {},
+    updateSocialLink: () => { },
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -79,6 +99,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [snoozeUntil, setSnoozeUntilState] = useState<number | null>(null);
     const [showBreathingGuide, setShowBreathingGuideState] = useState(true);
     const [showNatureVisuals, setShowNatureVisualsState] = useState(true);
+    const [showHabitStacking, setShowHabitStackingState] = useState(true);
+    const [timerMode, setTimerModeState] = useState<'countdown' | 'open'>('countdown');
+    const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
 
     // Computed: are we currently snoozed?
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
@@ -119,6 +142,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             // Load Nature Visuals
             const savedNature = await AsyncStorage.getItem('showNatureVisuals');
             if (savedNature !== null) setShowNatureVisualsState(JSON.parse(savedNature));
+
+            const savedStacking = await AsyncStorage.getItem('showHabitStacking');
+            if (savedStacking !== null) setShowHabitStackingState(JSON.parse(savedStacking));
+
+            const savedTimerMode = await AsyncStorage.getItem('timerMode');
+            if (savedTimerMode) setTimerModeState(savedTimerMode as 'countdown' | 'open');
+
+            // Load Social Links
+            const savedSocials = await AsyncStorage.getItem('socialLinks');
+            if (savedSocials) setSocialLinks(JSON.parse(savedSocials));
 
         } catch (e) {
             console.error('Failed to load settings', e);
@@ -165,6 +198,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem('showNatureVisuals', JSON.stringify(show));
     };
 
+    const setShowHabitStacking = async (show: boolean) => {
+        setShowHabitStackingState(show);
+        await AsyncStorage.setItem('showHabitStacking', JSON.stringify(show));
+    };
+
+    const setTimerMode = async (mode: 'countdown' | 'open') => {
+        setTimerModeState(mode);
+        await AsyncStorage.setItem('timerMode', mode);
+    };
+
+    const updateSocialLink = async (platform: keyof SocialLinks, handle: string) => {
+        const newLinks = { ...socialLinks, [platform]: handle };
+        setSocialLinks(newLinks);
+        await AsyncStorage.setItem('socialLinks', JSON.stringify(newLinks));
+    };
+
     return (
         <SettingsContext.Provider value={{
             timerDuration,
@@ -181,7 +230,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             showBreathingGuide,
             setShowBreathingGuide,
             showNatureVisuals,
-            setShowNatureVisuals
+            setShowNatureVisuals,
+            showHabitStacking,
+            setShowHabitStacking,
+            timerMode,
+            setTimerMode,
+            socialLinks,
+            updateSocialLink
         }}>
             {children}
         </SettingsContext.Provider>

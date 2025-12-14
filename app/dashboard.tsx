@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ImageBackground } from 'react-native';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { Colors } from '../constants/Colors';
@@ -6,6 +7,7 @@ import { Button } from '../components/Button';
 import { PremiumButton } from '../components/PremiumButton';
 import { ProFeatureLock } from '../components/ProFeatureLock';
 import { useBePractice } from '../hooks/useBePractice';
+import { useSettings } from '../contexts/SettingsContext';
 import { useBeBuddy } from '../hooks/useBeBuddy';
 import { LotusBloomMap } from '../components/LotusBloomMap';
 import { BuddyBoard } from '../components/BuddyBoard';
@@ -15,15 +17,92 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'expo-router';
 import { usePurchase } from '../contexts/PurchaseContext';
-import { Users, Trophy } from 'lucide-react-native';
+import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
+import { storage } from '../lib/firebase';
 
 export default function Dashboard() {
     const { user } = useAuth();
     const { stats, loading: practiceLoading, startNewPractice } = useBePractice();
     const { buddyState, buddyStats } = useBeBuddy();
     const { isPro } = usePurchase();
+    const { socialLinks } = useSettings();
+
     const router = useRouter();
+    const [uploading, setUploading] = useState(false);
     useProtectedRoute();
+
+    const handlePickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.5,
+            });
+
+            if (!result.canceled && result.assets[0].uri && user) {
+                setUploading(true);
+                const uri = result.assets[0].uri;
+
+                // For web/expo-go compatibility in demo, we might just use the local URI or upload if possible
+                // Real upload to Firebase Storage:
+                try {
+                    const response = await fetch(uri);
+                    const blob = await response.blob();
+                    const fileRef = ref(storage, `profiles/${user.uid}/avatar.jpg`);
+                    await uploadBytes(fileRef, blob);
+                    const photoURL = await getDownloadURL(fileRef);
+
+                    await updateProfile(user, { photoURL });
+                    // Force refresh or just let AuthContext eventually catch up (it might need a reload)
+                    // We can manually update the current user object if needed, but context user usually updates on reload.
+                    // Ideally we'd have a setUser in context, but for now this persists it.
+                    Alert.alert("Success", "Profile picture updated!");
+                } catch (e: any) {
+                    console.error("Upload failed", e);
+                    Alert.alert("Error", "Failed to upload image: " + e.message);
+                } finally {
+                    setUploading(false);
+                }
+            }
+        } catch (e) {
+            console.log("Picker error", e);
+            setUploading(false);
+        }
+    };
+
+    const handleShare = async (platform: 'tiktok' | 'facebook' | 'instagram') => {
+        // If the user has linked a specific profile, try to open that.
+        // Otherwise, use the primitive system share for general sharing.
+
+        try {
+            const message = `I'm on Day ${stats?.dayOfPractice || 1} of my 21-day breathing journey with BE333! Pause. Breathe. Join me.`;
+            let url = '';
+
+            // Check if user linked their profile (Deep linking logic can be complex, these are basic web fallbacks)
+            if (platform === 'tiktok' && socialLinks?.tiktok) {
+                // Just open the app or their profile if linked? 
+                // Usually "sharing" means posting. But user said "link Ticktock... to share progress". 
+                // If they want to POST, we usually need the system share sheet or specific SDKs.
+                // For now, I'll default to the system share sheet but maybe PREP the clipboard?
+                await Share.share({ message });
+                return;
+            }
+
+            // Default behavior: specific intents if possible, else standard Share
+            await Share.share({
+                message: message,
+                title: 'My BE333 Journey'
+            });
+
+        } catch (error: any) {
+            Alert.alert(error.message);
+        }
+    };
 
     async function handleSignOut() {
         await signOut(auth);
@@ -43,42 +122,110 @@ export default function Dashboard() {
     return (
         <View style={styles.wrapper}>
             <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.headerTitle}>Practice Hub</Text>
+                <View style={styles.headerRow}>
+                    <Text style={styles.headerTitle}>Practice Playground</Text>
+                    <TouchableOpacity onPress={() => router.push('/settings')} style={styles.headerSettingsBtn}>
+                        <SettingsIcon size={24} color={Colors.textSecondary} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Profile & Social Header */}
+                <View style={styles.profileSection}>
+                    <TouchableOpacity onPress={handlePickImage} style={styles.avatarContainer}>
+                        {user?.photoURL ? (
+                            <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+                        ) : (
+                            <View style={[styles.avatar, { backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center' }]}>
+                                <Users size={40} color={Colors.textSecondary} />
+                            </View>
+                        )}
+                        <View style={styles.editBadge}>
+                            {uploading ? <ActivityIndicator size="small" color="#FFF" /> : <Camera size={14} color="#FFF" />}
+                        </View>
+                    </TouchableOpacity>
+                    <Text style={styles.userName}>{user?.displayName || 'Breather'}</Text>
+
+                    <View style={styles.shareRow}>
+                        <TouchableOpacity onPress={() => handleShare('tiktok')} style={[styles.shareBtn, { backgroundColor: '#000' }]}>
+                            <Text style={styles.shareBtnText}>TikTok</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleShare('facebook')} style={[styles.shareBtn, { backgroundColor: '#1877F2' }]}>
+                            <Facebook size={16} color="#FFF" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleShare('instagram')} style={[styles.shareBtn, { backgroundColor: '#E1306C' }]}>
+                            <Instagram size={16} color="#FFF" />
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.shareHint}>Share your progress for accountability!</Text>
+                </View>
 
                 {/* 1. Golden Lotus Showcase */}
                 <View style={styles.lotusShowcase}>
-                    <Text style={styles.lotusTitle}>Day {stats.dayOfPractice} of 21</Text>
-                    {/* The Map visualizes the Lotus */}
-                    <LotusBloomMap bloomDays={stats.bloomDays} />
-                    <Text style={styles.lotusSubtitle}>{stats.bloomDays} Pause Petals Collected</Text>
+                    <Image
+                        source={require('../assets/images/be333_text_logo.png')}
+                        style={styles.logoImage}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.lotusTitle}>Day {stats?.dayOfPractice || 1} of 21</Text>
+                    <LotusBloomMap bloomDays={stats?.bloomDays || 0} />
+                </View>
+
+                {/* Awards / Trophy Case */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeaderRow}>
+                        <Trophy size={18} color="#FFD700" />
+                        <Text style={styles.sectionTitle}>Trophy Case</Text>
+                    </View>
+
+                    {/* 3D Shelf container */}
+                    <View style={styles.trophyCaseContainer}>
+                        <View style={styles.shelfLevel}>
+                            {/* Placeholder trophies - User will describe later */}
+                            <Text style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', fontSize: 12 }}>
+                                Empty Shelf
+                            </Text>
+                        </View>
+                        <View style={styles.shelfShadow} />
+
+                        <View style={styles.shelfLevel}>
+                            <Text style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', fontSize: 12 }}>
+                                Empty Shelf
+                            </Text>
+                        </View>
+                        <View style={styles.shelfShadow} />
+                    </View>
                 </View>
 
                 {/* 2. Trends Section */}
-                {!isResting && (
-                    <View style={styles.section}>
-                        <TrendChart
-                            currentPauses={stats.currentPauses}
-                            history={stats.recentHistory || []}
-                        />
-                    </View>
-                )}
+                {
+                    !isResting && (
+                        <View style={styles.section}>
+                            <TrendChart
+                                currentPauses={stats.currentPauses}
+                                history={stats.recentHistory || []}
+                            />
+                        </View>
+                    )
+                }
 
                 {/* Resting Ritual Card (Cycle Failed State) */}
-                {isResting && (
-                    <View style={[styles.section, styles.restingCard]}>
-                        <Text style={styles.restingTitle}>Cycle Interrupted</Text>
-                        <Text style={styles.restingBody}>
-                            You've missed 3 sessions. It happens to the best of us!
-                            {"\n"}Ready to begin a fresh 21-day journey?
-                        </Text>
-                        <PremiumButton
-                            title="Start New Cycle"
-                            variant="primary"
-                            onPress={startNewPractice}
-                            style={{ marginTop: 20, width: '100%' }}
-                        />
-                    </View>
-                )}
+                {
+                    isResting && (
+                        <View style={[styles.section, styles.restingCard]}>
+                            <Text style={styles.restingTitle}>Cycle Interrupted</Text>
+                            <Text style={styles.restingBody}>
+                                You've missed 3 sessions. It happens to the best of us!
+                                {"\n"}Ready to begin a fresh 21-day journey?
+                            </Text>
+                            <PremiumButton
+                                title="Start New Cycle"
+                                variant="primary"
+                                onPress={startNewPractice}
+                                style={{ marginTop: 20, width: '100%' }}
+                            />
+                        </View>
+                    )
+                }
 
                 {/* 3. Challenge Section */}
                 <View style={styles.section}>
@@ -139,8 +286,8 @@ export default function Dashboard() {
                     variant="ghost"
                     textStyle={{ color: Colors.textSecondary }}
                 />
-            </ScrollView>
-        </View>
+            </ScrollView >
+        </View >
     );
 }
 
@@ -157,16 +304,33 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         width: '100%',
     },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        position: 'relative',
+    },
     headerTitle: {
         fontSize: 28,
         fontWeight: 'bold',
         color: Colors.text,
         textAlign: 'center',
-        marginBottom: 20,
+    },
+    headerSettingsBtn: {
+        position: 'absolute',
+        right: 0,
+        padding: 5,
+    },
+    logoImage: {
+        width: 120,
+        height: 40,
+        marginBottom: 10,
     },
     lotusShowcase: {
         alignItems: 'center',
         marginBottom: 30,
+        // Removed redundant text
     },
     lotusTitle: {
         fontSize: 18,
@@ -248,5 +412,92 @@ const styles = StyleSheet.create({
     statLine: {
         color: Colors.text,
         fontSize: 14,
+    },
+    profileSection: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    avatarContainer: {
+        position: 'relative',
+        marginBottom: 10,
+    },
+    avatar: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 3,
+        borderColor: Colors.primary,
+    },
+    editBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: Colors.primary,
+        padding: 8,
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: Colors.background,
+    },
+    userName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: Colors.text,
+        marginBottom: 15,
+    },
+    shareRow: {
+        flexDirection: 'row',
+        gap: 15,
+        marginBottom: 5,
+    },
+    shareBtn: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 40,
+        height: 40,
+    },
+    shareBtnText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    shareHint: {
+        fontSize: 12,
+        color: Colors.textSecondary,
+        marginTop: 5,
+        fontStyle: 'italic',
+    },
+    trophyCaseContainer: {
+        backgroundColor: 'rgba(60, 40, 20, 0.4)', // Dark wood-ish tint
+        borderRadius: 12,
+        padding: 15,
+        borderWidth: 4,
+        borderColor: '#5D4037', // Wood frame color
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+    },
+    shelfLevel: {
+        height: 60,
+        borderBottomWidth: 8,
+        borderBottomColor: '#3E2723', // Darker shelf edge
+        marginBottom: 10,
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 5,
+        backgroundColor: 'rgba(0,0,0,0.2)', // Inner depth
+    },
+    shelfShadow: {
+        width: '100%',
+        height: 5,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        top: -10,
+        marginBottom: 5,
+        borderRadius: 5,
     }
 });

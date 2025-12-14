@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView, Platform, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings as SettingsIcon, UserCircle, LogIn, Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -28,7 +28,7 @@ import { collection, addDoc } from 'firebase/firestore';
 export default function Home() {
     const { user, loading } = useAuth();
     const { colors } = useTheme();
-    const { timerDuration, showNatureVisuals, showBreathingGuide } = useSettings();
+    const { timerDuration, showNatureVisuals, showBreathingGuide, timerMode } = useSettings();
     const router = useRouter();
 
     useProtectedRoute();
@@ -36,7 +36,9 @@ export default function Home() {
     const [timeLeft, setTimeLeft] = useState(timerDuration);
     const [isActive, setIsActive] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [guideText, setGuideText] = useState('Get Ready');
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const guideIntervalRef = useRef<any>(null); // Use 'any' or NodeJs.Timeout to avoid type issues
 
     // Biofeedback state
     const {
@@ -58,9 +60,56 @@ export default function Home() {
     // Update timer if settings change (and not active)
     useEffect(() => {
         if (!isActive && !isCompleted) {
-            setTimeLeft(timerDuration);
+            setTimeLeft(timerMode === 'open' ? 0 : timerDuration);
         }
-    }, [timerDuration, isActive, isCompleted]);
+    }, [timerDuration, isActive, isCompleted, timerMode]);
+
+    useEffect(() => {
+        // Clear guide interval
+        if (guideIntervalRef.current) {
+            clearTimeout(guideIntervalRef.current);
+            guideIntervalRef.current = null;
+        }
+
+        if (isActive) {
+            // Breathing Cycle Loop: Exhale (6.5s) -> Hold (0.5s) -> Inhale (4s) -> Hold (0.5s)
+            const runBreathingCycle = () => {
+                setGuideText("Exhale & Soften");
+
+                // 1. Exhale for 6.5s
+                guideIntervalRef.current = setTimeout(() => {
+                    setGuideText("...Pause...");
+
+                    // 2. Hold for 0.5s
+                    guideIntervalRef.current = setTimeout(() => {
+                        setGuideText("Inhale & Expand");
+
+                        // 3. Inhale for 4s
+                        guideIntervalRef.current = setTimeout(() => {
+                            setGuideText("...Hold...");
+
+                            // 4. Hold for 0.5s
+                            guideIntervalRef.current = setTimeout(() => {
+                                // Loop
+                                if (isActive) runBreathingCycle();
+                            }, 500);
+
+                        }, 4000);
+
+                    }, 500);
+
+                }, 6500);
+            };
+
+            runBreathingCycle();
+        } else {
+            setGuideText("Ready");
+        }
+
+        return () => {
+            if (guideIntervalRef.current) clearTimeout(guideIntervalRef.current);
+        };
+    }, [isActive]);
 
     useEffect(() => {
         // Clear any existing interval first
@@ -69,16 +118,20 @@ export default function Home() {
             intervalRef.current = null;
         }
 
-        if (isActive && timeLeft > 0) {
+        if (isActive) {
             intervalRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
+                    if (timerMode === 'open') {
+                        return prev + 1;
+                    }
+                    // Countdown
                     if (prev <= 1) {
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
-        } else if (timeLeft === 0 && isActive) {
+        } else if (timeLeft === 0 && isActive && timerMode === 'countdown') {
             handleComplete();
         }
 
@@ -88,7 +141,7 @@ export default function Home() {
                 intervalRef.current = null;
             }
         };
-    }, [isActive, timeLeft]);
+    }, [isActive, timeLeft, timerMode]);
 
     const { registerPause, stats } = useBePractice();
 
@@ -109,10 +162,12 @@ export default function Home() {
             try {
                 const userId = user.uid;
 
+                const durationLogged = timerMode === 'open' ? timeLeft : timerDuration;
+
                 // Build session data with optional biofeedback
                 const sessionData: any = {
                     user_id: userId,
-                    duration_seconds: timerDuration,
+                    duration_seconds: durationLogged,
                     completed_at: new Date()
                 };
 
@@ -144,11 +199,31 @@ export default function Home() {
         }
     }
 
+    const handleShareCompletion = async (platform: 'tiktok' | 'facebook' | 'instagram') => {
+        const { socialLinks } = useSettings();
+        const message = `I just completed a 3-minute breathing session on BE333! Pause. Breathe. Join me.`;
+
+        try {
+            if (platform === 'tiktok' && socialLinks?.tiktok) {
+                // If linked, we might just open the app or share sheet.
+                // For simplicity, we just use Share API with the message.
+                await Share.share({ message });
+                return;
+            }
+
+            // Fallback for all
+            await Share.share({ message });
+
+        } catch (e: any) {
+            Alert.alert('Sharing Error', e.message);
+        }
+    };
+
     const toggleTimer = () => {
         if (isCompleted) {
             // Reset
             setIsCompleted(false);
-            setTimeLeft(timerDuration);
+            setTimeLeft(timerMode === 'open' ? 0 : timerDuration);
             setIsActive(false);
             setBiofeedbackSummary(null);
         } else {
@@ -156,7 +231,11 @@ export default function Home() {
             setIsActive(newActive);
 
             // Start/stop biofeedback tracking
-            if (newActive && isBiofeedbackConnected && timeLeft === timerDuration) {
+            const shouldStartBio = newActive &&
+                isBiofeedbackConnected &&
+                ((timerMode === 'countdown' && timeLeft === timerDuration) || (timerMode === 'open' && timeLeft === 0));
+
+            if (shouldStartBio) {
                 // Starting fresh - begin tracking
                 startSessionTracking();
             }
@@ -166,7 +245,7 @@ export default function Home() {
     const resetTimer = () => {
         setIsActive(false);
         setIsCompleted(false);
-        setTimeLeft(timerDuration);
+        setTimeLeft(timerMode === 'open' ? 0 : timerDuration);
         setBiofeedbackSummary(null);
         if (isBiofeedbackConnected) {
             stopSessionTracking();
@@ -228,12 +307,18 @@ export default function Home() {
                     {/* BreathingLeaves is usually absolute. Let's ensure it doesn't block interactions or get cut off. 
                         Usually it's fine as absolute background. */}
                     <View style={styles.logoContainer}>
+                        {/* Tagline: Vertical Stack "Pause." then "Breathe." */}
+                        <View style={styles.taglineContainer}>
+                            <Text style={styles.taglineText}>Pause.</Text>
+                            <Text style={styles.taglineText}>Breathe.</Text>
+                        </View>
+
+                        {/* Main Logo (Floral BE333 + Lotus) */}
                         <Image
-                            source={require('../assets/images/logo.png')}
-                            style={styles.logo}
+                            source={require('../assets/images/brand_logo_floral.png')}
+                            style={styles.logoMain}
                             resizeMode="contain"
                         />
-                        <Text style={[styles.tagline, { color: colors.textLight }]}>Pause. Breathe. Be333</Text>
                     </View>
 
                     {/* Breathing Leaves (Background) */}
@@ -244,130 +329,194 @@ export default function Home() {
                     )}
 
 
+                    {/* Main Content */}
                     <View style={styles.content}>
 
-                        <View style={styles.timerContainer}>
-                            <View style={[styles.timerCircle, {
-                                borderColor: isActive ? '#4A9977' : (isCompleted ? '#4CAF50' : colors.textSecondary),
-                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                shadowColor: isActive ? '#4A9977' : 'transparent',
-                                shadowOffset: { width: 0, height: 0 },
-                                shadowOpacity: isActive ? 0.9 : 0,
-                                shadowRadius: isActive ? 30 : 0,
-                                elevation: isActive ? 25 : 0,
-                            }]}>
-                                {/* Timer text at top */}
-                                <View style={styles.timerTextTop}>
-                                    <Text style={[styles.timerText, { color: colors.textLight }]}>
-                                        {isCompleted ? "Done!" : formatTime(timeLeft)}
-                                    </Text>
-                                    {!isCompleted && !isActive && (
-                                        <Text style={[styles.timerSubtext, { color: colors.textSecondary }]}>
-                                            3mins × 3×Day × 3wks
-                                        </Text>
-                                    )}
+                        {/* Social Share AFTER Completion */}
+                        {isCompleted && (
+                            <View style={styles.completionShareRow}>
+                                <Text style={{ color: colors.textSecondary, marginBottom: 10 }}>Share your session:</Text>
+                                <View style={{ flexDirection: 'row', gap: 15 }}>
+                                    <TouchableOpacity onPress={() => handleShareCompletion('tiktok')} style={styles.miniShareBtn}>
+                                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>TikTok</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => handleShareCompletion('facebook')} style={[styles.miniShareBtn, { backgroundColor: '#1877F2' }]}>
+                                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>FB</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => handleShareCompletion('instagram')} style={[styles.miniShareBtn, { backgroundColor: '#E1306C' }]}>
+                                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>IG</Text>
+                                    </TouchableOpacity>
                                 </View>
+                            </View>
+                        )}
 
-                                {/* Lotus centered */}
-                                <View style={styles.lotusInCircle}>
+                        <View style={styles.timerContainer}>
+                            <View style={styles.timerContainer}>
+
+                                {/* Lotus - Moved OUTSIDE the card (Behind it or Overlapping) */}
+                                {/* We place it here so z-index handling allows card to be on top, or it to be behind */}
+                                <View style={styles.lotusBackground}>
                                     <BreathingCircle
                                         isActive={isActive}
-                                        showGuide={showBreathingGuide}
+                                        showGuide={false} // We handle guide inside card now
                                         showNature={showNatureVisuals}
                                         isMinuteMark={isActive && timeLeft > 0 && timeLeft % 60 === 0}
                                     />
                                 </View>
 
-                                {/* Inner Circle Glow Overlay */}
-                                <View pointerEvents="none" style={styles.innerGlow} />
+                                {/* Timer Card (Shorter Rectangle) */}
+                                <View style={[styles.timerCard, {
+                                    borderColor: isActive ? '#4A9977' : (isCompleted ? '#4CAF50' : colors.textSecondary),
+                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                    shadowColor: isActive ? '#4A9977' : 'transparent',
+                                    shadowOffset: { width: 0, height: 0 },
+                                    shadowOpacity: isActive ? 0.9 : 0,
+                                    shadowRadius: isActive ? 30 : 0,
+                                    elevation: isActive ? 25 : 0,
+                                }]}>
+                                    {/* Timer text at top */}
+                                    <View style={styles.timerTextContainer}>
+                                        <Text style={[styles.timerText, { color: colors.textLight }]}>
+                                            {isCompleted ? "Done!" : formatTime(timeLeft)}
+                                        </Text>
+
+                                        {/* Promo Text (Only when not active) */}
+                                        {!isCompleted && !isActive && (
+                                            <View style={styles.promoTextContainer}>
+                                                <Text style={styles.promoText}>
+                                                    <Text style={styles.promoGold}>3</Text>MINS
+                                                </Text>
+                                                <Text style={styles.promoX}>×</Text>
+                                                <Text style={styles.promoText}>
+                                                    <Text style={styles.promoGold}>3</Text><Text style={[styles.promoX, { marginRight: 0 }]}>×</Text>s DAY
+                                                </Text>
+                                                <Text style={styles.promoX}>×</Text>
+                                                <Text style={styles.promoText}>
+                                                    <Text style={styles.promoGold}>3</Text> WKS
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                        {isActive && showBreathingGuide && (
+                                            <Text style={styles.guideText}>
+                                                {guideText}
+                                            </Text>
+                                        )}
+                                    </View>
+
+                                    {/* Plain Start/Pause Icon (No Circle Background) */}
+                                    <View style={styles.innerControlContainer}>
+                                        <TouchableOpacity
+                                            onPress={toggleTimer}
+                                            style={styles.plainControlButton} // New style
+                                            activeOpacity={0.7}
+                                        >
+                                            <View style={styles.controlIconContainer}>
+                                                {isActive ? (
+                                                    <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                        <View style={styles.pauseBar} />
+                                                        <View style={styles.pauseBar} />
+                                                    </View>
+                                                ) : (
+                                                    timerMode === 'countdown' ? (
+                                                        timeLeft < timerDuration ? (
+                                                            <View style={styles.playTriangle} />
+                                                        ) : (
+                                                            <Text style={styles.plainStartText}>START</Text>
+                                                        )
+                                                    ) : (
+                                                        // Open mode
+                                                        timeLeft > 0 ? (
+                                                            <View style={styles.playTriangle} />
+                                                        ) : (
+                                                            <Text style={styles.plainStartText}>START</Text>
+                                                        )
+                                                    )
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {/* Inner Glow Overlay */}
+                                    <View pointerEvents="none" style={styles.innerGlowCard} />
+                                </View>
+
                             </View>
 
-                        </View>
-
-                        {/* Control Button - Moved Clearly Below Visuals */}
-                        <View style={styles.controlsContainer}>
-                            <TouchableOpacity
-                                onPress={toggleTimer}
-                                style={styles.mainControlCircle}
-                                activeOpacity={0.7}
-                            >
-                                <View style={styles.controlIconContainer}>
-                                    {isActive ? (
-                                        // Pause Icon
-                                        <View style={{ flexDirection: 'row', gap: 6 }}>
-                                            <View style={styles.pauseBar} />
-                                            <View style={styles.pauseBar} />
-                                        </View>
-                                    ) : (
-                                        // Play Triangle / Start Text
-                                        timeLeft < timerDuration ? (
-                                            <View style={styles.playTriangle} />
-                                        ) : (
-                                            <Text style={styles.miniButtonText}>START</Text>
-                                        )
-                                    )}
-                                </View>
+                            {/* Temporary Onboarding Test Button */}
+                            <TouchableOpacity onPress={() => router.push('/onboarding')} style={{ marginTop: 20 }}>
+                                <Text style={{ color: colors.textSecondary, textDecorationLine: 'underline' }}>
+                                    (Test Onboarding)
+                                </Text>
                             </TouchableOpacity>
-                        </View>
 
-                        {/* Temporary Onboarding Test Button */}
-                        <TouchableOpacity onPress={() => router.push('/onboarding')} style={{ marginTop: 20 }}>
-                            <Text style={{ color: colors.textSecondary, textDecorationLine: 'underline' }}>
-                                (Test Onboarding)
-                            </Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.actions}>
-                            {/* Primary Start Button removed from here, moved to circle */}
+                            <View style={styles.actions}>
+                                {/* Primary Start Button removed from here, moved to circle */}
 
 
-                            {isCompleted && (
-                                <ShimmerButton
-                                    title="Stack a Habit (+3 min)"
-                                    onPress={() => router.push('/habit-stack/selection')}
-                                    style={styles.secondaryButton}
-                                />
-                            )}
+                                {isCompleted && (
+                                    <ShimmerButton
+                                        title="Stack a Habit (+3 min)"
+                                        onPress={() => router.push('/habit-stack/selection')}
+                                        style={styles.secondaryButton}
+                                    />
+                                )}
 
-                            {!isCompleted && timeLeft < timerDuration && (
+                                {!isCompleted && (
+                                    <>
+                                        {/* Reset Button (If started) */}
+                                        {((timerMode === 'countdown' && timeLeft < timerDuration) || (timerMode === 'open' && timeLeft > 0)) && (
+                                            <PremiumButton
+                                                title="Reset"
+                                                variant="outline"
+                                                onPress={resetTimer}
+                                                style={styles.secondaryButton}
+                                                textStyle={{ color: colors.textSecondary }}
+                                            />
+                                        )}
+
+                                        {/* Finish Button for Open Mode (If paused and started) */}
+                                        {!isActive && timerMode === 'open' && timeLeft > 0 && (
+                                            <PremiumButton
+                                                title="Finish Session"
+                                                variant="primary"
+                                                onPress={handleComplete}
+                                                style={[styles.secondaryButton, { marginTop: 10 }]}
+                                            />
+                                        )}
+                                    </>
+                                )}
+
                                 <PremiumButton
-                                    title="Reset"
-                                    variant="outline"
-                                    onPress={resetTimer}
+                                    title="Dashboard"
+                                    variant="primary" // Gradient Green
+                                    onPress={() => router.push('/dashboard')}
                                     style={styles.secondaryButton}
-                                    textStyle={{ color: colors.textSecondary }}
+                                />
+                            </View>
+
+                            {/* Biofeedback post-session summary */}
+                            {isCompleted && biofeedbackSummary && (
+                                <BiofeedbackSummary
+                                    summary={biofeedbackSummary}
+                                    durationSeconds={timerDuration}
                                 />
                             )}
-
-                            <PremiumButton
-                                title="Dashboard"
-                                variant="primary" // Gradient Green
-                                onPress={() => router.push('/dashboard')}
-                                style={styles.secondaryButton}
-                            />
                         </View>
 
-                        {/* Biofeedback post-session summary */}
-                        {isCompleted && biofeedbackSummary && (
-                            <BiofeedbackSummary
-                                summary={biofeedbackSummary}
-                                durationSeconds={timerDuration}
-                            />
-                        )}
+                        {/* Device Scanner Modal */}
+                        <DeviceScanner
+                            visible={showDeviceScanner}
+                            onClose={() => setShowDeviceScanner(false)}
+                        />
+
+                        <PetalAwardModal
+                            visible={showPetalAward}
+                            onClose={() => setShowPetalAward(false)}
+                            dayOfPractice={stats?.dayOfPractice || 0}
+                            bloomDays={stats?.bloomDays || 0}
+                        />
                     </View>
-
-                    {/* Device Scanner Modal */}
-                    <DeviceScanner
-                        visible={showDeviceScanner}
-                        onClose={() => setShowDeviceScanner(false)}
-                    />
-
-                    <PetalAwardModal
-                        visible={showPetalAward}
-                        onClose={() => setShowPetalAward(false)}
-                        dayOfPractice={stats?.dayOfPractice || 0}
-                        bloomDays={stats?.bloomDays || 0}
-                    />
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -392,7 +541,7 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 0, // Removed space
         zIndex: 20,
     },
     // ... existing headerButton styles ...
@@ -413,93 +562,95 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
     },
-    logo: {
-        width: 140,
-        height: 100,
-        marginBottom: 5,
+    logoMain: {
+        width: 300,
+        height: 220,
+        marginBottom: 0, // Removed space
         resizeMode: 'contain',
     },
-    tagline: {
-        fontSize: 16,
-        fontWeight: '300',
-        marginBottom: 10,
-        letterSpacing: 1,
-        opacity: 0.9,
+    taglineContainer: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: -30, // Negative to pull logo up close
+        zIndex: 5,
+    },
+    taglineText: {
+        color: '#FFD700', // Gold
+        fontSize: 32, // Increased size
+        fontWeight: 'bold',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        letterSpacing: 2,
+        lineHeight: 38,
+        // 3D Glow Effect
+        textShadowColor: 'rgba(255, 215, 0, 0.6)', // Gold Glow
+        textShadowOffset: { width: 2, height: 2 }, // 3D Offset
+        textShadowRadius: 10, // Softness
+        elevation: 8,
     },
     timerContainer: {
         alignItems: 'center',
-        marginVertical: 20, // Vertical spacing
+        marginBottom: 10,
+        marginTop: -20, // Negative to pull clearer to logo
     },
-    timerCircle: {
-        width: 280,
-        height: 280,
-        borderRadius: 140,
-        borderWidth: 6, // Thicker border
+    timerCard: {
+        width: 320,
+        height: 200,
+        borderRadius: 30,
+        borderWidth: 3,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 15,
+        paddingVertical: 10,
         shadowColor: "#4A9977",
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.4,
         shadowRadius: 20,
         elevation: 15,
-    },
-    innerGlow: {
-        ...StyleSheet.absoluteFillObject,
-        borderRadius: 140,
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.1)',
-        shadowColor: "#FFF",
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-    },
-    lotusInCircle: {
-        position: 'absolute',
-        top: 20,
-        width: 400,
-        height: 400,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    timerTextTop: {
-        position: 'absolute',
-        top: 40, // Moved down slightly to make room
-        alignItems: 'center',
+        overflow: 'hidden',
+        marginTop: 20, // Reduced from 50
         zIndex: 10,
     },
-    controlsContainer: {
-        marginTop: 60, // Clear the overflowing Lotus (Lotus extends ~140px below 280px circle, so we need space)
-        marginBottom: 20,
+    innerGlowCard: {
+        ...StyleSheet.absoluteFillObject,
+        borderRadius: 30,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.08)',
+    },
+    lotusBackground: {
+        position: 'absolute',
+        top: 0, // Top of timer container
+        alignSelf: 'center',
+        zIndex: 0, // Behind (or effectively 'outside' visual flow of card contents)
+        opacity: 0.9,
+    },
+    timerTextContainer: {
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    guideText: {
+        color: '#E8F5E9',
+        fontSize: 18,
+        fontWeight: '500',
+        marginTop: 5,
+        letterSpacing: 1,
+    },
+    // Plain button styles
+    innerControlContainer: {
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    plainControlButton: {
+        padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 100,
     },
-    mainControlCircle: {
-        width: 70, // Slightly larger target
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: 'rgba(255,255,255,0.1)', // Subtle background
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.3)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 6,
-    },
-    controlIconContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    miniButtonText: {
+    plainStartText: {
         color: '#FFF',
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: 'bold',
-        letterSpacing: 1.5,
+        letterSpacing: 2,
     },
+    // Keep icons
     pauseBar: {
         width: 6,
         height: 22,
@@ -519,18 +670,82 @@ const styles = StyleSheet.create({
         borderRightColor: 'transparent',
         borderBottomColor: 'transparent',
         borderTopColor: 'transparent',
-        marginLeft: 5,
+        marginLeft: 4,
     },
+    controlIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    lotusInCircle: {
+        position: 'absolute',
+        // Center vertically but slightly up to leave room for button
+        top: '15%',
+        width: 400,
+        height: 400,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    timerTextTop: {
+        position: 'absolute',
+        top: 30,
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    // Updated button styles for inside the card
+
+    // controlIconContainer reused from above (removed duplicate logic)
+    miniButtonText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1.5,
+    },
+    // pauseBar and playTriangle reused from above, removing duplicates to fix lint error
     timerText: {
         fontSize: 48,
         fontWeight: '200',
         letterSpacing: -2,
     },
-    timerSubtext: {
-        fontSize: 13,
-        marginTop: 10,
-        fontWeight: '300',
-        opacity: 0.7,
+    promoTextContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+        marginTop: 15,
+        zIndex: 200,
+    },
+    promoText: {
+        fontSize: 18, // Larger numbers
+        fontWeight: 'bold',
+        color: '#E8F5E9',
+        letterSpacing: 0.5,
+        textShadowColor: 'rgba(0,0,0,0.6)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
+    promoLabel: {
+        fontSize: 12, // Smaller labels
+        fontWeight: '600',
+        color: '#CCCCCC', // Slightly dimmer to let Gold pop
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    promoX: {
+        fontSize: 40, // Doubled from 20
+        fontWeight: 'bold',
+        color: '#FFD700',
+        top: 2, // Adjusted for larger size alignment
+        marginHorizontal: 3,
+        textShadowColor: '#FFD700',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 8,
+    },
+    promoGold: {
+        fontSize: 36, // Doubled from 18 (base text)
+        color: '#FFD700',
+        textShadowColor: '#FFD700', // Self-color glow
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 8,
     },
     // Removed old circle styles
     actions: {
@@ -609,4 +824,17 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
     },
+    completionShareRow: {
+        alignItems: 'center',
+        marginBottom: 20,
+        zIndex: 100,
+    },
+    miniShareBtn: {
+        backgroundColor: '#000',
+        paddingVertical: 5,
+        paddingHorizontal: 12,
+        borderRadius: 15,
+        minWidth: 50,
+        alignItems: 'center',
+    }
 });

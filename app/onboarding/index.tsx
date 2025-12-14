@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
@@ -26,38 +26,87 @@ export default function OnboardingIntro() {
 
     return (
         <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
-            <View style={styles.container}>
-                <View style={styles.content}>
-                    <View style={{ height: 200, alignItems: 'center', justifyContent: 'center' }}>
-                        <BreathingLeaves isActive={true} />
+            <ScrollView
+                contentContainerStyle={styles.scrollContainer}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.container}>
+                    <View style={styles.content}>
+                        <View style={{ height: 260, alignItems: 'center', justifyContent: 'center', marginBottom: -60 }}>
+                            <Image
+                                source={require('../../assets/images/brand_logo_floral.png')}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
+                            <BreathingLeaves isActive={true} />
+                        </View>
+
+                        <Text style={[styles.title, { color: colors.primary }]}>Welcome to BE.</Text>
+
+                        <Text style={[styles.subtitle, { color: colors.text, paddingHorizontal: 10, lineHeight: 24 }]}>
+                            Root your new 3-minute practice in a habit that is already firmly grounded in your daily routine.
+                        </Text>
+
+                        <Text style={[styles.description, { color: colors.textSecondary }]}>
+                            Choose one habit from each time frame
+                        </Text>
+
+                        {/* Detailed Habit Descriptions */}
+                        <View style={styles.habitList}>
+                            <View style={styles.habitItem}>
+                                <Text style={[styles.habitTitle, { color: colors.text }]}>☀️ Rise: Anchoring Energy</Text>
+                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
+                                    "Sets the tone" and roots the habit before daily stress begins. It leverages the clarity you have when you first wake up.
+                                </Text>
+                            </View>
+
+                            <View style={styles.habitItem}>
+                                <Text style={[styles.habitTitle, { color: colors.text }]}>🌤️ Rest: Preventing the Slump</Text>
+                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
+                                    Serves as a deliberate Rest or recharge point, breaking up the longest work or activity block and helping you overcome the typical afternoon energy dip.
+                                </Text>
+                            </View>
+
+                            <View style={styles.habitItem}>
+                                <Text style={[styles.habitTitle, { color: colors.text }]}>🌙 Relax: Unwind</Text>
+                                <Text style={[styles.habitDesc, { color: colors.textSecondary }]}>
+                                    Creates a vital separation between the day's activity and sleep. It uses Relax time to promote reflection and better rest, making winding down easier.
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Sample Plan Section */}
+                        <View style={styles.samplePlanContainer}>
+                            <Text style={[styles.sampleTitle, { color: colors.primary }]}>Sample Plan:</Text>
+                            <View style={styles.sampleRow}>
+                                <Text style={styles.sampleIcon}>☀️</Text>
+                                <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
+                                    <Text style={{ fontWeight: 'bold' }}>Rise:</Text> After I feed the cats (8am)
+                                </Text>
+                            </View>
+                            <View style={styles.sampleRow}>
+                                <Text style={styles.sampleIcon}>🌤️</Text>
+                                <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
+                                    <Text style={{ fontWeight: 'bold' }}>Rest:</Text> Before Lunch break (12pm)
+                                </Text>
+                            </View>
+                            <View style={styles.sampleRow}>
+                                <Text style={styles.sampleIcon}>🌙</Text>
+                                <Text style={[styles.sampleText, { color: colors.textSecondary }]}>
+                                    <Text style={{ fontWeight: 'bold' }}>Relax:</Text> After eating dinner (7pm)
+                                </Text>
+                            </View>
+                        </View>
+
+                        <ShimmerButton
+                            title="Set Up Root Routine"
+                            onPress={() => router.push('/onboarding/setup')}
+                            style={styles.button}
+                            icon={Leaf}
+                        />
                     </View>
-
-                    <Text style={[styles.title, { color: colors.primary }]}>Welcome to BE.</Text>
-
-                    <Text style={[styles.subtitle, { color: colors.text }]}>
-                        Let's weave mindfulness into the fabric of your day.
-                    </Text>
-
-                    <Text style={[styles.description, { color: colors.textSecondary }]}>
-                        We'll set up 3 simple pauses linked to habits you already do:
-                    </Text>
-
-                    <TreeRoots color={colors.primary} />
-
-                    <View style={styles.steps}>
-                        <Text style={[styles.stepProp, { color: colors.text }]}>☀️ Rise</Text>
-                        <Text style={[styles.stepProp, { color: colors.text }]}>🌤️ Rest</Text>
-                        <Text style={[styles.stepProp, { color: colors.text }]}>🌙 Relax</Text>
-                    </View>
-
-                    <ShimmerButton
-                        title="Start Linking"
-                        onPress={() => router.push('/onboarding/morning')}
-                        style={styles.button}
-                        icon={Leaf}
-                    />
                 </View>
-            </View>
+            </ScrollView>
         </View>
     );
 }
@@ -66,13 +115,16 @@ const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
     },
+    scrollContainer: {
+        flexGrow: 1,
+        alignItems: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 20,
+    },
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20,
-        maxWidth: 400,
-        alignSelf: 'center',
         width: '100%',
+        maxWidth: 500, // Increased for larger devices/tablets
+        alignItems: 'center',
     },
     content: {
         alignItems: 'center',
@@ -95,18 +147,64 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         lineHeight: 20,
     },
-    steps: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+    habitList: {
         width: '100%',
-        marginBottom: 30,
-        paddingHorizontal: 10,
+        marginBottom: 20,
+        gap: 15,
     },
-    stepProp: {
+    habitItem: {
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        padding: 15,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.05)',
+    },
+    habitTitle: {
         fontSize: 16,
         fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    habitDesc: {
+        fontSize: 14,
+        lineHeight: 20,
     },
     button: {
         width: '100%',
+    },
+    logo: {
+        width: 320,
+        height: 240,
+        marginBottom: 0,
+        position: 'absolute',
+        zIndex: 10,
+    },
+    samplePlanContainer: {
+        width: '100%',
+        backgroundColor: 'rgba(212, 175, 55, 0.1)', // Light gold bg
+        padding: 15,
+        borderRadius: 12,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(212, 175, 55, 0.3)',
+    },
+    sampleTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    sampleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 5,
+        gap: 10,
+    },
+    sampleIcon: {
+        fontSize: 14,
+    },
+    sampleText: {
+        fontSize: 14,
+        fontStyle: 'italic',
     }
 });

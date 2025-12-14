@@ -10,7 +10,10 @@ import { ArrowLeft } from 'lucide-react-native';
 
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
-    const { timerDuration, setTimerDuration, habitCue, setHabitCue } = useSettings();
+    const {
+        timerDuration, setTimerDuration, habitCue, setHabitCue, socialLinks, updateSocialLink,
+        showHabitStacking, setShowHabitStacking, timerMode, setTimerMode
+    } = useSettings();
     const {
         audioFeedbackEnabled,
         setAudioFeedback,
@@ -33,8 +36,23 @@ export default function Settings() {
                         <ArrowLeft size={24} color={colors.primary} />
                     </TouchableOpacity>
                     <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
+
+                    {/* New Profile Link Logic could go here or as a button below */}
+
                     <TouchableOpacity onPress={() => router.push('/')} style={{ marginLeft: 'auto' }}>
                         <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '600' }}>Done</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Account & Profile Link - New user flow */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Account</Text>
+                    <TouchableOpacity
+                        style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                        onPress={() => router.push('/dashboard')}
+                    >
+                        <Text style={[styles.menuItemText, { color: colors.text }]}>View Profile & Stats</Text>
+                        <ArrowLeft size={16} color={colors.textSecondary} style={{ transform: [{ rotate: '180deg' }] }} />
                     </TouchableOpacity>
                 </View>
 
@@ -177,19 +195,78 @@ export default function Settings() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Habit Stacking */}
+                {/* Social Media Linking - NEW */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Social Links</Text>
+                    <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 15 }]}>
+                        Link your profiles to easily share progress.
+                    </Text>
+
+                    <View style={styles.socialInputRow}>
+                        <Text style={[styles.label, { color: colors.text, width: 80 }]}>TikTok</Text>
+                        <TextInput
+                            style={[styles.input, { flex: 1, marginTop: 0 }]}
+                            placeholder="@username"
+                            placeholderTextColor={colors.textSecondary}
+                            value={socialLinks.tiktok || ''}
+                            onChangeText={(val) => updateSocialLink('tiktok', val)}
+                        />
+                    </View>
+
+                    <View style={styles.socialInputRow}>
+                        <Text style={[styles.label, { color: colors.text, width: 80 }]}>Facebook</Text>
+                        <TextInput
+                            style={[styles.input, { flex: 1, marginTop: 0 }]}
+                            placeholder="Profile URL"
+                            placeholderTextColor={colors.textSecondary}
+                            value={socialLinks.facebook || ''}
+                            onChangeText={(val) => updateSocialLink('facebook', val)}
+                        />
+                    </View>
+
+                    <View style={styles.socialInputRow}>
+                        <Text style={[styles.label, { color: colors.text, width: 80 }]}>Instagram</Text>
+                        <TextInput
+                            style={[styles.input, { flex: 1, marginTop: 0 }]}
+                            placeholder="@username"
+                            placeholderTextColor={colors.textSecondary}
+                            value={socialLinks.instagram || ''}
+                            onChangeText={(val) => updateSocialLink('instagram', val)}
+                        />
+                    </View>
+                </View>
+
+                {/* Habit Stacking - Unlocked for everyone */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>Habit Stacking</Text>
-                    <ProFeatureLock label="Pro Feature">
-                        <Text style={[styles.label, { color: colors.text, marginTop: 10 }]}>My Cue (After I...)</Text>
-                        <TextInput
-                            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-                            placeholder="e.g., brush my teeth"
-                            placeholderTextColor={colors.textSecondary}
-                            value={habitCue}
-                            onChangeText={setHabitCue}
+
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Show Stacking Options</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                Prompt to link habits after sessions
+                            </Text>
+                        </View>
+                        <Switch
+                            value={showHabitStacking}
+                            onValueChange={setShowHabitStacking}
+                            trackColor={{ false: "#767577", true: colors.primary }}
+                            thumbColor={showHabitStacking ? "#fff" : "#f4f3f4"}
                         />
-                    </ProFeatureLock>
+                    </View>
+
+                    {showHabitStacking && (
+                        <View>
+                            <Text style={[styles.label, { color: colors.text, marginTop: 10 }]}>My Cue (After I...)</Text>
+                            <TextInput
+                                style={[styles.input, { borderColor: colors.border, color: colors.text }]}
+                                placeholder="e.g., brush my teeth"
+                                placeholderTextColor={colors.textSecondary}
+                                value={habitCue}
+                                onChangeText={setHabitCue}
+                            />
+                        </View>
+                    )}
                 </View>
 
                 {/* Theme Settings (Pro) */}
@@ -218,8 +295,8 @@ export default function Settings() {
                     style={{ marginTop: 20, marginBottom: 40 }}
                 />
 
-            </ScrollView>
-        </View>
+            </ScrollView >
+        </View >
     );
 }
 
@@ -323,5 +400,24 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         borderWidth: 1,
         borderStyle: 'dashed',
+    },
+    socialInputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 15,
+        borderRadius: 12,
+        borderWidth: 1,
+        marginBottom: 10,
+        backgroundColor: '#fff',
+    },
+    menuItemText: {
+        fontSize: 16,
+        fontWeight: '500',
     }
 });

@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing, Image } from 'react-native';
+import Svg, { Path, LinearGradient, Stop, Defs } from 'react-native-svg';
 
 type BreathingLeavesProps = {
     isActive: boolean;
 };
 
+const AnimatedSvg = Animated.createAnimatedComponent(Svg);
+
 export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
-    const leaves = Array(5).fill(0).map(() => ({
+    // 6 Items: All Flowers/Leaves (using image assets for consistency)
+    const leaves = Array(6).fill(0).map(() => ({
         y: useRef(new Animated.Value(0)).current,
         x: useRef(new Animated.Value(0)).current,
         rotation: useRef(new Animated.Value(0)).current,
@@ -33,19 +37,20 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
             return;
         }
 
-        // More dramatic swirl patterns 
+        // Swirl paths for 6 items
         const swirlPaths = [
             { phase1: 65, phase2: -45, phase3: 30 },
-            { phase1: -70, phase2: 50, phase3: -25 },
+            { phase1: -50, phase2: 40, phase3: -15 },
             { phase1: 55, phase2: -40, phase3: 35 },
             { phase1: -65, phase2: 60, phase3: -30 },
-            { phase1: 50, phase2: -50, phase3: 25 },
+            { phase1: 45, phase2: -35, phase3: 20 },
+            { phase1: -70, phase2: 50, phase3: -25 },
         ];
 
         leaves.forEach((leaf, index) => {
             const swirl = swirlPaths[index];
             const BREATH_CYCLE_MS = 11500; // ~11.5s per breath
-            const EVERY_3RD_BREATH_DELAY = BREATH_CYCLE_MS * 2;
+            const REPEAT_DELAY = BREATH_CYCLE_MS * 2;
 
             const breathingCycle = () => {
                 Animated.sequence([
@@ -131,7 +136,7 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
                         useNativeDriver: true,
                     }),
                     // WAIT for 2 full breath cycles before reappearing
-                    Animated.delay(EVERY_3RD_BREATH_DELAY)
+                    Animated.delay(REPEAT_DELAY)
                 ]).start((finished) => {
                     if (finished.finished) {
                         leaf.y.setValue(0);
@@ -144,7 +149,7 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
             };
 
             // Start delay only on first run to stagger
-            const timer = setTimeout(() => breathingCycle(), index * 800);
+            const timer = setTimeout(() => breathingCycle(), index * 600);
             timeouts.current.push(timer);
         });
 
@@ -165,14 +170,12 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
 
     if (!isActive) return null;
 
-    const startPositions = [15, 30, 50, 70, 85];
-    const imageSizes = [60, 50, 70, 55, 65];
-    const images = [
+    // 6 starting positions across the screen
+    const startPositions = [15, 30, 45, 60, 75, 90];
+
+    const flowerImages = [
         require('../assets/images/flower_floating_1.png'),
         require('../assets/images/flower_floating_2.png'),
-        require('../assets/images/flower_floating_1.png'),
-        require('../assets/images/flower_floating_2.png'),
-        require('../assets/images/flower_floating_1.png'),
     ];
 
     return (
@@ -200,12 +203,11 @@ export function BreathingLeaves({ isActive }: BreathingLeavesProps) {
                     ]}
                 >
                     <Image
-                        source={images[index]}
+                        source={flowerImages[index % 2]} // Alternate between the two flower images
                         style={{
-                            width: imageSizes[index],
-                            height: imageSizes[index],
-                            opacity: 0.9,
-                            // Removed tintColor to ensure visibility if images are already colored/gold.
+                            width: 60, // Standardize size
+                            height: 60,
+                            opacity: 0.95,
                         }}
                         resizeMode="contain"
                     />
