@@ -11,8 +11,17 @@ import { ArrowLeft } from 'lucide-react-native';
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
     const {
-        timerDuration, setTimerDuration, habitCue, setHabitCue, socialLinks, updateSocialLink,
-        showHabitStacking, setShowHabitStacking, timerMode, setTimerMode
+        timerDuration, setTimerDuration,
+        habitCue, setHabitCue,
+        socialLinks, updateSocialLink,
+        showHabitStacking, setShowHabitStacking,
+        timerMode, setTimerMode,
+        // Added missing destructuring
+        showBreathingGuide, setShowBreathingGuide,
+        showNatureVisuals, setShowNatureVisuals,
+        breathingPattern, setBreathingPattern,
+        deep3Enabled, setDeep3Enabled,
+        deep3Duration, setDeep3Duration
     } = useSettings();
     const {
         audioFeedbackEnabled,
@@ -94,10 +103,10 @@ export default function Settings() {
                             </Text>
                         </View>
                         <Switch
-                            value={useSettings().showBreathingGuide}
-                            onValueChange={useSettings().setShowBreathingGuide}
+                            value={showBreathingGuide}
+                            onValueChange={setShowBreathingGuide}
                             trackColor={{ false: "#767577", true: colors.primary }}
-                            thumbColor={useSettings().showBreathingGuide ? "#fff" : "#f4f3f4"}
+                            thumbColor={showBreathingGuide ? "#fff" : "#f4f3f4"}
                         />
                     </View>
 
@@ -109,10 +118,10 @@ export default function Settings() {
                             </Text>
                         </View>
                         <Switch
-                            value={useSettings().showNatureVisuals}
-                            onValueChange={useSettings().setShowNatureVisuals}
+                            value={showNatureVisuals}
+                            onValueChange={setShowNatureVisuals}
                             trackColor={{ false: "#767577", true: colors.primary }}
-                            thumbColor={useSettings().showNatureVisuals ? "#fff" : "#f4f3f4"}
+                            thumbColor={showNatureVisuals ? "#fff" : "#f4f3f4"}
                         />
                     </View>
                 </View>
@@ -124,23 +133,23 @@ export default function Settings() {
                     {/* Pattern Selection */}
                     <View style={styles.settingRow}>
                         <View style={{ flex: 1, paddingRight: 10 }}>
-                            <Text style={[styles.label, { color: colors.text }]}>Breathing Ratio</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Find & Set your Breathing Frequency</Text>
                             <Text style={[styles.hint, { color: colors.textSecondary }]}>
-                                {useSettings().breathingPattern === '4-1-6' ? '4s In - 1s Pause - 6s Out' : '3s In - 1s Pause - 5s Out'}
+                                {breathingPattern === '4-1-6' ? '4s In - 1s Pause - 6s Out' : '3s In - 1s Pause - 5s Out'}
                             </Text>
                         </View>
                         <View style={{ flexDirection: 'row', gap: 5 }}>
                             <TouchableOpacity
-                                onPress={() => useSettings().setBreathingPattern('4-1-6')}
-                                style={[styles.optionButton, useSettings().breathingPattern === '4-1-6' && { backgroundColor: colors.primary }]}
+                                onPress={() => setBreathingPattern('4-1-6')}
+                                style={[styles.optionButton, breathingPattern === '4-1-6' && { backgroundColor: colors.primary }]}
                             >
-                                <Text style={[styles.optionText, { color: useSettings().breathingPattern === '4-1-6' ? '#fff' : colors.text }]}>4-1-6</Text>
+                                <Text style={[styles.optionText, { color: breathingPattern === '4-1-6' ? '#fff' : colors.text }]}>4-1-6</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={() => useSettings().setBreathingPattern('3-1-5')}
-                                style={[styles.optionButton, useSettings().breathingPattern === '3-1-5' && { backgroundColor: colors.primary }]}
+                                onPress={() => setBreathingPattern('3-1-5')}
+                                style={[styles.optionButton, breathingPattern === '3-1-5' && { backgroundColor: colors.primary }]}
                             >
-                                <Text style={[styles.optionText, { color: useSettings().breathingPattern === '3-1-5' ? '#fff' : colors.text }]}>3-1-5</Text>
+                                <Text style={[styles.optionText, { color: breathingPattern === '3-1-5' ? '#fff' : colors.text }]}>3-1-5</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -154,31 +163,31 @@ export default function Settings() {
                             </Text>
                         </View>
                         <Switch
-                            value={useSettings().deep3Enabled}
-                            onValueChange={useSettings().setDeep3Enabled}
+                            value={deep3Enabled}
+                            onValueChange={setDeep3Enabled}
                             trackColor={{ false: "#767577", true: colors.primary }}
-                            thumbColor={useSettings().deep3Enabled ? "#fff" : "#f4f3f4"}
+                            thumbColor={deep3Enabled ? "#fff" : "#f4f3f4"}
                         />
                     </View>
 
                     {/* DEEP3 Duration */}
-                    {useSettings().deep3Enabled && (
+                    {deep3Enabled && (
                         <View style={styles.settingRow}>
                             <View style={{ flex: 1, paddingRight: 10 }}>
                                 <Text style={[styles.label, { color: colors.text }]}>DEEP3 Duration</Text>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 5 }}>
                                 <TouchableOpacity
-                                    onPress={() => useSettings().setDeep3Duration(15)}
-                                    style={[styles.optionButton, useSettings().deep3Duration === 15 && { backgroundColor: colors.primary }]}
+                                    onPress={() => setDeep3Duration(15)}
+                                    style={[styles.optionButton, deep3Duration === 15 && { backgroundColor: colors.primary }]}
                                 >
-                                    <Text style={[styles.optionText, { color: useSettings().deep3Duration === 15 ? '#fff' : colors.text }]}>15s</Text>
+                                    <Text style={[styles.optionText, { color: deep3Duration === 15 ? '#fff' : colors.text }]}>15s</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    onPress={() => useSettings().setDeep3Duration(20)}
-                                    style={[styles.optionButton, useSettings().deep3Duration === 20 && { backgroundColor: colors.primary }]}
+                                    onPress={() => setDeep3Duration(20)}
+                                    style={[styles.optionButton, deep3Duration === 20 && { backgroundColor: colors.primary }]}
                                 >
-                                    <Text style={[styles.optionText, { color: useSettings().deep3Duration === 20 ? '#fff' : colors.text }]}>20s</Text>
+                                    <Text style={[styles.optionText, { color: deep3Duration === 20 ? '#fff' : colors.text }]}>20s</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

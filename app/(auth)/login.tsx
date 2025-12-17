@@ -84,9 +84,11 @@ export default function Login() {
         try {
             const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
             const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
             await signInWithPopup(auth, provider);
             router.replace('/');
         } catch (error: any) {
+            console.error("Google Sign-In Error:", error);
             Alert.alert('Error', error.message);
         } finally {
             setLoading(false);

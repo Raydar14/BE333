@@ -10,10 +10,14 @@ interface BreathingBellyProps {
 }
 
 export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
-    const { bellyVisualGender, showBreathingLotus } = useSettings();
+    const { showBreathingLotus, breathingPattern } = useSettings();
     const scale = useSharedValue(0.3); // Start small in the lap
     const translateY = useSharedValue(0);
     const opacity = useSharedValue(0.8);
+
+    // Sync durations with the main logic
+    const inhaleDur = breathingPattern === '3-1-5' ? 3000 : 4000;
+    const exhaleDur = breathingPattern === '3-1-5' ? 5000 : 6000;
 
     useEffect(() => {
         if (!isActive) {
@@ -38,15 +42,15 @@ export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
                 opacity.value = withTiming(0.9, { duration: 500 });
                 break;
             case 'inhale':
-                // Grow out of the person (up and big)
-                scale.value = withTiming(1.2, { duration: 4000, easing: Easing.out(Easing.ease) });
-                translateY.value = withTiming(-50, { duration: 4000, easing: Easing.out(Easing.ease) });
+                // RISE from Root to Crown
+                scale.value = withTiming(1.0, { duration: inhaleDur, easing: Easing.inOut(Easing.quad) });
+                translateY.value = withTiming(-110, { duration: inhaleDur, easing: Easing.inOut(Easing.quad) }); // Move UP to Crown (Reduced height)
                 opacity.value = withTiming(1, { duration: 500 });
                 break;
             case 'exhale':
-                // Shrink back to base/lap
-                scale.value = withTiming(0.3, { duration: 6000, easing: Easing.out(Easing.ease) });
-                translateY.value = withTiming(30, { duration: 6000, easing: Easing.out(Easing.ease) });
+                // DESCEND from Crown to Root
+                scale.value = withTiming(0.3, { duration: exhaleDur, easing: Easing.inOut(Easing.quad) });
+                translateY.value = withTiming(0, { duration: exhaleDur, easing: Easing.inOut(Easing.quad) }); // Move DOWN to Root
                 opacity.value = withTiming(0.7, { duration: 500 });
                 break;
             case 'pause':
@@ -65,32 +69,26 @@ export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
         };
     });
 
-    const backgroundImage = bellyVisualGender === 'male'
-        ? require('../assets/images/breathing_belly_male.png')
-        : require('../assets/images/breathing_belly_female.png');
-
     return (
         <View style={styles.container}>
-            {/* Background: User Provided Image (Male/Female) */}
+            {/* Background: Single Validated Image */}
             <Image
-                source={backgroundImage}
+                source={require('../assets/images/breathing_belly_filled.png')}
                 style={styles.backgroundImage}
                 resizeMode="contain"
             />
 
             {/* Foreground: The Dynamic Lotus (Optional Overlay) */}
-            {showBreathingLotus && (
-                <View style={styles.lotusContainer}>
-                    <Animated.View style={[styles.lotusWrapper, animatedStyle]}>
-                        <BreathingCircle
-                            isActive={isActive}
-                            showGuide={false} // Just the visual
-                            showNature={false} // We handle nature separately
-                            size={200} // Base size
-                        />
-                    </Animated.View>
-                </View>
-            )}
+            <View style={styles.lotusContainer}>
+                <Animated.View style={[styles.lotusWrapper, animatedStyle]}>
+                    <BreathingCircle
+                        isActive={isActive}
+                        showGuide={false} // Just the visual
+                        showNature={false} // We handle nature separately
+                        size={200} // Base size
+                    />
+                </Animated.View>
+            </View>
         </View>
     );
 }
@@ -110,8 +108,8 @@ const styles = StyleSheet.create({
     },
     lotusContainer: {
         position: 'absolute',
-        // Position roughly at the center/core
-        top: '25%', // Adjusted for pure lotus center alignment
+        // Anchor at the ROOT (Base of Spine/Lap) - 120 (Fine tuned)
+        top: 120,
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10

@@ -89,8 +89,15 @@ export default function HabitTimerScreen() {
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
             <ScrollView contentContainerStyle={styles.container}>
 
-                {/* Header with Home Button */}
-                <View style={styles.header}>
+                {/* Header with Back and Home Button */}
+                <View style={[styles.header, { justifyContent: 'space-between' }]}>
+                    <TouchableOpacity
+                        onPress={() => router.replace({ pathname: '/', params: { restored: 'true' } })}
+                        style={styles.homeButton}
+                    >
+                        <Text style={styles.homeText}>← Back</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity onPress={returnHome} style={styles.homeButton}>
                         <Home size={24} color={Colors.textSecondary} />
                         <Text style={styles.homeText}>Home</Text>
@@ -119,10 +126,12 @@ export default function HabitTimerScreen() {
                                 </Text>
                             </View>
 
-                            {/* Lotus centered */}
-                            <View style={styles.lotusInCircle}>
-                                <BreathingCircle isActive={isActive} showGuide={showBreathingGuide} showNature={showNatureVisuals} />
-                            </View>
+                            {/* Lotus centered - Only for Breath Work */}
+                            {['Breath Work', 'Breathing', 'BE Again'].includes(activity) && (
+                                <View style={styles.lotusInCircle}>
+                                    <BreathingCircle isActive={isActive} showGuide={showBreathingGuide} showNature={showNatureVisuals} />
+                                </View>
+                            )}
 
                             {/* Inner Circle Glow Overlay */}
                             <View pointerEvents="none" style={styles.innerGlow} />
@@ -200,6 +209,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         marginBottom: 20,
+        maxWidth: 400, // constrained width
+        width: '100%',
+        alignSelf: 'center',
     },
     homeButton: {
         flexDirection: 'row',

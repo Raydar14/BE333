@@ -34,6 +34,7 @@ interface BiofeedbackContextType {
     // Current readings
     currentReading: BiofeedbackReading | null;
     baselineReading: BiofeedbackReading | null;
+    recentReadings: BiofeedbackReading[];
 
     // Audio feedback settings
     audioFeedbackEnabled: boolean;
@@ -70,6 +71,7 @@ const BiofeedbackContext = createContext<BiofeedbackContextType>({
     lastDeviceName: null,
     currentReading: null,
     baselineReading: null,
+    recentReadings: [],
     audioFeedbackEnabled: false,
     audioFeedbackMetric: 'hr',
     isDemoMode: false,
@@ -99,6 +101,7 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
     // Readings
     const [currentReading, setCurrentReading] = useState<BiofeedbackReading | null>(null);
     const [baselineReading, setBaselineReading] = useState<BiofeedbackReading | null>(null);
+    const [recentReadings, setRecentReadings] = useState<BiofeedbackReading[]>([]);
 
     // Audio feedback
     const [audioFeedbackEnabled, setAudioFeedbackEnabled] = useState(false);
@@ -126,6 +129,10 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
         // Set up reading callback
         BiofeedbackService.setOnReadingCallback((reading) => {
             setCurrentReading(reading);
+            setRecentReadings(prev => {
+                const newHistory = [...prev, reading];
+                return newHistory.length > 60 ? newHistory.slice(newHistory.length - 60) : newHistory;
+            });
             handleAudioFeedback(reading);
         });
 
@@ -335,6 +342,10 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
                 };
 
                 setCurrentReading(reading);
+                setRecentReadings(prev => {
+                    const newHistory = [...prev, reading];
+                    return newHistory.length > 60 ? newHistory.slice(newHistory.length - 60) : newHistory;
+                });
 
                 // Also call the reading callback for audio feedback
                 if (audioFeedbackEnabled && baselineReading) {
@@ -354,6 +365,7 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
             lastDeviceName,
             currentReading,
             baselineReading,
+            recentReadings,
             audioFeedbackEnabled,
             audioFeedbackMetric,
             isDemoMode,
