@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView, Platform, Share, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView, Platform, Share, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings as SettingsIcon, UserCircle, LogIn, Heart, ArrowUp } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -15,6 +15,7 @@ import { ShimmerButton } from '../components/ShimmerButton';
 import { GuestBanner } from '../components/GuestBanner';
 import { BreathingLeaves } from '../components/BreathingLeaves';
 import { BiofeedbackChart } from '../components/BiofeedbackChart';
+import { SessionPhaseGuide } from '../components/SessionPhaseGuide';
 import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly component
 import { PetalAwardModal } from '../components/PetalAwardModal';
 
@@ -96,7 +97,7 @@ export default function Home() {
     const sessionsToday = stats?.currentPauses || 0;
     const durationInMinutes = Math.floor(timerDuration / 60);
     // Interpreting "!isGuest" as "!isPro" for the limit logic, assuming Pro is unlimited.
-    const limitReached = !isPro && sessionsToday >= 3;
+    const isBonusSession = sessionsToday >= 3;
     const [biofeedbackSummary, setBiofeedbackSummary] = useState<SessionSummary | null>(null);
     const [showDeviceScanner, setShowDeviceScanner] = useState(false);
     const [showPetalAward, setShowPetalAward] = useState(false);
@@ -361,7 +362,13 @@ export default function Home() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -459,13 +466,12 @@ export default function Home() {
                                             </View>
 
                                             {/* LIVE GRAPH */}
-                                            {recentReadings.length > 2 && (
-                                                <View style={{ marginBottom: 10, width: '100%' }}>
-                                                    <BiofeedbackChart
-                                                        data={recentReadings}
-                                                        height={100}
-                                                    />
-                                                </View>
+                                            {/* Unified Session Phase Guide with Chart */}
+                                            {isActive && (
+                                                <SessionPhaseGuide
+                                                    elapsedTime={timerMode === 'open' ? timeLeft : (timerDuration - timeLeft)}
+                                                    data={recentReadings}
+                                                />
                                             )}
                                         </>
                                     )}
@@ -525,7 +531,7 @@ export default function Home() {
                                             </TouchableOpacity>
                                         ) : (
                                             <ShimmerButton
-                                                title={limitReached ? "Begin Bonus Session" : `Begin ${durationInMinutes}-Minute Practice`}
+                                                title={isBonusSession ? "Begin Bonus Session" : `Begin ${durationInMinutes}-Minute Practice`}
                                                 onPress={toggleTimer}
                                                 style={{
                                                     width: 260,

@@ -7,8 +7,10 @@ import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 
 export default function Signup() {
+    useProtectedRoute();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

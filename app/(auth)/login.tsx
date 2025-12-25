@@ -7,6 +7,7 @@ import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 
 declare global {
     interface Window {
@@ -15,6 +16,7 @@ declare global {
 }
 
 export default function Login() {
+    useProtectedRoute();
     const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

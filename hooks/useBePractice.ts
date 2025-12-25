@@ -28,7 +28,13 @@ const DEFAULT_STATS: BePracticeStats = {
     currentPauses: 0,
     streakBreaksUsed: 0,
     recentHistory: [],
-    lastActiveDate: new Date().toISOString().split('T')[0],
+    lastActiveDate: (() => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    })(),
     resetRitualStartDate: null,
 };
 
@@ -38,8 +44,14 @@ export function useBePractice() {
     const [stats, setStats] = useState<BePracticeStats | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Helper to get today's date string YYYY-MM-DD
-    const getTodayStr = () => new Date().toISOString().split('T')[0];
+    // Helper to get today's date string YYYY-MM-DD in LOCAL time
+    const getTodayStr = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     useEffect(() => {
         if (!user) {
@@ -65,6 +77,9 @@ export function useBePractice() {
                 setStats(initialStats);
                 setLoading(false);
             }
+        }, (error) => {
+            console.error("Error in useBePractice snapshot:", error);
+            setLoading(false); // Ensure loading stops so UI can show something
         });
 
         return () => unsubscribe();
