@@ -17,6 +17,7 @@ interface BiofeedbackSummaryProps {
 
 export function BiofeedbackSummary({ summary, durationSeconds }: BiofeedbackSummaryProps) {
     const { colors } = useTheme();
+    const [showExplanation, setShowExplanation] = React.useState(false);
 
     const hrImproved = summary.hrChange < 0;
     const hrvImproved = summary.hrvChange !== null && summary.hrvChange > 0;
@@ -154,6 +155,27 @@ export function BiofeedbackSummary({ summary, durationSeconds }: BiofeedbackSumm
                     {getImprovementMessage()}
                 </Text>
             </View>
+
+            {/* Explanation Toggle */}
+            <TouchableOpacity
+                onPress={() => setShowExplanation(!showExplanation)}
+                style={styles.explanationButton}
+            >
+                <Text style={[styles.explanationButtonText, { color: colors.textSecondary }]}>
+                    {showExplanation ? "Hide Details" : "Understanding These Numbers"}
+                </Text>
+            </TouchableOpacity>
+
+            {showExplanation && (
+                <View style={{ marginTop: 10, padding: 10, backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8 }}>
+                    <Text style={{ color: colors.textLight, fontSize: 12, marginBottom: 8 }}>
+                        <Text style={{ fontWeight: 'bold', color: '#FF6B6B' }}>HR (Heart Rate):</Text> Lower measures usually indicate a deeper state of calm and relaxation.
+                    </Text>
+                    <Text style={{ color: colors.textLight, fontSize: 12 }}>
+                        <Text style={{ fontWeight: 'bold', color: '#4ECDC4' }}>HRV (Variability):</Text> Higher is better! It means your nervous system is balanced, resilient, and recovering well.
+                    </Text>
+                </View>
+            )}
         </View>
     );
 }
@@ -227,6 +249,19 @@ const styles = StyleSheet.create({
     message: {
         fontSize: 13,
         textAlign: 'center',
+        fontWeight: '500',
+    },
+    explanationButton: {
+        marginTop: 16,
+        paddingVertical: 8,
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 6,
+        opacity: 0.9,
+    },
+    explanationButtonText: {
+        fontSize: 13,
         fontWeight: '500',
     },
 });

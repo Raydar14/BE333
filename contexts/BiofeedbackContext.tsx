@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { Platform, Alert } from 'react-native';
-import { Device } from 'react-native-ble-plx';
+import type { Device } from 'react-native-ble-plx';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BiofeedbackService, BiofeedbackReading, SessionSummary } from '../services/BiofeedbackService';

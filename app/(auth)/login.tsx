@@ -8,6 +8,7 @@ import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
+import BrandLogo from '../../components/BrandLogo';
 
 declare global {
     interface Window {
@@ -142,11 +143,7 @@ export default function Login() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
-                    <Image
-                        source={require('../../assets/images/logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+                    <BrandLogo style={styles.logo} />
                     <Text style={styles.subtitle}>Pause. Breathe. Be333</Text>
                 </View>
 

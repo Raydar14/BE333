@@ -59,13 +59,14 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
 
         try {
             // TODO: Replace with your actual RevenueCat API keys
+            // TODO: REPLACE THESE WITH YOUR ACTUAL REVENUECAT API KEYS
             const apiKey = Platform.select({
-                ios: 'YOUR_IOS_API_KEY',
-                android: 'google_test_api_key', // Use a dummy or real key
+                ios: 'appl_...', // Put your iOS RevenueCat API key here
+                android: 'goog_...', // Find this in RevenueCat Dashboard > Project Settings > API Keys
             });
 
-            if (!apiKey) {
-                console.log('No RevenueCat API Key');
+            if (!apiKey || apiKey.includes('...')) {
+                console.error('RevenueCat API Key not set! Please update contexts/PurchaseContext.tsx');
                 setLoading(false);
                 return;
             }

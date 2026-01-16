@@ -23,6 +23,7 @@ import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { storage } from '../lib/firebase';
+import BrandLogo from '../components/BrandLogo';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -108,10 +109,24 @@ export default function Dashboard() {
         await signOut(auth);
     }
 
-    if (practiceLoading || !stats) {
+    if (practiceLoading) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: Colors.text }}>Loading Practice...</Text>
+                <ActivityIndicator size="large" color={Colors.primary} />
+                <Text style={{ color: Colors.text, marginTop: 10 }}>Loading Practice...</Text>
+            </View>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+                <Text style={{ color: Colors.text, fontSize: 18, marginBottom: 20 }}>Unable to load practice data.</Text>
+                <PremiumButton
+                    title="Return Home"
+                    onPress={() => router.replace('/')}
+                    variant="primary"
+                />
             </View>
         );
     }
@@ -161,11 +176,7 @@ export default function Dashboard() {
 
                 {/* 1. Golden Lotus Showcase */}
                 <View style={styles.lotusShowcase}>
-                    <Image
-                        source={require('../assets/images/be333_text_logo.png')}
-                        style={styles.logoImage}
-                        resizeMode="contain"
-                    />
+                    <BrandLogo style={styles.logoImage} />
                     <Text style={styles.lotusTitle}>Day {stats?.dayOfPractice || 1} of 21</Text>
                     <LotusBloomMap bloomDays={stats?.bloomDays || 0} />
                 </View>

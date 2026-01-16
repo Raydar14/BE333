@@ -69,16 +69,38 @@ export function SessionPhaseGuide({ elapsedTime, data }: SessionPhaseGuideProps)
     return (
         <View style={styles.container}>
 
-            {/* Phase Dots (Timeline) */}
+            {/* Redesigned Timeline: Minute # -> Dot -> Title */}
             <View style={styles.indicatorRow}>
+                {/* Connecting Line */}
                 <View style={styles.indicatorTrack} />
-                {SESSION_PHASES.map((phase) => {
+
+                {SESSION_PHASES.map((phase, index) => {
                     const isActive = currentPhase.id === phase.id;
                     const isPast = elapsedTime > phase.timeRange[1];
-                    const dotStyle = isActive ? styles.dotActive : (isPast ? styles.dotPast : styles.dotFuture);
+
+                    // Use lighter color for active text, darker for inactive
+                    const textColor = isActive ? '#FFFFFF' : 'rgba(255,255,255,0.3)';
+                    const titleWeight = isActive ? 'bold' : 'normal';
+
                     return (
-                        <View key={phase.id} style={styles.dotContainer}>
-                            <View style={[styles.dotBase, dotStyle]} />
+                        <View key={phase.id} style={styles.timelineColumn}>
+                            {/* Minute Number */}
+                            <Text style={[styles.timelineNumber, { color: textColor, fontWeight: titleWeight }]}>
+                                {index + 1}
+                            </Text>
+
+                            {/* Dot Tracker */}
+                            <View style={styles.dotContainer}>
+                                <View style={[
+                                    styles.dotBase,
+                                    isActive ? styles.dotActive : (isPast ? styles.dotPast : styles.dotFuture)
+                                ]} />
+                            </View>
+
+                            {/* Phase Title */}
+                            <Text style={[styles.timelineTitle, { color: textColor, fontWeight: titleWeight }]}>
+                                {phase.title}
+                            </Text>
                         </View>
                     );
                 })}
@@ -91,15 +113,21 @@ export function SessionPhaseGuide({ elapsedTime, data }: SessionPhaseGuideProps)
                 exiting={FadeOutUp.duration(200)}
                 style={styles.card}
             >
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.minuteLabel}>BE333 {currentPhase.minuteLabel}:</Text>
-                    <Text style={styles.phaseTitle}>{currentPhase.title}</Text>
+                {/* Graph Guidance (New Row) */}
+                <View style={styles.guidanceRow}>
+                    <Text style={styles.graphGuidanceText}>
+                        <Text style={{ fontWeight: 'bold', color: '#4ECDC4' }}>Target:</Text> {
+                            currentPhase.id === 'arrive' ? "Let Heart Rate (Red) settle down." :
+                                currentPhase.id === 'align' ? "Smooth out the Green waves." :
+                                    "Deep waves. Maximum range."
+                        }
+                    </Text>
                 </View>
 
-                {/* Chart Area */}
+                {/* Chart Area - Expanded */}
                 <View style={styles.chartContainer}>
-                    <BiofeedbackChart data={data} height={160} />
+                    {/* Passed larger height */}
+                    <BiofeedbackChart data={data} height={220} />
                 </View>
 
                 {/* Footer (Coaching) */}
@@ -130,21 +158,38 @@ const styles = StyleSheet.create({
     indicatorRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 40,
-        marginBottom: 8,
+        paddingHorizontal: 20,
+        marginBottom: 15, // More space for the text below dots
         position: 'relative',
-        height: 20,
+        height: 60, // Increased height for top/bottom text
+        alignItems: 'center',
     },
     indicatorTrack: {
         position: 'absolute',
-        top: 9,
-        left: 50, right: 50,
+        top: 30, // Centered vertically relative to the dot's position roughly
+        left: 40, right: 40,
         height: 2,
         backgroundColor: 'rgba(255,255,255,0.1)',
         zIndex: -1,
     },
+    timelineColumn: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 4,
+        width: 80, // Ensure enough width for text
+    },
+    timelineNumber: {
+        fontSize: 12,
+        marginBottom: 2,
+    },
+    timelineTitle: {
+        fontSize: 10,
+        marginTop: 2,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
     dotContainer: {
-        width: 20, alignItems: 'center'
+        width: 20, alignItems: 'center', justifyContent: 'center'
     },
     dotBase: {
         width: 20, height: 20, borderRadius: 10, borderWidth: 2,
@@ -165,28 +210,22 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2D6A4F',
         overflow: 'hidden',
-        paddingTop: 16,
+        paddingTop: 10,
     },
-    header: {
+    guidanceRow: {
         paddingHorizontal: 16,
-        marginBottom: 10,
+        marginBottom: 8,
+        alignItems: 'center',
     },
-    minuteLabel: {
-        color: 'rgba(255,255,255,0.6)',
-        fontSize: 12,
-        fontWeight: '600',
-        marginBottom: 2,
-        letterSpacing: 0.5,
-    },
-    phaseTitle: {
-        color: '#FFFFFF',
-        fontSize: 24,
-        fontWeight: 'bold',
-        letterSpacing: 1,
+    graphGuidanceText: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 13,
+        fontStyle: 'italic',
+        textAlign: 'center',
     },
     chartContainer: {
-        height: 160,
-        backgroundColor: 'rgba(0,0,0,0.2)', // Slightly darker for graph
+        height: 220, // Expanded height in styles
+        backgroundColor: 'rgba(0,0,0,0.2)',
         marginBottom: 12,
     },
     footer: {
