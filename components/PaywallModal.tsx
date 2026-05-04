@@ -10,8 +10,19 @@ type PaywallModalProps = {
     onClose: () => void;
 };
 
+// Package identifiers — these MUST match the identifiers configured in RevenueCat dashboard.
+// See setup guide: https://app.revenuecat.com -> Products
+const PACKAGES = {
+    user_monthly: 'user_monthly',
+    user_yearly: 'user_yearly',
+    user_lifetime: 'user_lifetime',
+    therapist_monthly: 'therapist_monthly',
+    therapist_yearly: 'therapist_yearly',
+    therapist_lifetime: 'therapist_lifetime',
+} as const;
+
 export function PaywallModal({ visible, onClose }: PaywallModalProps) {
-    const { offerings, purchasePackage, loading } = usePurchase();
+    const { offerings, purchasePackage, restorePurchases, loading } = usePurchase();
     const { colors } = useTheme();
     const [purchasing, setPurchasing] = useState(false);
     const [selectedTier, setSelectedTier] = useState<'user' | 'therapist'>('user');
@@ -28,8 +39,18 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
         }
     }
 
+    async function handleRestore() {
+        setPurchasing(true);
+        try {
+            await restorePurchases();
+            onClose();
+        } finally {
+            setPurchasing(false);
+        }
+    }
+
     const handleStripeRedirect = () => {
-        // TODO: Replace with your actual Stripe Payment Link
+        // TODO: Replace with your actual Stripe Payment Link before launch
         Linking.openURL('https://buy.stripe.com/test_placeholder');
         onClose();
     };
@@ -130,16 +151,16 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                                 title="Monthly"
                                                 price="$3.33"
                                                 period="/month"
-                                                onPress={() => handlePurchase('user_monthly')}
+                                                onPress={() => handlePurchase(PACKAGES.user_monthly)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
                                             <PricingCard
                                                 title="Yearly"
-                                                price="$33"
+                                                price="$33.33"
                                                 period="/year"
                                                 badge="Save 17%"
-                                                onPress={() => handlePurchase('user_yearly')}
+                                                onPress={() => handlePurchase(PACKAGES.user_yearly)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
@@ -148,7 +169,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                                 price="$99"
                                                 period="one-time"
                                                 badge="Best Value"
-                                                onPress={() => handlePurchase('user_lifetime')}
+                                                onPress={() => handlePurchase(PACKAGES.user_lifetime)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
@@ -159,7 +180,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                                 title="Monthly"
                                                 price="$9.99"
                                                 period="/month"
-                                                onPress={() => handlePurchase('therapist_monthly')}
+                                                onPress={() => handlePurchase(PACKAGES.therapist_monthly)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
@@ -168,7 +189,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                                 price="$111"
                                                 period="/year"
                                                 badge="Save 8%"
-                                                onPress={() => handlePurchase('therapist_yearly')}
+                                                onPress={() => handlePurchase(PACKAGES.therapist_yearly)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
@@ -177,7 +198,7 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                                 price="$333"
                                                 period="one-time"
                                                 badge="Professional"
-                                                onPress={() => handlePurchase('therapist_lifetime')}
+                                                onPress={() => handlePurchase(PACKAGES.therapist_lifetime)}
                                                 colors={colors}
                                                 loading={purchasing}
                                             />
@@ -186,6 +207,17 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
                                 </>
                             )}
                         </View>
+
+                        <TouchableOpacity onPress={handleRestore} disabled={purchasing} style={styles.restoreBtn}>
+                            <Text style={[styles.restoreText, { color: colors.textSecondary }]}>
+                                Already subscribed? Restore purchases
+                            </Text>
+                        </TouchableOpacity>
+
+                        <Text style={[styles.legal, { color: colors.textSecondary }]}>
+                            Subscriptions auto-renew until cancelled. Cancel anytime in your{' '}
+                            {Platform.OS === 'ios' ? 'App Store' : Platform.OS === 'android' ? 'Google Play' : 'Stripe'} settings.
+                        </Text>
                     </ScrollView>
                 </View>
             </View>
@@ -193,7 +225,17 @@ export function PaywallModal({ visible, onClose }: PaywallModalProps) {
     );
 }
 
-function PricingCard({ title, price, period, badge, onPress, colors, loading }: any) {
+type PricingCardProps = {
+    title: string;
+    price: string;
+    period: string;
+    badge?: string;
+    onPress: () => void;
+    colors: { border: string; surface: string; secondary: string; primary: string; text: string; textSecondary: string };
+    loading: boolean;
+};
+
+function PricingCard({ title, price, period, badge, onPress, colors, loading }: PricingCardProps) {
     return (
         <TouchableOpacity
             style={[styles.pricingCard, { borderColor: colors.border, backgroundColor: colors.surface }]}
@@ -213,93 +255,25 @@ function PricingCard({ title, price, period, badge, onPress, colors, loading }: 
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    content: {
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        padding: 20,
-        maxHeight: '90%',
-    },
-    closeButton: {
-        alignSelf: 'flex-end',
-        marginBottom: 10,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    tierSelector: {
-        flexDirection: 'row',
-        gap: 10,
-        marginBottom: 20,
-    },
-    tierButton: {
-        flex: 1,
-        padding: 15,
-        borderRadius: 10,
-        borderWidth: 2,
-        alignItems: 'center',
-    },
-    tierButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    featuresBox: {
-        padding: 20,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    featureTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    feature: {
-        fontSize: 14,
-        marginBottom: 5,
-    },
-    pricingContainer: {
-        gap: 15,
-    },
-    pricingCard: {
-        padding: 20,
-        borderRadius: 12,
-        borderWidth: 2,
-        alignItems: 'center',
-        position: 'relative',
-    },
-    badge: {
-        position: 'absolute',
-        top: -10,
-        right: 10,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    badgeText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    cardPrice: {
-        fontSize: 32,
-        fontWeight: 'bold',
-    },
-    cardPeriod: {
-        fontSize: 14,
-    },
+    container: { flex: 1, justifyContent: 'flex-end' },
+    content: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '90%' },
+    closeButton: { alignSelf: 'flex-end', marginBottom: 10 },
+    title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
+    subtitle: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
+    tierSelector: { flexDirection: 'row', gap: 10, marginBottom: 20 },
+    tierButton: { flex: 1, padding: 15, borderRadius: 10, borderWidth: 2, alignItems: 'center' },
+    tierButtonText: { fontSize: 16, fontWeight: 'bold' },
+    featuresBox: { padding: 20, borderRadius: 10, marginBottom: 20 },
+    featureTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
+    feature: { fontSize: 14, marginBottom: 5 },
+    pricingContainer: { gap: 15 },
+    pricingCard: { padding: 20, borderRadius: 12, borderWidth: 2, alignItems: 'center', position: 'relative' },
+    badge: { position: 'absolute', top: -10, right: 10, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+    badgeText: { fontSize: 12, fontWeight: 'bold' },
+    cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+    cardPrice: { fontSize: 32, fontWeight: 'bold' },
+    cardPeriod: { fontSize: 14 },
+    restoreBtn: { alignItems: 'center', marginTop: 20, padding: 10 },
+    restoreText: { fontSize: 14, textDecorationLine: 'underline' },
+    legal: { fontSize: 11, textAlign: 'center', marginTop: 15, lineHeight: 16 },
 });
