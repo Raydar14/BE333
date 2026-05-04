@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Platform } from 'react-native';
 import Purchases, { PurchasesOffering, CustomerInfo } from 'react-native-purchases';
 import { useAuth } from './AuthContext';
@@ -32,41 +32,39 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
     const [isConfigured, setIsConfigured] = useState(false);
 
-    // Initialize RevenueCat
     useEffect(() => {
         initializePurchases();
     }, []);
 
-    // Update user when auth changes
     useEffect(() => {
-        if (!isConfigured) return; // Guard: Wait for init
+        if (!isConfigured) return;
 
         if (user) {
-            Purchases.logIn(user.uid).then(() => loadCustomerInfo());
+            Purchases.logIn(user.uid)
+                .then(() => loadCustomerInfo())
+                .catch(e => console.warn('RevenueCat logIn error:', e));
         } else {
-            Purchases.logOut().then(() => setTier('free'));
+            Purchases.logOut()
+                .then(() => setTier('free'))
+                .catch(e => console.warn('RevenueCat logOut error:', e));
         }
     }, [user, isConfigured]);
 
     async function initializePurchases() {
         if (Platform.OS === 'web') {
-            // RevenueCat React Native SDK does not support Web.
-            // We disable it for web previews.
-            console.log('RevenueCat disabled on Web');
             setLoading(false);
             return;
         }
 
         try {
-            // TODO: Replace with your actual RevenueCat API keys
-            // TODO: REPLACE THESE WITH YOUR ACTUAL REVENUECAT API KEYS
+            // TODO: Replace with your actual RevenueCat API keys from https://app.revenuecat.com
             const apiKey = Platform.select({
-                ios: 'appl_...', // Put your iOS RevenueCat API key here
-                android: 'goog_...', // Find this in RevenueCat Dashboard > Project Settings > API Keys
+                ios: 'YOUR_IOS_API_KEY',
+                android: 'YOUR_ANDROID_API_KEY',
             });
 
-            if (!apiKey || apiKey.includes('...')) {
-                console.error('RevenueCat API Key not set! Please update contexts/PurchaseContext.tsx');
+            if (!apiKey || apiKey.startsWith('YOUR_')) {
+                console.warn('RevenueCat: API key not configured. In-app purchases disabled.');
                 setLoading(false);
                 return;
             }
@@ -74,11 +72,8 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
             await Purchases.configure({ apiKey });
             setIsConfigured(true);
 
-            // Load offerings
-            const offerings = await Purchases.getOfferings();
-            if (offerings.current) {
-                setOfferings(offerings.current);
-            }
+            const result = await Purchases.getOfferings();
+            if (result.current) setOfferings(result.current);
 
             await loadCustomerInfo();
         } catch (e) {
@@ -100,10 +95,10 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     }
 
     function updateTierFromCustomerInfo(customerInfo: CustomerInfo) {
-        // Check which entitlement is active
-        if (customerInfo.entitlements.active['therapist']) {
+        const active = customerInfo.entitlements?.active ?? {};
+        if (active['therapist']) {
             setTier('therapist');
-        } else if (customerInfo.entitlements.active['user']) {
+        } else if (active['user']) {
             setTier('user');
         } else {
             setTier('free');
@@ -111,7 +106,7 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
     }
 
-    async function purchasePackage(packageId: string) {
+    const purchasePackage = useCallback(async (packageId: string) => {
         if (!isConfigured) {
             console.warn('Purchases not configured');
             return;
@@ -130,14 +125,15 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
 
             const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
             updateTierFromCustomerInfo(customerInfo);
-        } catch (e: any) {
-            if (!e.userCancelled) {
+        } catch (e: unknown) {
+            const err = e as { userCancelled?: boolean };
+            if (!err.userCancelled) {
                 console.error('Error making purchase:', e);
             }
         }
-    }
+    }, [isConfigured, offerings]);
 
-    async function restorePurchases() {
+    const restorePurchases = useCallback(async () => {
         if (!isConfigured) return;
         try {
             const customerInfo = await Purchases.restorePurchases();
@@ -145,12 +141,17 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
             console.error('Error restoring purchases:', e);
         }
-    }
+    }, [isConfigured]);
 
     const isPro = tier === 'user' || tier === 'therapist';
 
+    const value = useMemo(
+        () => ({ tier, isPro, loading, offerings, purchasePackage, restorePurchases }),
+        [tier, isPro, loading, offerings, purchasePackage, restorePurchases]
+    );
+
     return (
-        <PurchaseContext.Provider value={{ tier, isPro, loading, offerings, purchasePackage, restorePurchases }}>
+        <PurchaseContext.Provider value={value}>
             {children}
         </PurchaseContext.Provider>
     );

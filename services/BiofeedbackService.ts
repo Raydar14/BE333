@@ -5,7 +5,7 @@
  * with HRV calculated from RR-intervals in the measurement characteristic
  */
 
-import { BleManager, Device, Characteristic, State } from 'react-native-ble-plx';
+import { BleManager, Device, Characteristic, State, Subscription } from 'react-native-ble-plx';
 import { Platform, PermissionsAndroid } from 'react-native';
 import { decode } from 'base-64';
 
@@ -46,13 +46,20 @@ export interface SessionSummary {
 class BiofeedbackServiceClass {
     private bleManager: BleManager | null = null;
     private connectedDevice: Device | null = null;
-    private hrSubscription: any = null;
-    private tempSubscription: any = null;
+    private hrSubscription: Subscription | null = null;
+    private tempSubscription: Subscription | null = null;
+    private disconnectSubscription: Subscription | null = null;
 
     // Session tracking
     private sessionReadings: BiofeedbackReading[] = [];
     private rrBuffer: number[] = []; // Buffer for HRV calculation
     private isTracking: boolean = false;
+
+    // Calculation caches — avoid recomputing on every reading when data hasn't changed
+    private lastHrvBufferLen = 0;
+    private lastHrv: number | null = null;
+    private lastBreathBufferLen = 0;
+    private lastBreathRate: number | null = null;
 
     // Callbacks
     private onReadingCallback: ((reading: BiofeedbackReading) => void) | null = null;
@@ -224,10 +231,11 @@ class BiofeedbackServiceClass {
 
         this.connectedDevice = device;
 
-        // Set up disconnection listener
-        device.onDisconnected((error, disconnectedDevice) => {
+        // Set up disconnection listener; store subscription so we can remove it later
+        this.disconnectSubscription = device.onDisconnected((error, disconnectedDevice) => {
             console.log('Device disconnected:', disconnectedDevice?.name);
             this.connectedDevice = null;
+            this.disconnectSubscription = null;
             this.onConnectionChange?.(false, null);
         });
 
@@ -243,15 +251,14 @@ class BiofeedbackServiceClass {
      * Disconnect from current device
      */
     async disconnectDevice(): Promise<void> {
-        if (this.hrSubscription) {
-            this.hrSubscription.remove();
-            this.hrSubscription = null;
-        }
+        this.hrSubscription?.remove();
+        this.hrSubscription = null;
 
-        if (this.tempSubscription) {
-            this.tempSubscription.remove();
-            this.tempSubscription = null;
-        }
+        this.tempSubscription?.remove();
+        this.tempSubscription = null;
+
+        this.disconnectSubscription?.remove();
+        this.disconnectSubscription = null;
 
         if (this.connectedDevice) {
             try {
@@ -282,7 +289,7 @@ class BiofeedbackServiceClass {
 
                 if (characteristic?.value) {
                     const data = this.parseHeartRateMeasurement(characteristic.value);
-                    this.processHeartRateData(data);
+                    if (data) this.processHeartRateData(data);
                 }
             }
         );
@@ -292,8 +299,14 @@ class BiofeedbackServiceClass {
      * Parse the Heart Rate Measurement characteristic value
      * Format defined by Bluetooth GATT specification
      */
-    private parseHeartRateMeasurement(base64Value: string): HeartRateData {
-        const buffer = this.base64ToBuffer(base64Value);
+    private parseHeartRateMeasurement(base64Value: string): HeartRateData | null {
+        let buffer: Uint8Array;
+        try {
+            buffer = this.base64ToBuffer(base64Value);
+        } catch {
+            return null;
+        }
+        if (!buffer || buffer.length < 2) return null;
         const flags = buffer[0];
 
         // Bit 0: Heart Rate Value Format (0 = UINT8, 1 = UINT16)
@@ -378,23 +391,23 @@ class BiofeedbackServiceClass {
      */
     private calculateHRV(rrIntervals: number[]): number | null {
         if (rrIntervals.length < 2) return null;
+        // Skip recalculation when buffer hasn't grown
+        if (rrIntervals.length === this.lastHrvBufferLen) return this.lastHrv;
 
         let sumSquaredDiffs = 0;
         let count = 0;
 
         for (let i = 1; i < rrIntervals.length; i++) {
             const diff = rrIntervals[i] - rrIntervals[i - 1];
-
-            // Filter out artifacts (unrealistic changes > 300ms)
             if (Math.abs(diff) < 300) {
                 sumSquaredDiffs += diff * diff;
                 count++;
             }
         }
 
-        if (count === 0) return null;
-
-        return Math.sqrt(sumSquaredDiffs / count);
+        this.lastHrvBufferLen = rrIntervals.length;
+        this.lastHrv = count === 0 ? null : Math.sqrt(sumSquaredDiffs / count);
+        return this.lastHrv;
     }
 
     /**
@@ -403,9 +416,9 @@ class BiofeedbackServiceClass {
      */
     private estimateBreathRate(rrIntervals: number[]): number | null {
         if (rrIntervals.length < 10) return null;
+        // Skip recalculation when buffer hasn't grown
+        if (rrIntervals.length === this.lastBreathBufferLen) return this.lastBreathRate;
 
-        // Simple peak detection in RR intervals
-        // Breathing causes cyclical changes in heart rate
         let peaks = 0;
         const lookback = Math.min(rrIntervals.length, 60);
         const recent = rrIntervals.slice(-lookback);
@@ -421,13 +434,12 @@ class BiofeedbackServiceClass {
             }
         }
 
-        // Estimate time span covered
         const totalMs = recent.reduce((a, b) => a + b, 0);
         const minutes = totalMs / 60000;
 
-        if (minutes < 0.1) return null;
-
-        return Math.round(peaks / minutes);
+        this.lastBreathBufferLen = rrIntervals.length;
+        this.lastBreathRate = minutes < 0.1 ? null : Math.round(peaks / minutes);
+        return this.lastBreathRate;
     }
 
     /**
@@ -518,9 +530,10 @@ class BiofeedbackServiceClass {
     /**
      * Clean up resources
      */
-    destroy(): void {
-        this.disconnectDevice();
+    async destroy(): Promise<void> {
+        await this.disconnectDevice();
         this.getManager()?.destroy();
+        this.bleManager = null;
     }
 }
 

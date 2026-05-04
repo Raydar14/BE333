@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -23,13 +23,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setLoading(false);
+        }, (error) => {
+            console.error('Firebase Auth Error:', error);
+            setLoading(false);
         });
 
         return unsubscribe;
     }, []);
 
+    const value = useMemo(() => ({ user, loading }), [user, loading]);
+
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );

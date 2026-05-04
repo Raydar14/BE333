@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Mail, Lock, Phone, KeyRound } from 'lucide-react-native';
@@ -8,7 +8,6 @@ import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
-import BrandLogo from '../../components/BrandLogo';
 
 declare global {
     interface Window {
@@ -30,8 +29,6 @@ export default function Login() {
 
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    // We don't actually attach ref to div in React Native Web this way usually, but we need the ID
-    const recaptchaContainer = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (Platform.OS === 'web' && !window.recaptchaVerifier) {
@@ -52,8 +49,8 @@ export default function Login() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             router.replace('/');
-        } catch (error: any) {
-            Alert.alert('Error', error.message);
+        } catch (error: unknown) {
+            Alert.alert('Error', error instanceof Error ? error.message : 'Sign in failed');
         } finally {
             setLoading(false);
         }
@@ -70,8 +67,8 @@ export default function Login() {
             const { sendPasswordResetEmail } = await import('firebase/auth');
             await sendPasswordResetEmail(auth, email);
             Alert.alert('Email Sent', 'Check your email for a link to reset your password.');
-        } catch (error: any) {
-            Alert.alert('Error', error.message);
+        } catch (error: unknown) {
+            Alert.alert('Error', error instanceof Error ? error.message : 'Failed to send reset email');
         } finally {
             setLoading(false);
         }
@@ -90,9 +87,9 @@ export default function Login() {
             provider.setCustomParameters({ prompt: 'select_account' });
             await signInWithPopup(auth, provider);
             router.replace('/');
-        } catch (error: any) {
-            console.error("Google Sign-In Error:", error);
-            Alert.alert('Error', error.message);
+        } catch (error: unknown) {
+            console.error('Google Sign-In Error:', error);
+            Alert.alert('Error', error instanceof Error ? error.message : 'Google sign in failed');
         } finally {
             setLoading(false);
         }
@@ -116,10 +113,12 @@ export default function Login() {
             setVerificationId(confirmationResult);
             setPhoneStep('otp');
             Alert.alert('Code Sent', 'Check your SMS for the verification code.');
-        } catch (error: any) {
-            Alert.alert('Error Sending Code', error.message);
+        } catch (error: unknown) {
+            Alert.alert('Error Sending Code', error instanceof Error ? error.message : 'Could not send code');
             // Reset recaptcha on error so user can try again
-            if (window.recaptchaVerifier) (window.recaptchaVerifier as any).render().then((widgetId: any) => (window.recaptchaVerifier as any).reset(widgetId));
+            if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.render().then((widgetId: number) => window.recaptchaVerifier.reset(widgetId));
+            }
         } finally {
             setLoading(false);
         }
@@ -132,7 +131,7 @@ export default function Login() {
         try {
             await verificationId.confirm(verificationCode);
             router.replace('/');
-        } catch (error: any) {
+        } catch {
             Alert.alert('Invalid Code', 'The code you entered is incorrect.');
         } finally {
             setLoading(false);
@@ -143,7 +142,11 @@ export default function Login() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
-                    <BrandLogo style={styles.logo} />
+                    <Image
+                        source={require('../../assets/images/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                     <Text style={styles.subtitle}>Pause. Breathe. Be333</Text>
                 </View>
 

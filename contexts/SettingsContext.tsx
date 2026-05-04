@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// [NEW] Habit Linking Interfaces
 export interface HabitLinkConfig {
     anchor: string;
     relation: 'before' | 'after';
@@ -32,43 +31,25 @@ type SettingsContextType = {
     setShowHabitStacking: (show: boolean) => void;
     timerMode: 'countdown' | 'open';
     setTimerMode: (mode: 'countdown' | 'open') => void;
-
-    // Habit Links
     habitLinks: HabitLinks;
     updateHabitLink: (period: keyof HabitLinks, link: HabitLinkConfig) => void;
-
-    // Notification preferences
     notificationMethod: NotificationMethod;
     setNotificationMethod: (method: NotificationMethod) => void;
-
-    // Snooze
     snoozeUntil: number | null;
     isSnoozed: boolean;
     setSnoozeUntil: (until: number | null) => void;
-
-    // Breathing Guide
     showBreathingGuide: boolean;
     setShowBreathingGuide: (show: boolean) => void;
-
-    // Nature/Flower Visuals
-    showNatureVisuals: boolean; // Controls the Lotus + Flowers
+    showNatureVisuals: boolean;
     setShowNatureVisuals: (show: boolean) => void;
-
-    // Social Links
     socialLinks: SocialLinks;
     updateSocialLink: (platform: keyof SocialLinks, handle: string) => void;
-
-    // Breathing Pattern
     breathingPattern: '4-1-6' | '3-1-5';
     setBreathingPattern: (pattern: '4-1-6' | '3-1-5') => void;
-
-    // DEEP3 Start
     deep3Enabled: boolean;
     setDeep3Enabled: (enabled: boolean) => void;
-    deep3Duration: number; // 15 or 20
+    deep3Duration: number;
     setDeep3Duration: (duration: number) => void;
-
-    // Visual Options
     showBreathingLotus: boolean;
     setShowBreathingLotus: (show: boolean) => void;
     bellyVisualGender: 'male' | 'female';
@@ -109,7 +90,6 @@ const SettingsContext = createContext<SettingsContextType>({
     setDeep3Enabled: () => { },
     deep3Duration: 15,
     setDeep3Duration: () => { },
-
     showBreathingLotus: false,
     setShowBreathingLotus: () => { },
     bellyVisualGender: 'female',
@@ -117,6 +97,14 @@ const SettingsContext = createContext<SettingsContextType>({
 });
 
 export const useSettings = () => useContext(SettingsContext);
+
+async function persist(key: string, value: string) {
+    try {
+        await AsyncStorage.setItem(key, value);
+    } catch (e) {
+        console.warn(`Failed to persist setting "${key}":`, e);
+    }
+}
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [timerDuration, setTimerDurationState] = useState(180);
@@ -135,7 +123,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [showBreathingLotus, setShowBreathingLotusState] = useState(false);
     const [bellyVisualGender, setBellyVisualGenderState] = useState<'male' | 'female'>('female');
 
-    // Computed: are we currently snoozed?
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
 
     useEffect(() => {
@@ -144,184 +131,154 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const loadSettings = async () => {
         try {
-            const savedDuration = await AsyncStorage.getItem('timerDuration');
-            if (savedDuration) setTimerDurationState(parseInt(savedDuration));
+            const keys = [
+                'timerDuration', 'habitCue', 'habitLinks', 'notificationMethod',
+                'snoozeUntil', 'showBreathingGuide', 'showNatureVisuals', 'showHabitStacking',
+                'timerMode', 'socialLinks', 'breathingPattern', 'deep3Enabled',
+                'deep3Duration', 'showBreathingLotus', 'bellyVisualGender',
+            ] as const;
 
-            const savedCue = await AsyncStorage.getItem('habitCue');
-            if (savedCue) setHabitCueState(savedCue);
+            const values = await AsyncStorage.multiGet(keys);
+            const map = Object.fromEntries(values.map(([k, v]) => [k, v]));
 
-            // Load HabitLinks
-            const savedLinks = await AsyncStorage.getItem('habitLinks');
-            if (savedLinks) setHabitLinks(JSON.parse(savedLinks));
-
-            // Load notification method
-            const savedMethod = await AsyncStorage.getItem('notificationMethod');
-            if (savedMethod) setNotificationMethodState(savedMethod as NotificationMethod);
-
-            // Load snooze
-            const savedSnooze = await AsyncStorage.getItem('snoozeUntil');
-            if (savedSnooze) {
-                const val = parseInt(savedSnooze);
-                // Only restore if still valid
+            if (map.timerDuration) setTimerDurationState(parseInt(map.timerDuration, 10));
+            if (map.habitCue) setHabitCueState(map.habitCue);
+            if (map.habitLinks) setHabitLinks(JSON.parse(map.habitLinks));
+            if (map.notificationMethod) setNotificationMethodState(map.notificationMethod as NotificationMethod);
+            if (map.snoozeUntil) {
+                const val = parseInt(map.snoozeUntil, 10);
                 if (val > Date.now()) setSnoozeUntilState(val);
-                else await AsyncStorage.removeItem('snoozeUntil');
+                else AsyncStorage.removeItem('snoozeUntil').catch(() => { });
             }
-
-            // Load Breathing Guide
-            const savedGuide = await AsyncStorage.getItem('showBreathingGuide');
-            if (savedGuide !== null) setShowBreathingGuideState(JSON.parse(savedGuide));
-
-            // Load Nature Visuals
-            const savedNature = await AsyncStorage.getItem('showNatureVisuals');
-            if (savedNature !== null) setShowNatureVisualsState(JSON.parse(savedNature));
-
-            const savedStacking = await AsyncStorage.getItem('showHabitStacking');
-            if (savedStacking !== null) setShowHabitStackingState(JSON.parse(savedStacking));
-
-            const savedTimerMode = await AsyncStorage.getItem('timerMode');
-            if (savedTimerMode) setTimerModeState(savedTimerMode as 'countdown' | 'open');
-
-            // Load Social Links
-            const savedSocials = await AsyncStorage.getItem('socialLinks');
-            if (savedSocials) setSocialLinks(JSON.parse(savedSocials));
-
-            // Load Breathing Settings
-            const savedPattern = await AsyncStorage.getItem('breathingPattern');
-            if (savedPattern) setBreathingPatternState(savedPattern as '4-1-6' | '3-1-5');
-
-            const savedDeep3 = await AsyncStorage.getItem('deep3Enabled');
-            if (savedDeep3 !== null) setDeep3EnabledState(JSON.parse(savedDeep3));
-
-            const savedDeep3Dur = await AsyncStorage.getItem('deep3Duration');
-            if (savedDeep3Dur) setDeep3DurationState(parseInt(savedDeep3Dur));
-
-            // Load Visual Options
-            const savedLotus = await AsyncStorage.getItem('showBreathingLotus');
-            if (savedLotus !== null) setShowBreathingLotusState(JSON.parse(savedLotus));
-
-            const savedGender = await AsyncStorage.getItem('bellyVisualGender');
-            if (savedGender) setBellyVisualGenderState(savedGender as 'male' | 'female');
-
+            if (map.showBreathingGuide !== null) setShowBreathingGuideState(JSON.parse(map.showBreathingGuide!));
+            if (map.showNatureVisuals !== null) setShowNatureVisualsState(JSON.parse(map.showNatureVisuals!));
+            if (map.showHabitStacking !== null) setShowHabitStackingState(JSON.parse(map.showHabitStacking!));
+            if (map.timerMode) setTimerModeState(map.timerMode as 'countdown' | 'open');
+            if (map.socialLinks) setSocialLinks(JSON.parse(map.socialLinks));
+            if (map.breathingPattern) setBreathingPatternState(map.breathingPattern as '4-1-6' | '3-1-5');
+            if (map.deep3Enabled !== null) setDeep3EnabledState(JSON.parse(map.deep3Enabled!));
+            if (map.deep3Duration) setDeep3DurationState(parseInt(map.deep3Duration, 10));
+            if (map.showBreathingLotus !== null) setShowBreathingLotusState(JSON.parse(map.showBreathingLotus!));
+            if (map.bellyVisualGender) setBellyVisualGenderState(map.bellyVisualGender as 'male' | 'female');
         } catch (e) {
-            console.error('Failed to load settings', e);
+            console.error('Failed to load settings:', e);
         }
     };
 
-    const setTimerDuration = async (duration: number) => {
+    const setTimerDuration = useCallback((duration: number) => {
         setTimerDurationState(duration);
-        await AsyncStorage.setItem('timerDuration', duration.toString());
-    };
+        persist('timerDuration', duration.toString());
+    }, []);
 
-    const setHabitCue = async (cue: string) => {
+    const setHabitCue = useCallback((cue: string) => {
         setHabitCueState(cue);
-        await AsyncStorage.setItem('habitCue', cue);
-    };
+        persist('habitCue', cue);
+    }, []);
 
-    const updateHabitLink = async (period: keyof HabitLinks, link: HabitLinkConfig) => {
-        const newLinks = { ...habitLinks, [period]: link };
-        setHabitLinks(newLinks);
-        await AsyncStorage.setItem('habitLinks', JSON.stringify(newLinks));
-    };
+    const updateHabitLink = useCallback((period: keyof HabitLinks, link: HabitLinkConfig) => {
+        setHabitLinks(prev => {
+            const newLinks = { ...prev, [period]: link };
+            persist('habitLinks', JSON.stringify(newLinks));
+            return newLinks;
+        });
+    }, []);
 
-    const setNotificationMethod = async (method: NotificationMethod) => {
+    const setNotificationMethod = useCallback((method: NotificationMethod) => {
         setNotificationMethodState(method);
-        await AsyncStorage.setItem('notificationMethod', method);
-    };
+        persist('notificationMethod', method);
+    }, []);
 
-    const setSnoozeUntil = async (until: number | null) => {
+    const setSnoozeUntil = useCallback((until: number | null) => {
         setSnoozeUntilState(until);
         if (until) {
-            await AsyncStorage.setItem('snoozeUntil', until.toString());
+            persist('snoozeUntil', until.toString());
         } else {
-            await AsyncStorage.removeItem('snoozeUntil');
+            AsyncStorage.removeItem('snoozeUntil').catch(e => console.warn('Failed to clear snooze:', e));
         }
-    };
+    }, []);
 
-    const setShowBreathingGuide = async (show: boolean) => {
+    const setShowBreathingGuide = useCallback((show: boolean) => {
         setShowBreathingGuideState(show);
-        await AsyncStorage.setItem('showBreathingGuide', JSON.stringify(show));
-    };
+        persist('showBreathingGuide', JSON.stringify(show));
+    }, []);
 
-    const setShowNatureVisuals = async (show: boolean) => {
+    const setShowNatureVisuals = useCallback((show: boolean) => {
         setShowNatureVisualsState(show);
-        await AsyncStorage.setItem('showNatureVisuals', JSON.stringify(show));
-    };
+        persist('showNatureVisuals', JSON.stringify(show));
+    }, []);
 
-    const setShowHabitStacking = async (show: boolean) => {
+    const setShowHabitStacking = useCallback((show: boolean) => {
         setShowHabitStackingState(show);
-        await AsyncStorage.setItem('showHabitStacking', JSON.stringify(show));
-    };
+        persist('showHabitStacking', JSON.stringify(show));
+    }, []);
 
-    const setTimerMode = async (mode: 'countdown' | 'open') => {
+    const setTimerMode = useCallback((mode: 'countdown' | 'open') => {
         setTimerModeState(mode);
-        await AsyncStorage.setItem('timerMode', mode);
-    };
+        persist('timerMode', mode);
+    }, []);
 
-    const updateSocialLink = async (platform: keyof SocialLinks, handle: string) => {
-        const newLinks = { ...socialLinks, [platform]: handle };
-        setSocialLinks(newLinks);
-        await AsyncStorage.setItem('socialLinks', JSON.stringify(newLinks));
-    };
+    const updateSocialLink = useCallback((platform: keyof SocialLinks, handle: string) => {
+        setSocialLinks(prev => {
+            const newLinks = { ...prev, [platform]: handle };
+            persist('socialLinks', JSON.stringify(newLinks));
+            return newLinks;
+        });
+    }, []);
 
-    const setBreathingPattern = async (pattern: '4-1-6' | '3-1-5') => {
+    const setBreathingPattern = useCallback((pattern: '4-1-6' | '3-1-5') => {
         setBreathingPatternState(pattern);
-        await AsyncStorage.setItem('breathingPattern', pattern);
-    };
+        persist('breathingPattern', pattern);
+    }, []);
 
-    const setDeep3Enabled = async (enabled: boolean) => {
+    const setDeep3Enabled = useCallback((enabled: boolean) => {
         setDeep3EnabledState(enabled);
-        await AsyncStorage.setItem('deep3Enabled', JSON.stringify(enabled));
-    };
+        persist('deep3Enabled', JSON.stringify(enabled));
+    }, []);
 
-    const setDeep3Duration = async (duration: number) => {
+    const setDeep3Duration = useCallback((duration: number) => {
         setDeep3DurationState(duration);
-        await AsyncStorage.setItem('deep3Duration', duration.toString());
-    };
+        persist('deep3Duration', duration.toString());
+    }, []);
 
-    const setShowBreathingLotus = async (show: boolean) => {
+    const setShowBreathingLotus = useCallback((show: boolean) => {
         setShowBreathingLotusState(show);
-        await AsyncStorage.setItem('showBreathingLotus', JSON.stringify(show));
-    };
+        persist('showBreathingLotus', JSON.stringify(show));
+    }, []);
 
-    const setBellyVisualGender = async (gender: 'male' | 'female') => {
+    const setBellyVisualGender = useCallback((gender: 'male' | 'female') => {
         setBellyVisualGenderState(gender);
-        await AsyncStorage.setItem('bellyVisualGender', gender);
-    };
+        persist('bellyVisualGender', gender);
+    }, []);
+
+    const value = useMemo(() => ({
+        timerDuration, setTimerDuration,
+        habitCue, setHabitCue,
+        habitLinks, updateHabitLink,
+        notificationMethod, setNotificationMethod,
+        snoozeUntil, isSnoozed, setSnoozeUntil,
+        showBreathingGuide, setShowBreathingGuide,
+        showNatureVisuals, setShowNatureVisuals,
+        showHabitStacking, setShowHabitStacking,
+        timerMode, setTimerMode,
+        socialLinks, updateSocialLink,
+        breathingPattern, setBreathingPattern,
+        deep3Enabled, setDeep3Enabled,
+        deep3Duration, setDeep3Duration,
+        showBreathingLotus, setShowBreathingLotus,
+        bellyVisualGender, setBellyVisualGender,
+    }), [
+        timerDuration, habitCue, habitLinks, notificationMethod,
+        snoozeUntil, isSnoozed, showBreathingGuide, showNatureVisuals,
+        showHabitStacking, timerMode, socialLinks, breathingPattern,
+        deep3Enabled, deep3Duration, showBreathingLotus, bellyVisualGender,
+        setTimerDuration, setHabitCue, updateHabitLink, setNotificationMethod,
+        setSnoozeUntil, setShowBreathingGuide, setShowNatureVisuals, setShowHabitStacking,
+        setTimerMode, updateSocialLink, setBreathingPattern, setDeep3Enabled,
+        setDeep3Duration, setShowBreathingLotus, setBellyVisualGender,
+    ]);
 
     return (
-        <SettingsContext.Provider value={{
-            timerDuration,
-            setTimerDuration,
-            habitCue,
-            setHabitCue,
-            habitLinks,
-            updateHabitLink,
-            notificationMethod,
-            setNotificationMethod,
-            snoozeUntil,
-            isSnoozed,
-            setSnoozeUntil,
-            showBreathingGuide,
-            setShowBreathingGuide,
-            showNatureVisuals,
-            setShowNatureVisuals,
-            showHabitStacking,
-            setShowHabitStacking,
-            timerMode,
-            setTimerMode,
-            socialLinks,
-            updateSocialLink,
-            breathingPattern,
-            setBreathingPattern,
-            deep3Enabled,
-            setDeep3Enabled,
-            deep3Duration,
-            setDeep3Duration,
-            showBreathingLotus,
-            setShowBreathingLotus,
-            bellyVisualGender,
-            setBellyVisualGender
-        }}>
+        <SettingsContext.Provider value={value}>
             {children}
         </SettingsContext.Provider>
     );

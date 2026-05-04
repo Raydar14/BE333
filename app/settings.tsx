@@ -46,8 +46,6 @@ export default function Settings() {
                     </TouchableOpacity>
                     <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
 
-                    {/* New Profile Link Logic could go here or as a button below */}
-
                     <TouchableOpacity onPress={() => router.push('/')} style={{ marginLeft: 'auto' }}>
                         <Text style={{ color: colors.primary, fontSize: 16, fontWeight: '600' }}>Done</Text>
                     </TouchableOpacity>
@@ -261,12 +259,7 @@ export default function Settings() {
 
                     <TouchableOpacity
                         style={[styles.actionButton, { borderColor: colors.primary }]}
-                        onPress={() => {
-                            // Close settings and open scanner on main screen
-                            // In a real app we might want a dedicated scanner screen
-                            router.push('/');
-                            // We need a way to trigger the scanner from here, or just direct them back
-                        }}
+                        onPress={() => router.push('/')}
                     >
                         <Text style={{ color: colors.primary, textAlign: 'center' }}>Manage Devices on Home Screen</Text>
                     </TouchableOpacity>

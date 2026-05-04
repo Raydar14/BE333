@@ -5,9 +5,9 @@
  * to all components in the app.
  */
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Platform, Alert } from 'react-native';
-import type { Device } from 'react-native-ble-plx';
+import { Device } from 'react-native-ble-plx';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BiofeedbackService, BiofeedbackReading, SessionSummary } from '../services/BiofeedbackService';
@@ -129,10 +129,9 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
         // Set up reading callback
         BiofeedbackService.setOnReadingCallback((reading) => {
             setCurrentReading(reading);
-            setRecentReadings(prev => {
-                const newHistory = [...prev, reading];
-                return newHistory.length > 60 ? newHistory.slice(newHistory.length - 60) : newHistory;
-            });
+            setRecentReadings(prev =>
+                prev.length >= 60 ? [...prev.slice(1), reading] : [...prev, reading]
+            );
             handleAudioFeedback(reading);
         });
 
@@ -140,7 +139,9 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
             BiofeedbackService.destroy();
             if (demoIntervalRef.current) {
                 clearInterval(demoIntervalRef.current);
+                demoIntervalRef.current = null;
             }
+            audioSoundRef.current?.unloadAsync();
         };
     }, []);
 
@@ -193,23 +194,21 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
 
     const playFeedbackSound = async () => {
         try {
-            // Clean up previous sound
             if (audioSoundRef.current) {
                 await audioSoundRef.current.unloadAsync();
+                audioSoundRef.current = null;
             }
 
-            // Create a gentle chime sound using the system
-            // In production, you'd load a custom audio file
-            const { sound } = await Audio.Sound.createAsync(
-                // Using a placeholder - you can add your own audio file
-                { uri: 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' },
-                { volume: 0.3 }
-            );
-
-            audioSoundRef.current = sound;
-            await sound.playAsync();
+            // TODO: Add assets/chime.mp3 to play a local sound.
+            // Until then, audio feedback is silently disabled.
+            // const { sound } = await Audio.Sound.createAsync(
+            //     require('../assets/chime.mp3'),
+            //     { volume: 0.3 }
+            // );
+            // audioSoundRef.current = sound;
+            // await sound.playAsync();
         } catch (e) {
-            console.log('Audio feedback not available:', e);
+            console.warn('Audio feedback not available:', e);
         }
     };
 
@@ -322,12 +321,15 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
             // Start demo mode
             setIsDemoMode(true);
             setIsConnected(true);
-            setConnectedDevice({ id: 'demo', name: 'Demo Device' } as Device);
+            // Use Partial<Device> cast — demo mode only reads .id and .name
+            setConnectedDevice({ id: 'demo', name: 'Demo Device' } as unknown as Device);
 
             // Simulate heart rate data
             let baseHr = 75;
             let baseHrv = 35;
 
+            // Clear any existing interval before starting a new one
+            if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
             demoIntervalRef.current = setInterval(() => {
                 // Gradually improve values to simulate relaxation
                 baseHr = Math.max(55, baseHr - (Math.random() * 0.5));
@@ -342,10 +344,9 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
                 };
 
                 setCurrentReading(reading);
-                setRecentReadings(prev => {
-                    const newHistory = [...prev, reading];
-                    return newHistory.length > 60 ? newHistory.slice(newHistory.length - 60) : newHistory;
-                });
+                setRecentReadings(prev =>
+                    prev.length >= 60 ? [...prev.slice(1), reading] : [...prev, reading]
+                );
 
                 // Also call the reading callback for audio feedback
                 if (audioFeedbackEnabled && baselineReading) {
@@ -355,31 +356,24 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
         }
     };
 
+    const value = useMemo(() => ({
+        isConnected, connectedDevice, isScanning, discoveredDevices,
+        lastDeviceId, lastDeviceName, currentReading, baselineReading,
+        recentReadings, audioFeedbackEnabled, audioFeedbackMetric, isDemoMode,
+        startScan, stopScan, connectToDevice, disconnectDevice, reconnectLastDevice,
+        startSessionTracking, stopSessionTracking, setAudioFeedback,
+        setAudioFeedbackMetric, toggleDemoMode,
+    }), [
+        isConnected, connectedDevice, isScanning, discoveredDevices,
+        lastDeviceId, lastDeviceName, currentReading, baselineReading,
+        recentReadings, audioFeedbackEnabled, audioFeedbackMetric, isDemoMode,
+        startScan, stopScan, connectToDevice, disconnectDevice, reconnectLastDevice,
+        startSessionTracking, stopSessionTracking, setAudioFeedback,
+        setAudioFeedbackMetric, toggleDemoMode,
+    ]);
+
     return (
-        <BiofeedbackContext.Provider value={{
-            isConnected,
-            connectedDevice,
-            isScanning,
-            discoveredDevices,
-            lastDeviceId,
-            lastDeviceName,
-            currentReading,
-            baselineReading,
-            recentReadings,
-            audioFeedbackEnabled,
-            audioFeedbackMetric,
-            isDemoMode,
-            startScan,
-            stopScan,
-            connectToDevice,
-            disconnectDevice,
-            reconnectLastDevice,
-            startSessionTracking,
-            stopSessionTracking,
-            setAudioFeedback,
-            setAudioFeedbackMetric,
-            toggleDemoMode,
-        }}>
+        <BiofeedbackContext.Provider value={value}>
             {children}
         </BiofeedbackContext.Provider>
     );

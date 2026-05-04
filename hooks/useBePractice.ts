@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePurchase } from '../contexts/PurchaseContext';
-import { doc, onSnapshot, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export interface BePracticeStats {
     practiceState: 'active' | 'resting_ritual' | 'completed';
-    startDate: string; // ISO Date String
-    dayOfPractice: number; // 1-21 estimated by calendar days
-
-    bloomDays: number; // Total Petals (0-21)
-    currentPauses: number; // Pauses completed TODAY (0-3)
-    streakBreaksUsed: number; // Rest days used (0-3)
-
-    // History for 3-Day Trend
+    startDate: string;
+    dayOfPractice: number;
+    bloomDays: number;
+    currentPauses: number;
+    streakBreaksUsed: number;
     recentHistory: { date: string; pauses: number }[];
+    lastActiveDate: string;
+    resetRitualStartDate?: string | null;
+}
 
-    lastActiveDate: string; // YYYY-MM-DD to track daily resets
-    resetRitualStartDate?: string | null; // If in resting state
+function getTodayStr(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 const DEFAULT_STATS: BePracticeStats = {
@@ -28,13 +32,7 @@ const DEFAULT_STATS: BePracticeStats = {
     currentPauses: 0,
     streakBreaksUsed: 0,
     recentHistory: [],
-    lastActiveDate: (() => {
-        const d = new Date();
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    })(),
+    lastActiveDate: getTodayStr(),
     resetRitualStartDate: null,
 };
 
@@ -43,15 +41,6 @@ export function useBePractice() {
     const { isPro } = usePurchase();
     const [stats, setStats] = useState<BePracticeStats | null>(null);
     const [loading, setLoading] = useState(true);
-
-    // Helper to get today's date string YYYY-MM-DD in LOCAL time
-    const getTodayStr = () => {
-        const d = new Date();
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
 
     useEffect(() => {
         if (!user) {
@@ -62,24 +51,27 @@ export function useBePractice() {
 
         const userRef = doc(db, 'users', user.uid);
 
-        const unsubscribe = onSnapshot(userRef, (docSnap) => {
+        const unsubscribe = onSnapshot(userRef, async (docSnap) => {
             if (docSnap.exists() && docSnap.data().bePractice) {
                 const data = docSnap.data().bePractice as BePracticeStats;
-                checkDailyLogic(data, user.uid, isPro);
+                await checkDailyLogic(data, user.uid, isPro);
             } else {
-                // Initialize if missing
                 const initialStats = {
                     ...DEFAULT_STATS,
                     startDate: new Date().toISOString(),
                     lastActiveDate: getTodayStr(),
                 };
-                setDoc(userRef, { bePractice: initialStats }, { merge: true });
+                try {
+                    await setDoc(userRef, { bePractice: initialStats }, { merge: true });
+                } catch (e) {
+                    console.error('Failed to initialize bePractice stats:', e);
+                }
                 setStats(initialStats);
                 setLoading(false);
             }
         }, (error) => {
-            console.error("Error in useBePractice snapshot:", error);
-            setLoading(false); // Ensure loading stops so UI can show something
+            console.error('Error in useBePractice snapshot:', error);
+            setLoading(false);
         });
 
         return () => unsubscribe();
@@ -95,99 +87,67 @@ export function useBePractice() {
             return;
         }
 
-        // New Day Detected!
-        let newStreakBreaks = currentStats.streakBreaksUsed;
         const lastDateObj = new Date(lastActive);
         const todayObj = new Date(today);
         const diffTime = Math.abs(todayObj.getTime() - lastDateObj.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // Update History: Push yesterday's final state
         let updatedHistory = [...(currentStats.recentHistory || [])];
-        // If we missed days, we might want to fill them with 0, but for "Last 3 Days of active use" vs "Last 3 calendar days":
-        // Requirements say "trend", usually implies calendar days.
-        // Simple approach: Add the *last active* day's result to history
         updatedHistory.push({ date: lastActive, pauses: currentStats.currentPauses });
+        if (updatedHistory.length > 3) updatedHistory = updatedHistory.slice(-3);
 
-        // Keep only last 3
-        if (updatedHistory.length > 3) {
-            updatedHistory = updatedHistory.slice(updatedHistory.length - 3);
-        }
-
-        let addedStrikes = 0;
-
-        // Check yesterday's completeness
         const targetPauses = userIsPro ? 2 : 3;
+        let addedStrikes = currentStats.currentPauses < targetPauses ? 1 : 0;
 
-        if (currentStats.currentPauses < targetPauses) {
-            addedStrikes += 1;
-        }
-        // Penalize for completely missed days in between
         if (diffDays > 1) {
-            addedStrikes += (diffDays - 1);
-            // Optionally backfill missed days as 0 in history
+            addedStrikes += diffDays - 1;
             for (let i = 1; i < diffDays; i++) {
                 const missedDate = new Date(lastDateObj);
                 missedDate.setDate(missedDate.getDate() + i);
                 updatedHistory.push({ date: missedDate.toISOString().split('T')[0], pauses: 0 });
             }
-            if (updatedHistory.length > 3) {
-                updatedHistory = updatedHistory.slice(updatedHistory.length - 3);
-            }
+            if (updatedHistory.length > 3) updatedHistory = updatedHistory.slice(-3);
         }
 
-        newStreakBreaks += addedStrikes;
-
-        let newState = currentStats.practiceState;
-        let resetDate = currentStats.resetRitualStartDate;
-
-        // PRO RULE: Unlimited Resets / No Loss
-        // We no longer force 'resting_ritual' even if 3 strikes.
-        // if (!userIsPro && newStreakBreaks >= 3 && currentStats.practiceState === 'active') {
-        //    newState = 'resting_ritual';
-        //    resetDate = new Date().toISOString();
-        // }
+        const dayDiff = Math.ceil((todayObj.getTime() - new Date(currentStats.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
         const updatedStats: BePracticeStats = {
             ...currentStats,
-            currentPauses: 0, // Reset for today
+            currentPauses: 0,
             lastActiveDate: today,
-            streakBreaksUsed: newStreakBreaks,
+            streakBreaksUsed: currentStats.streakBreaksUsed + addedStrikes,
             recentHistory: updatedHistory,
-            practiceState: newState,
-            resetRitualStartDate: resetDate,
+            dayOfPractice: dayDiff,
         };
 
-        const start = new Date(currentStats.startDate);
-        const dayDiff = Math.ceil((todayObj.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        updatedStats.dayOfPractice = dayDiff;
-
-        const userRef = doc(db, 'users', uid);
-        await updateDoc(userRef, { bePractice: updatedStats });
+        try {
+            const userRef = doc(db, 'users', uid);
+            await updateDoc(userRef, { bePractice: updatedStats });
+        } catch (e) {
+            console.error('Failed to update daily stats:', e);
+            // Still update local state even if Firestore write fails
+            setStats(updatedStats);
+            setLoading(false);
+        }
     };
 
     const registerPause = async (): Promise<{ petalAwarded: boolean }> => {
         if (!user || !stats || stats.practiceState !== 'active') return { petalAwarded: false };
 
         const newPauses = stats.currentPauses + 1;
-
-        // PRO RULE: Bloom Logic
         const targetPauses = isPro ? 2 : 3;
-        let newBloomDays = stats.bloomDays;
-        let petalAwarded = false;
+        const petalAwarded = newPauses === targetPauses;
+        const newBloomDays = petalAwarded ? stats.bloomDays + 1 : stats.bloomDays;
 
-        if (newPauses === targetPauses) {
-            newBloomDays += 1;
-            petalAwarded = true;
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, {
+                'bePractice.currentPauses': newPauses,
+                'bePractice.bloomDays': newBloomDays,
+            });
+        } catch (e) {
+            console.error('Failed to register pause:', e);
         }
-
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-            'bePractice.currentPauses': newPauses,
-            'bePractice.bloomDays': newBloomDays
-            // We don't strictly need to update 'recentHistory' here because that stores *past* days. 
-            // Today is 'currentPauses'.
-        });
 
         return { petalAwarded };
     };
@@ -201,14 +161,13 @@ export function useBePractice() {
             lastActiveDate: getTodayStr(),
         };
 
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { bePractice: newStats });
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, { bePractice: newStats });
+        } catch (e) {
+            console.error('Failed to start new practice:', e);
+        }
     };
 
-    return {
-        stats,
-        loading,
-        registerPause,
-        startNewPractice
-    };
+    return { stats, loading, registerPause, startNewPractice };
 }

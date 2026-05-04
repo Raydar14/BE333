@@ -23,7 +23,6 @@ import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { storage } from '../lib/firebase';
-import BrandLogo from '../components/BrandLogo';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -63,9 +62,9 @@ export default function Dashboard() {
                     // We can manually update the current user object if needed, but context user usually updates on reload.
                     // Ideally we'd have a setUser in context, but for now this persists it.
                     Alert.alert("Success", "Profile picture updated!");
-                } catch (e: any) {
-                    console.error("Upload failed", e);
-                    Alert.alert("Error", "Failed to upload image: " + e.message);
+                } catch (e: unknown) {
+                    console.error('Upload failed', e);
+                    Alert.alert('Error', 'Failed to upload image: ' + (e instanceof Error ? e.message : String(e)));
                 } finally {
                     setUploading(false);
                 }
@@ -100,33 +99,23 @@ export default function Dashboard() {
                 title: 'My BE333 Journey'
             });
 
-        } catch (error: any) {
-            Alert.alert(error.message);
+        } catch (error: unknown) {
+            Alert.alert('Sharing Error', error instanceof Error ? error.message : 'Could not share');
         }
     };
 
     async function handleSignOut() {
-        await signOut(auth);
+        try {
+            await signOut(auth);
+        } catch (e: unknown) {
+            Alert.alert('Sign Out Error', e instanceof Error ? e.message : 'Could not sign out');
+        }
     }
 
-    if (practiceLoading) {
+    if (practiceLoading || !stats) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-                <Text style={{ color: Colors.text, marginTop: 10 }}>Loading Practice...</Text>
-            </View>
-        );
-    }
-
-    if (!stats) {
-        return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-                <Text style={{ color: Colors.text, fontSize: 18, marginBottom: 20 }}>Unable to load practice data.</Text>
-                <PremiumButton
-                    title="Return Home"
-                    onPress={() => router.replace('/')}
-                    variant="primary"
-                />
+                <Text style={{ color: Colors.text }}>Loading Practice...</Text>
             </View>
         );
     }
@@ -176,7 +165,11 @@ export default function Dashboard() {
 
                 {/* 1. Golden Lotus Showcase */}
                 <View style={styles.lotusShowcase}>
-                    <BrandLogo style={styles.logoImage} />
+                    <Image
+                        source={require('../assets/images/be333_text_logo.png')}
+                        style={styles.logoImage}
+                        resizeMode="contain"
+                    />
                     <Text style={styles.lotusTitle}>Day {stats?.dayOfPractice || 1} of 21</Text>
                     <LotusBloomMap bloomDays={stats?.bloomDays || 0} />
                 </View>

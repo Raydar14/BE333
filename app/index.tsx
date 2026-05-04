@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image, Vibration, Alert, TouchableOpacity, ScrollView, Platform, Share, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings as SettingsIcon, UserCircle, LogIn, Heart, ArrowUp, ChevronDown } from 'lucide-react-native';
+import { Settings as SettingsIcon, UserCircle, LogIn, Heart, ArrowUp } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +20,6 @@ import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly 
 import { PetalAwardModal } from '../components/PetalAwardModal';
 
 import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
-import BrandLogo from '../components/BrandLogo';
 import { DeviceScanner } from '../components/DeviceScanner';
 import { SessionSummary } from '../services/BiofeedbackService';
 import { db } from '../lib/firebase';
@@ -30,7 +29,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, w
 
 
 const HABIT_ACTIVITIES = [
-    'Breath Work', 'Yoga', 'Chanting', 'Singing', 'Journaling',
+    'Breath Work', 'BE Again', 'Yoga', 'Chanting', 'Singing', 'Journaling',
     'Stretching', 'Gratitude', 'Poetry',
     'Day Planning', 'Prayer', 'Mantra'
 ];
@@ -58,12 +57,13 @@ export default function Home() {
     const [isActive, setIsActive] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
 
-    // Restore completion state if navigating back
+    // Restore completion state if navigating back; clear the param so it doesn't re-fire
     useEffect(() => {
         if (params.restored === 'true') {
             setIsCompleted(true);
             setIsActive(false);
             setTimeLeft(0);
+            router.setParams({ restored: undefined });
         }
     }, [params.restored]);
 
@@ -144,8 +144,8 @@ export default function Home() {
 
             // 1. DEEP3 Exhale (8s)
             setBreathingPhase('exhale');
-            setGuideText("Deep Exhale");
-            setSubGuideText("Thru mouth. Belly falls.");
+            setGuideText("Sigh Out");
+            setSubGuideText("(Thru mouth. Belly falls.)");
 
             breathingTimeoutRef.current = setTimeout(() => {
                 if (!isActiveRef.current) return;
@@ -153,15 +153,15 @@ export default function Home() {
                 // 2. DEEP3 Pause (2s)
                 setBreathingPhase('pause');
                 setGuideText("Pause");
-                setSubGuideText("Wait for the urge.");
+                setSubGuideText("(Wait for the urge)");
 
                 breathingTimeoutRef.current = setTimeout(() => {
                     if (!isActiveRef.current) return;
 
                     // 3. DEEP3 In (5s)
                     setBreathingPhase('inhale');
-                    setGuideText("Inhale");
-                    setSubGuideText("Thru nose. Belly rises.");
+                    setGuideText("Deep Inhale");
+                    setSubGuideText("(Thru nose. Belly rises.)");
 
                     breathingTimeoutRef.current = setTimeout(() => {
                         if (!isActiveRef.current) return;
@@ -212,8 +212,7 @@ export default function Home() {
             }, exhaleDur);
         };
 
-        // Force DEEP3 for now as per user feedback "It is skipping"
-        if (true) {
+        if (deep3Enabled) {
             startDeep3();
         } else {
             startNormalCycle();
@@ -278,18 +277,29 @@ export default function Home() {
             try {
                 const userId = user.uid;
                 const durationLogged = timerMode === 'open' ? timeLeft : timerDuration;
-                const sessionData: any = {
+                interface SessionRecord {
+                    user_id: string;
+                    duration_seconds: number;
+                    completed_at: Date;
+                    biofeedback?: {
+                        startHR: number; endHR: number;
+                        startHRV: number | null; endHRV: number | null;
+                        avgHR: number; avgHRV: number;
+                        hrChange: number; hrvChange: number;
+                    };
+                }
+                const sessionData: SessionRecord = {
                     user_id: userId,
                     duration_seconds: durationLogged,
-                    completed_at: new Date()
+                    completed_at: new Date(),
                 };
 
                 if (bioSummary) {
                     sessionData.biofeedback = {
                         startHR: bioSummary.startReading.hr,
                         endHR: bioSummary.endReading.hr,
-                        startHRV: bioSummary.startReading.hrv,
-                        endHRV: bioSummary.endReading.hrv,
+                        startHRV: bioSummary.startReading.hrv ?? null,
+                        endHRV: bioSummary.endReading.hrv ?? null,
                         avgHR: bioSummary.avgHr,
                         avgHRV: bioSummary.avgHrv,
                         hrChange: bioSummary.hrChange,
@@ -298,21 +308,21 @@ export default function Home() {
                 }
 
                 await addDoc(collection(db, 'sessions'), sessionData);
-                const { petalAwarded } = await registerPause();
-                if (petalAwarded) setShowPetalAward(true);
+                const result = await registerPause();
+                if (result?.petalAwarded) setShowPetalAward(true);
 
-            } catch (e) {
-                console.error('Exception logging session:', e);
+            } catch (e: unknown) {
+                console.error('Exception logging session:', e instanceof Error ? e.message : e);
             }
         }
     }
 
     const handleShareCompletion = async (platform: 'tiktok' | 'facebook' | 'instagram') => {
-        const message = `I just completed a 3 minute meditation training session on BE333! Join me next time, Pause. Breathe. Be. 333.`;
+        const message = `I just completed a 3-minute breathing session on BE333! Pause. Breathe. Join me.`;
         try {
             await Share.share({ message });
-        } catch (e: any) {
-            Alert.alert('Sharing Error', e.message);
+        } catch (e: unknown) {
+            Alert.alert('Sharing Error', e instanceof Error ? e.message : 'Could not share');
         }
     };
 
@@ -366,7 +376,7 @@ export default function Home() {
     if (loading) {
         return (
             <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={colors.primary} />
+                <ActivityIndicator size="large" color={'#FFFFFF'} />
             </View>
         );
     }
@@ -414,10 +424,12 @@ export default function Home() {
                                 <Text style={styles.taglineText}>Pause.</Text>
                                 <Text style={styles.taglineText}>Breathe.</Text>
                             </View>
-                            <BrandLogo style={styles.logoMain} />
+                            <Image
+                                source={require('../assets/images/brand_logo_floral.png')}
+                                style={styles.logoMain}
+                                resizeMode="contain"
+                            />
                         </View>
-
-
 
                         {/* Breathing Leaves (Background) */}
                         {showNatureVisuals && (
@@ -440,76 +452,13 @@ export default function Home() {
 
                                 {/* Stacked Layout: Green Glowing Box (Timer+Promo+Start) -> Instructions -> Person (Separated) */}
 
-
-                                {/* Deep 3 Guidance: Stays if 'showBreathingGuide' is TRUE (checked) */}
-                                {showBreathingGuide && !isCompleted && (
-                                    isGuidanceDismissed ? (
-                                        /* COLLAPSED STATE */
-                                        <TouchableOpacity
-                                            activeOpacity={0.7}
-                                            onPress={() => setIsGuidanceDismissed(false)}
-                                            style={{ marginBottom: 20, width: 300 }} // Keep width consistent
-                                        >
-                                            <View style={styles.guidanceCollapsedBar}>
-                                                <Text style={[styles.deep3LogoText, { fontSize: 14 }]}>DEEP3</Text>
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                                    <Text style={{ color: 'rgba(255, 215, 0, 0.7)', fontSize: 10, textTransform: 'uppercase' }}>Show Guide</Text>
-                                                    <ChevronDown size={14} color="#FFD700" />
-                                                </View>
-                                            </View>
-                                        </TouchableOpacity>
-                                    ) : (
-                                        /* EXPANDED STATE */
-                                        <TouchableOpacity
-                                            activeOpacity={0.9}
-                                            onPress={() => setIsGuidanceDismissed(true)} // Clicking body also collapses
-                                            style={{ marginBottom: 20 }}
-                                        >
-                                            <Animated.View style={[styles.guidanceFrame]}>
-                                                <TouchableOpacity
-                                                    style={{ position: 'absolute', top: 10, right: 10, zIndex: 50, padding: 5 }}
-                                                    hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-                                                    onPress={() => setIsGuidanceDismissed(true)}
-                                                >
-                                                    <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 18, fontWeight: 'bold' }}>×</Text>
-                                                </TouchableOpacity>
-
-                                                <Text style={styles.guidanceTitle}>
-                                                    <Text style={styles.deep3LogoText}>DEEP3</Text> GUIDANCE
-                                                </Text>
-                                                <Text style={styles.guidanceText}>
-                                                    <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Deep Exhale: </Text>Out thru mouth. Release your breath slowly to tell your nervous system you are safe and may now release tension.
-                                                    {"\n"}
-                                                    <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Pause: </Text>Be Still Just for a Moment. Observe the body’s natural request for the next breath.
-                                                    {"\n"}
-                                                    <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Inhale: </Text>Through your nose. Softly, gently fill your belly.
-                                                </Text>
-                                                <View style={{ marginTop: 5, alignItems: 'flex-start' }}>
-                                                    <Text style={{ color: '#FFD700', fontSize: 16, fontWeight: 'bold', letterSpacing: 1 }}>
-                                                        Exhale - Pause - Inhale × 3
-                                                    </Text>
-                                                </View>
-                                            </Animated.View>
-                                        </TouchableOpacity>
-                                    )
-                                )}
-
                                 {/* 1. Green Glowing Box (Timer, 3-min line, Start Button) */}
                                 <View style={[styles.glowBox, { borderColor: '#4A9977', shadowColor: '#4A9977' }]}>
 
                                     {/* Timer Text */}
-                                    {isCompleted ? (
-                                        <View style={{ alignItems: 'center', marginVertical: 5 }}>
-                                            <Text style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 0, lineHeight: 16 }}>Reminder</Text>
-                                            <Text style={{ color: '#4A9977', fontSize: 18, fontWeight: 'bold', lineHeight: 22 }}>Tomorrow @ 8:00 AM</Text>
-
-                                            <Text style={[styles.timerTextMain, { color: colors.textLight, fontSize: 28, marginTop: 10 }]}>That was easy!</Text>
-                                        </View>
-                                    ) : (
-                                        <Text style={[styles.timerTextMain, { color: colors.textLight, fontSize: 50 }]}>
-                                            {formatTime(timeLeft)}
-                                        </Text>
-                                    )}
+                                    <Text style={[styles.timerTextMain, { color: colors.textLight, fontSize: isCompleted ? 36 : 50 }]}>
+                                        {isCompleted ? "You DID it!" : formatTime(timeLeft)}
+                                    </Text>
 
                                     {/* BIOFEEDBACK DISPLAY */}
                                     {isBiofeedbackConnected && !isCompleted && (
@@ -550,7 +499,7 @@ export default function Home() {
                                         <View style={{ alignItems: 'center', width: '100%' }}>
 
                                             {/* Inline Habit Selection */}
-                                            <Text style={{ color: colors.textSecondary, marginBottom: 10, marginTop: 10, fontWeight: '600' }}>Stack a 3 min habit</Text>
+                                            <Text style={{ color: colors.textSecondary, marginBottom: 10, marginTop: 10, fontWeight: '600' }}>Choose Activity</Text>
 
                                             <View style={styles.habitGrid}>
                                                 {HABIT_ACTIVITIES.map(activity => (
@@ -596,16 +545,12 @@ export default function Home() {
                                                 title={isBonusSession ? "Begin Bonus Session" : `Begin ${durationInMinutes}-Minute Practice`}
                                                 onPress={toggleTimer}
                                                 style={{
-                                                    width: 280, // Fits inside the 300px glowBox
+                                                    width: 260,
+                                                    height: 50,
                                                     marginTop: 10,
                                                     alignSelf: 'center'
                                                 }}
-                                                textStyle={{
-                                                    fontSize: 16, // Slightly smaller to prevent wrapping
-                                                    fontWeight: 'bold',
-                                                    letterSpacing: 0.5,
-                                                    textAlign: 'center'
-                                                }}
+                                                textStyle={{ fontSize: 18, fontWeight: 'bold', letterSpacing: 0.5 }}
                                             />
                                         )
                                     )}
@@ -652,7 +597,38 @@ export default function Home() {
                                 )}
                                 {/* If active but not deep3, we show nothing here to keep layout tight */}
                                 {/* If active but not deep3, we show nothing here to keep layout tight */}
+                                {!isActive && !isCompleted && !isGuidanceDismissed && (
+                                    <TouchableOpacity
+                                        activeOpacity={0.9}
+                                        onPress={() => setIsGuidanceDismissed(true)}
+                                    >
+                                        <Animated.View style={[styles.guidanceFrame]}>
+                                            <TouchableOpacity
+                                                style={{ position: 'absolute', top: 10, right: 10, zIndex: 50, padding: 5 }}
+                                                onPress={() => setIsGuidanceDismissed(true)}
+                                            >
+                                                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 18, fontWeight: 'bold' }}>×</Text>
+                                            </TouchableOpacity>
 
+                                            <Text style={styles.guidanceTitle}>
+                                                <Text style={styles.deep3LogoText}>DEEP3</Text> GUIDANCE {"\n"}
+                                                <Text style={{ fontSize: 8, fontWeight: 'normal', opacity: 0.7 }}>(Tap to Dismiss)</Text>
+                                            </Text>
+                                            <Text style={styles.guidanceText}>
+                                                <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Exhale: </Text>Release all of the air through your mouth with a sigh, until your body is empty of breath.
+                                                {"\n"}
+                                                <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Pause: </Text>Until your body requests an in-breath.
+                                                {"\n"}
+                                                <Text style={{ fontWeight: 'bold', color: '#FFD700' }}>Inhale: </Text>Through your nose, filling your belly up like a balloon—don't fill it up completely.
+                                            </Text>
+                                            <View style={{ marginTop: 5, alignItems: 'center' }}>
+                                                <Text style={{ color: '#FFD700', fontSize: 16, fontWeight: 'bold', letterSpacing: 1 }}>
+                                                    Exhale - Pause - Inhale × 3
+                                                </Text>
+                                            </View>
+                                        </Animated.View>
+                                    </TouchableOpacity>
+                                )}
 
 
 
@@ -762,6 +738,7 @@ const styles = StyleSheet.create({
         width: 300,
         height: 220,
         marginBottom: 0,
+        resizeMode: 'contain',
     },
     taglineContainer: {
         flexDirection: 'column',
@@ -942,21 +919,9 @@ const styles = StyleSheet.create({
         borderColor: '#FFD700', // Gold
         borderRadius: 20,
         padding: 20,
-        // alignItems: 'center', // Removed to allow full width for text alignment
+        alignItems: 'center',
         marginBottom: 0,
         backgroundColor: 'rgba(26, 67, 49, 0.5)', // Slight background dim
-    },
-    guidanceCollapsedBar: {
-        width: 300,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20, // Matches frame
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.3)', // Subtle gold
-        backgroundColor: 'rgba(26, 67, 49, 0.3)',
     },
     guidanceTitle: {
         color: '#E8F5E9',
@@ -964,7 +929,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 2,
         marginBottom: 10,
-        textAlign: 'left',
+        textAlign: 'center',
     },
     deep3LogoText: {
         color: '#FFD700',
@@ -1007,7 +972,7 @@ const styles = StyleSheet.create({
     guidanceText: {
         color: '#E8F5E9',
         fontSize: 14,
-        textAlign: 'left',
+        textAlign: 'center',
         lineHeight: 22,
         fontStyle: 'italic',
     },

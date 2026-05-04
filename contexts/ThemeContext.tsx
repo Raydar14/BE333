@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors as DefaultColors } from '../constants/Colors';
 
@@ -41,29 +41,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 }));
             }
         } catch (e) {
-            console.error('Failed to load theme', e);
+            console.warn('Failed to load theme:', e);
         }
     }
 
-    async function setPrimaryColor(color: string) {
-        const newColors = { ...colors, primary: color };
-        setColors(newColors);
-        await AsyncStorage.setItem('theme_primary', color);
-    }
+    const setPrimaryColor = useCallback(async (color: string) => {
+        setColors(prev => ({ ...prev, primary: color }));
+        try {
+            await AsyncStorage.setItem('theme_primary', color);
+        } catch (e) {
+            console.warn('Failed to save primary color:', e);
+        }
+    }, []);
 
-    async function setSecondaryColor(color: string) {
-        const newColors = { ...colors, secondary: color };
-        setColors(newColors);
-        await AsyncStorage.setItem('theme_secondary', color);
-    }
+    const setSecondaryColor = useCallback(async (color: string) => {
+        setColors(prev => ({ ...prev, secondary: color }));
+        try {
+            await AsyncStorage.setItem('theme_secondary', color);
+        } catch (e) {
+            console.warn('Failed to save secondary color:', e);
+        }
+    }, []);
 
-    async function resetTheme() {
+    const resetTheme = useCallback(async () => {
         setColors(DefaultColors);
-        await AsyncStorage.multiRemove(['theme_primary', 'theme_secondary']);
-    }
+        try {
+            await AsyncStorage.multiRemove(['theme_primary', 'theme_secondary']);
+        } catch (e) {
+            console.warn('Failed to reset theme:', e);
+        }
+    }, []);
+
+    const value = useMemo(
+        () => ({ colors, setPrimaryColor, setSecondaryColor, resetTheme }),
+        [colors, setPrimaryColor, setSecondaryColor, resetTheme]
+    );
 
     return (
-        <ThemeContext.Provider value={{ colors, setPrimaryColor, setSecondaryColor, resetTheme }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     );
