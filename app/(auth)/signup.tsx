@@ -8,7 +8,6 @@ import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
-import BrandLogo from '../../components/BrandLogo';
 
 export default function Signup() {
     useProtectedRoute();
@@ -60,7 +59,11 @@ export default function Signup() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.header}>
-                    <BrandLogo style={styles.logo} />
+                    <Image
+                        source={require('../../assets/images/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </View>
 
                 <View style={styles.form}>
@@ -147,6 +150,8 @@ const styles = StyleSheet.create({
     },
     form: {
         width: '100%',
+        maxWidth: 420,
+        alignSelf: 'center',
     },
     title: {
         fontSize: 28,

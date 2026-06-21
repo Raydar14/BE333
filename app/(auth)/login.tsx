@@ -299,6 +299,8 @@ const styles = StyleSheet.create({
     },
     form: {
         width: '100%',
+        maxWidth: 420,
+        alignSelf: 'center',
     },
     title: {
         fontSize: 28,
