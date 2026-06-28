@@ -7,17 +7,18 @@ import { useSettings } from '../contexts/SettingsContext';
 interface BreathingBellyProps {
     isActive: boolean;
     phase: 'deep3' | 'inhale' | 'pause' | 'exhale' | 'idle';
+    phaseDuration?: number;
 }
 
-export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
+export function BreathingBelly({ isActive, phase, phaseDuration }: BreathingBellyProps) {
     const { showBreathingLotus, breathingPattern } = useSettings();
     const scale = useSharedValue(0.3); // Start small in the lap
     const translateY = useSharedValue(0);
     const opacity = useSharedValue(0.8);
 
-    // Sync durations with the main logic
-    const inhaleDur = breathingPattern === '3-1-5' ? 3000 : 4000;
-    const exhaleDur = breathingPattern === '3-1-5' ? 5000 : 6000;
+    // Fallback durations if parent doesn't pass phaseDuration (older callers, idle state)
+    const fallbackInhale = breathingPattern === '3-1-5' ? 3000 : 4000;
+    const fallbackExhale = breathingPattern === '3-1-5' ? 5000 : 6000;
 
     useEffect(() => {
         if (!isActive) {
@@ -29,8 +30,28 @@ export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
         }
 
         switch (phase) {
+            case 'inhale': {
+                const dur = phaseDuration && phaseDuration > 0 ? phaseDuration : fallbackInhale;
+                // RISE from Root to Crown
+                scale.value = withTiming(1.0, { duration: dur, easing: Easing.inOut(Easing.quad) });
+                translateY.value = withTiming(-110, { duration: dur, easing: Easing.inOut(Easing.quad) });
+                opacity.value = withTiming(1, { duration: Math.min(500, dur / 2) });
+                break;
+            }
+            case 'exhale': {
+                const dur = phaseDuration && phaseDuration > 0 ? phaseDuration : fallbackExhale;
+                // DESCEND from Crown to Root
+                scale.value = withTiming(0.3, { duration: dur, easing: Easing.inOut(Easing.quad) });
+                translateY.value = withTiming(0, { duration: dur, easing: Easing.inOut(Easing.quad) });
+                opacity.value = withTiming(0.7, { duration: Math.min(500, dur / 2) });
+                break;
+            }
+            case 'pause':
+                // Hold position; just steady the opacity
+                opacity.value = withTiming(0.85, { duration: 300 });
+                break;
             case 'deep3':
-                // Deep breathing (pulsing large)
+                // Legacy phase — should not be set in practice, but keep a gentle pulse fallback
                 scale.value = withRepeat(
                     withSequence(
                         withTiming(0.8, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
@@ -41,23 +62,8 @@ export function BreathingBelly({ isActive, phase }: BreathingBellyProps) {
                 );
                 opacity.value = withTiming(0.9, { duration: 500 });
                 break;
-            case 'inhale':
-                // RISE from Root to Crown
-                scale.value = withTiming(1.0, { duration: inhaleDur, easing: Easing.inOut(Easing.quad) });
-                translateY.value = withTiming(-110, { duration: inhaleDur, easing: Easing.inOut(Easing.quad) }); // Move UP to Crown (Reduced height)
-                opacity.value = withTiming(1, { duration: 500 });
-                break;
-            case 'exhale':
-                // DESCEND from Crown to Root
-                scale.value = withTiming(0.3, { duration: exhaleDur, easing: Easing.inOut(Easing.quad) });
-                translateY.value = withTiming(0, { duration: exhaleDur, easing: Easing.inOut(Easing.quad) }); // Move DOWN to Root
-                opacity.value = withTiming(0.7, { duration: 500 });
-                break;
-            case 'pause':
-                // Hold state
-                break;
         }
-    }, [isActive, phase]);
+    }, [isActive, phase, phaseDuration]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {

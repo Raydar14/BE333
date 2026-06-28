@@ -7,6 +7,7 @@ const { width, height } = Dimensions.get('window');
 type BreathingLeavesProps = {
     isActive: boolean;
     phase: 'deep3' | 'inhale' | 'pause' | 'exhale' | 'idle';
+    phaseDuration?: number;
 };
 
 // 21 items total: 14 leaves, 7 flowers
@@ -38,7 +39,7 @@ const FlowerIcon = () => (
     </Svg>
 );
 
-export function BreathingLeaves({ isActive, phase }: BreathingLeavesProps) {
+export function BreathingLeaves({ isActive, phase, phaseDuration }: BreathingLeavesProps) {
     // Generate items once with fully randomized properties to avoid "lines"
     const items = useRef(Array(ITEM_COUNT).fill(0).map((_, i) => ({
         // Animation Values
@@ -138,20 +139,32 @@ export function BreathingLeaves({ isActive, phase }: BreathingLeavesProps) {
     useEffect(() => {
         if (!isActive) return;
 
+        // Use the actual phase duration when provided so visuals stay synced
+        // with the on-screen "Sigh Out / Pause / Deep Inhale" coaching text.
+        // A small ±15% jitter per item keeps them visually staggered without
+        // letting any leaf finish well after the phase has ended.
+        const syncedDuration = (item: { driftDuration: number }) => {
+            if (phaseDuration && phaseDuration > 0) {
+                return phaseDuration * (0.85 + Math.random() * 0.3);
+            }
+            return item.driftDuration;
+        };
+        const fadeDuration = phaseDuration && phaseDuration > 0
+            ? Math.min(800, phaseDuration / 2)
+            : 800;
+
         const floatUp = () => {
             items.forEach((item) => {
-                // Animate Y position - One shot, not looped
                 Animated.parallel([
                     Animated.timing(item.y, {
-                        toValue: -height * 0.9 - (Math.random() * 100), // Go well off screen
-                        duration: item.driftDuration,
+                        toValue: -height * 0.9 - (Math.random() * 100),
+                        duration: syncedDuration(item),
                         easing: Easing.out(Easing.cubic),
                         useNativeDriver: true,
-                        delay: Math.random() * 500 // Small random start jitter
                     }),
                     Animated.timing(item.opacity, {
                         toValue: 0.9,
-                        duration: 800,
+                        duration: fadeDuration,
                         useNativeDriver: true
                     })
                 ]).start();
@@ -162,14 +175,14 @@ export function BreathingLeaves({ isActive, phase }: BreathingLeavesProps) {
             items.forEach((item) => {
                 Animated.parallel([
                     Animated.timing(item.y, {
-                        toValue: 0, // Back to bottom/start
-                        duration: item.driftDuration * 0.8, // Slightly faster down?
+                        toValue: 0,
+                        duration: syncedDuration(item),
                         easing: Easing.inOut(Easing.cubic),
                         useNativeDriver: true,
                     }),
                     Animated.timing(item.opacity, {
                         toValue: 0.5,
-                        duration: 800,
+                        duration: fadeDuration,
                         useNativeDriver: true
                     })
                 ]).start();
@@ -180,12 +193,17 @@ export function BreathingLeaves({ isActive, phase }: BreathingLeavesProps) {
             floatUp();
         } else if (phase === 'inhale') {
             floatDown();
+        } else if (phase === 'pause') {
+            // Hold position; gentle opacity steady
+            items.forEach(item => {
+                Animated.timing(item.opacity, { toValue: 0.7, duration: fadeDuration, useNativeDriver: true }).start();
+            });
         } else if (phase === 'deep3') {
             items.forEach(item => {
                 Animated.timing(item.opacity, { toValue: 0.6, duration: 1000, useNativeDriver: true }).start();
             });
         }
-    }, [isActive, phase]);
+    }, [isActive, phase, phaseDuration]);
 
     if (!isActive) return null;
 

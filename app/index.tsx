@@ -79,6 +79,7 @@ export default function Home() {
     const [guideText, setGuideText] = useState('Get Ready');
     const [subGuideText, setSubGuideText] = useState('');
     const [breathingPhase, setBreathingPhase] = useState<'deep3' | 'exhale' | 'inhale' | 'pause' | 'idle'>('idle');
+    const [phaseDuration, setPhaseDuration] = useState(0);
     const [isDeep3Active, setIsDeep3Active] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -125,6 +126,7 @@ export default function Home() {
     useEffect(() => {
         if (!isActive) {
             setBreathingPhase('idle');
+            setPhaseDuration(0);
             setGuideText('Ready');
             setSubGuideText('');
             setIsDeep3Active(false);
@@ -136,6 +138,16 @@ export default function Home() {
         const exhaleDur = breathingPattern === '3-1-5' ? 5000 : 6000;
         const pauseDur = 1000;
 
+        // DEEP3 coaching pace is fixed regardless of selected pattern
+        const DEEP3_EXHALE = 8000;
+        const DEEP3_PAUSE = 2000;
+        const DEEP3_INHALE = 5000;
+
+        const setPhase = (phase: 'exhale' | 'pause' | 'inhale', duration: number) => {
+            setBreathingPhase(phase);
+            setPhaseDuration(duration);
+        };
+
         const runDeep3Cycle = (count: number) => {
             if (count <= 0) {
                 startNormalCycle();
@@ -143,7 +155,7 @@ export default function Home() {
             }
 
             // 1. DEEP3 Exhale (8s)
-            setBreathingPhase('exhale');
+            setPhase('exhale', DEEP3_EXHALE);
             setGuideText("Sigh Out");
             setSubGuideText("(Thru mouth. Belly falls.)");
 
@@ -151,7 +163,7 @@ export default function Home() {
                 if (!isActiveRef.current) return;
 
                 // 2. DEEP3 Pause (2s)
-                setBreathingPhase('pause');
+                setPhase('pause', DEEP3_PAUSE);
                 setGuideText("Pause");
                 setSubGuideText("(Wait for the urge)");
 
@@ -159,21 +171,17 @@ export default function Home() {
                     if (!isActiveRef.current) return;
 
                     // 3. DEEP3 In (5s)
-                    setBreathingPhase('inhale');
+                    setPhase('inhale', DEEP3_INHALE);
                     setGuideText("Deep Inhale");
                     setSubGuideText("(Thru nose. Belly rises.)");
 
                     breathingTimeoutRef.current = setTimeout(() => {
                         if (!isActiveRef.current) return;
 
-                        // Loop to next cycle
                         runDeep3Cycle(count - 1);
-
-                    }, 5000); // 5s In duration
-
-                }, 2000); // 2s Pause duration
-
-            }, 8000); // 8s Exhale duration
+                    }, DEEP3_INHALE);
+                }, DEEP3_PAUSE);
+            }, DEEP3_EXHALE);
         };
 
         const startDeep3 = () => {
@@ -185,30 +193,28 @@ export default function Home() {
             if (!isActiveRef.current) return;
             setIsDeep3Active(false);
 
-            setBreathingPhase('exhale');
+            setPhase('exhale', exhaleDur);
             setGuideText("Breathe Out");
             setSubGuideText("");
 
             breathingTimeoutRef.current = setTimeout(() => {
                 if (!isActiveRef.current) return;
 
-                setBreathingPhase('inhale');
+                setPhase('inhale', inhaleDur);
                 setGuideText("Breathe In");
                 setSubGuideText("");
 
                 breathingTimeoutRef.current = setTimeout(() => {
                     if (!isActiveRef.current) return;
 
-                    setBreathingPhase('pause');
+                    setPhase('pause', pauseDur);
                     setGuideText("Pause");
                     setSubGuideText("");
 
                     breathingTimeoutRef.current = setTimeout(() => {
                         if (isActiveRef.current) startNormalCycle();
                     }, pauseDur);
-
                 }, inhaleDur);
-
             }, exhaleDur);
         };
 
@@ -434,7 +440,7 @@ export default function Home() {
                         {/* Breathing Leaves (Background) */}
                         {showNatureVisuals && (
                             <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                                <BreathingLeaves isActive={isActive} phase={breathingPhase} />
+                                <BreathingLeaves isActive={isActive} phase={breathingPhase} phaseDuration={phaseDuration} />
                             </View>
                         )}
 
@@ -659,7 +665,7 @@ export default function Home() {
 
                                 {/* 3. Person Graphic Box (Base) */}
                                 <View style={[styles.personBox, { backgroundColor: colors.background }]}>
-                                    <BreathingBelly isActive={isActive} phase={breathingPhase} />
+                                    <BreathingBelly isActive={isActive} phase={breathingPhase} phaseDuration={phaseDuration} />
                                 </View>
 
                             </View>
