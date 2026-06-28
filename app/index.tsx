@@ -597,6 +597,30 @@ export default function Home() {
                                 )}
                                 {/* If active but not deep3, we show nothing here to keep layout tight */}
                                 {/* If active but not deep3, we show nothing here to keep layout tight */}
+                                {!isActive && !isCompleted && isGuidanceDismissed && (
+                                    <TouchableOpacity
+                                        activeOpacity={0.7}
+                                        onPress={() => setIsGuidanceDismissed(false)}
+                                        style={{
+                                            alignSelf: 'center',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            paddingVertical: 6,
+                                            paddingHorizontal: 14,
+                                            borderRadius: 16,
+                                            borderWidth: 1,
+                                            borderColor: '#FFD700',
+                                            backgroundColor: 'rgba(26,67,49,0.6)',
+                                            marginVertical: 8,
+                                        }}
+                                    >
+                                        <Text style={{ color: '#FFD700', fontSize: 12, fontWeight: 'bold', letterSpacing: 0.5 }}>
+                                            DEEP3 Guide
+                                        </Text>
+                                        <Text style={{ color: '#FFD700', fontSize: 12 }}>▾</Text>
+                                    </TouchableOpacity>
+                                )}
                                 {!isActive && !isCompleted && !isGuidanceDismissed && (
                                     <TouchableOpacity
                                         activeOpacity={0.9}
