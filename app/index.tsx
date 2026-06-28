@@ -455,12 +455,7 @@ export default function Home() {
                                 {/* 1. Green Glowing Box (Timer, 3-min line, Start Button) */}
                                 <View style={[styles.glowBox, { borderColor: '#4A9977', shadowColor: '#4A9977' }]}>
 
-                                    {/* Timer Text */}
-                                    <Text style={[styles.timerTextMain, { color: colors.textLight, fontSize: isCompleted ? 36 : 50 }]}>
-                                        {isCompleted ? "You DID it!" : formatTime(timeLeft)}
-                                    </Text>
-
-                                    {/* BIOFEEDBACK DISPLAY */}
+                                    {/* BIOFEEDBACK DISPLAY (rendered ABOVE timer when connected) */}
                                     {isBiofeedbackConnected && !isCompleted && (
                                         <>
                                             <View style={styles.bioRow}>
@@ -486,6 +481,11 @@ export default function Home() {
                                             )}
                                         </>
                                     )}
+
+                                    {/* Timer Text */}
+                                    <Text style={[styles.timerTextMain, { color: colors.textLight, fontSize: isCompleted ? 36 : 50 }]}>
+                                        {isCompleted ? "You DID it!" : formatTime(timeLeft)}
+                                    </Text>
 
                                     {/* Promo Text (3 mins line) */}
                                     {!isCompleted && !isActive && (
