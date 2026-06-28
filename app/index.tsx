@@ -545,12 +545,12 @@ export default function Home() {
                                                 title={isBonusSession ? "Begin Bonus Session" : `Begin ${durationInMinutes}-Minute Practice`}
                                                 onPress={toggleTimer}
                                                 style={{
-                                                    width: 260,
-                                                    height: 50,
+                                                    minWidth: 260,
+                                                    maxWidth: 360,
                                                     marginTop: 10,
-                                                    alignSelf: 'center'
+                                                    alignSelf: 'center',
                                                 }}
-                                                textStyle={{ fontSize: 18, fontWeight: 'bold', letterSpacing: 0.5 }}
+                                                textStyle={{ fontSize: 16, fontWeight: 'bold', letterSpacing: 0.5, textAlign: 'center' }}
                                             />
                                         )
                                     )}
