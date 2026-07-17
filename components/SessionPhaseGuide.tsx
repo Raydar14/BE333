@@ -9,7 +9,8 @@ type PhaseType = 'arrive' | 'align' | 'bloom';
 
 interface PhaseConfig {
     id: PhaseType;
-    title: string;
+    title: string;      // e.g. "THE LANDING"
+    subtitle: string;   // e.g. "Arrive"
     minuteLabel: string;
     timeRange: [number, number]; // Start sec, End sec
     coaching: string;
@@ -19,7 +20,8 @@ interface PhaseConfig {
 const SESSION_PHASES: PhaseConfig[] = [
     {
         id: 'arrive',
-        title: 'ARRIVE',
+        title: 'THE LANDING',
+        subtitle: 'Arrive',
         minuteLabel: 'MINUTE 1',
         timeRange: [0, 60],
         coaching: "The noise is loud here.\nThat’s okay. Just land.",
@@ -27,7 +29,8 @@ const SESSION_PHASES: PhaseConfig[] = [
     },
     {
         id: 'align',
-        title: 'ALIGN',
+        title: 'THE SYNC',
+        subtitle: 'Align',
         minuteLabel: 'MINUTE 2',
         timeRange: [60, 120],
         coaching: "Ride the wave.\nSoften the edges.",
@@ -35,7 +38,8 @@ const SESSION_PHASES: PhaseConfig[] = [
     },
     {
         id: 'bloom',
-        title: 'BLOOM',
+        title: 'THE BLOOM',
+        subtitle: 'Bloom',
         minuteLabel: 'MINUTE 3',
         timeRange: [120, 180],
         coaching: "Roots down. Heart open.\nYou are replenished.",
@@ -69,38 +73,16 @@ export function SessionPhaseGuide({ elapsedTime, data }: SessionPhaseGuideProps)
     return (
         <View style={styles.container}>
 
-            {/* Redesigned Timeline: Minute # -> Dot -> Title */}
+            {/* Phase Dots (Timeline) */}
             <View style={styles.indicatorRow}>
-                {/* Connecting Line */}
                 <View style={styles.indicatorTrack} />
-
-                {SESSION_PHASES.map((phase, index) => {
+                {SESSION_PHASES.map((phase) => {
                     const isActive = currentPhase.id === phase.id;
                     const isPast = elapsedTime > phase.timeRange[1];
-
-                    // Use lighter color for active text, darker for inactive
-                    const textColor = isActive ? '#FFFFFF' : 'rgba(255,255,255,0.3)';
-                    const titleWeight = isActive ? 'bold' : 'normal';
-
+                    const dotStyle = isActive ? styles.dotActive : (isPast ? styles.dotPast : styles.dotFuture);
                     return (
-                        <View key={phase.id} style={styles.timelineColumn}>
-                            {/* Minute Number */}
-                            <Text style={[styles.timelineNumber, { color: textColor, fontWeight: titleWeight }]}>
-                                {index + 1}
-                            </Text>
-
-                            {/* Dot Tracker */}
-                            <View style={styles.dotContainer}>
-                                <View style={[
-                                    styles.dotBase,
-                                    isActive ? styles.dotActive : (isPast ? styles.dotPast : styles.dotFuture)
-                                ]} />
-                            </View>
-
-                            {/* Phase Title */}
-                            <Text style={[styles.timelineTitle, { color: textColor, fontWeight: titleWeight }]}>
-                                {phase.title}
-                            </Text>
+                        <View key={phase.id} style={styles.dotContainer}>
+                            <View style={[styles.dotBase, dotStyle]} />
                         </View>
                     );
                 })}
@@ -113,21 +95,24 @@ export function SessionPhaseGuide({ elapsedTime, data }: SessionPhaseGuideProps)
                 exiting={FadeOutUp.duration(200)}
                 style={styles.card}
             >
-                {/* Graph Guidance (New Row) */}
-                <View style={styles.guidanceRow}>
-                    <Text style={styles.graphGuidanceText}>
-                        <Text style={{ fontWeight: 'bold', color: '#4ECDC4' }}>Target:</Text> {
-                            currentPhase.id === 'arrive' ? "Let Heart Rate (Red) settle down." :
-                                currentPhase.id === 'align' ? "Smooth out the Green waves." :
-                                    "Deep waves. Maximum range."
-                        }
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={styles.minuteLabel}>BE333 {currentPhase.minuteLabel}:</Text>
+                    <Text style={styles.phaseTitle}>
+                        {currentPhase.title}
+                        <Text style={styles.phaseSubtitle}> ({currentPhase.subtitle})</Text>
                     </Text>
                 </View>
 
-                {/* Chart Area - Expanded */}
+                {/* Chart Area */}
                 <View style={styles.chartContainer}>
-                    {/* Passed larger height */}
-                    <BiofeedbackChart data={data} height={220} />
+                    <BiofeedbackChart
+                        data={data}
+                        height={180}
+                        phase={currentPhase.id}
+                        windowStartSec={currentPhase.timeRange[0]}
+                        windowEndSec={currentPhase.timeRange[1]}
+                    />
                 </View>
 
                 {/* Footer (Coaching) */}
@@ -158,38 +143,21 @@ const styles = StyleSheet.create({
     indicatorRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        marginBottom: 15, // More space for the text below dots
+        paddingHorizontal: 40,
+        marginBottom: 8,
         position: 'relative',
-        height: 60, // Increased height for top/bottom text
-        alignItems: 'center',
+        height: 20,
     },
     indicatorTrack: {
         position: 'absolute',
-        top: 30, // Centered vertically relative to the dot's position roughly
-        left: 40, right: 40,
+        top: 9,
+        left: 50, right: 50,
         height: 2,
         backgroundColor: 'rgba(255,255,255,0.1)',
         zIndex: -1,
     },
-    timelineColumn: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 4,
-        width: 80, // Ensure enough width for text
-    },
-    timelineNumber: {
-        fontSize: 12,
-        marginBottom: 2,
-    },
-    timelineTitle: {
-        fontSize: 10,
-        marginTop: 2,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
     dotContainer: {
-        width: 20, alignItems: 'center', justifyContent: 'center'
+        width: 20, alignItems: 'center'
     },
     dotBase: {
         width: 20, height: 20, borderRadius: 10, borderWidth: 2,
@@ -210,23 +178,35 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2D6A4F',
         overflow: 'hidden',
-        paddingTop: 10,
+        paddingTop: 16,
     },
-    guidanceRow: {
+    header: {
         paddingHorizontal: 16,
-        marginBottom: 8,
-        alignItems: 'center',
+        marginBottom: 10,
     },
-    graphGuidanceText: {
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: 13,
-        fontStyle: 'italic',
-        textAlign: 'center',
+    minuteLabel: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 2,
+        letterSpacing: 0.5,
+    },
+    phaseTitle: {
+        color: '#FFFFFF',
+        fontSize: 24,
+        fontWeight: 'bold',
+        letterSpacing: 1,
     },
     chartContainer: {
-        height: 220, // Expanded height in styles
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        height: 180,
+        backgroundColor: 'rgba(0,0,0,0.2)', // Slightly darker for graph
         marginBottom: 12,
+    },
+    phaseSubtitle: {
+        color: 'rgba(255,255,255,0.65)',
+        fontSize: 16,
+        fontWeight: '500',
+        letterSpacing: 0.5,
     },
     footer: {
         flexDirection: 'row',

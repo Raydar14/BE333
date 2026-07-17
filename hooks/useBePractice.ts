@@ -96,7 +96,8 @@ export function useBePractice() {
         updatedHistory.push({ date: lastActive, pauses: currentStats.currentPauses });
         if (updatedHistory.length > 3) updatedHistory = updatedHistory.slice(-3);
 
-        const targetPauses = userIsPro ? 2 : 3;
+        // Manual: every user needs all 3 BE Pauses for a Bloom Day.
+        const targetPauses = 3;
         let addedStrikes = currentStats.currentPauses < targetPauses ? 1 : 0;
 
         if (diffDays > 1) {
@@ -135,7 +136,8 @@ export function useBePractice() {
         if (!user || !stats || stats.practiceState !== 'active') return { petalAwarded: false };
 
         const newPauses = stats.currentPauses + 1;
-        const targetPauses = isPro ? 2 : 3;
+        // Manual: everyone needs all 3 daily BE Pauses to earn a Bloom Petal.
+        const targetPauses = 3;
         const petalAwarded = newPauses === targetPauses;
         const newBloomDays = petalAwarded ? stats.bloomDays + 1 : stats.bloomDays;
 

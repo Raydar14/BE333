@@ -18,6 +18,7 @@ import { BiofeedbackChart } from '../components/BiofeedbackChart';
 import { SessionPhaseGuide } from '../components/SessionPhaseGuide';
 import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly component
 import { PetalAwardModal } from '../components/PetalAwardModal';
+import { getRandomPrompt } from '../content/selfCompassionPrompts';
 
 import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
 import { DeviceScanner } from '../components/DeviceScanner';
@@ -104,6 +105,7 @@ export default function Home() {
     const [showDeviceScanner, setShowDeviceScanner] = useState(false);
     const [showPetalAward, setShowPetalAward] = useState(false);
     const [isGuidanceDismissed, setIsGuidanceDismissed] = useState(false);
+    const [compassionPrompt, setCompassionPrompt] = useState<string>('');
 
 
 
@@ -271,6 +273,7 @@ export default function Home() {
 
         setIsActive(false);
         setIsCompleted(true);
+        setCompassionPrompt(getRandomPrompt());
         Vibration.vibrate();
 
         let bioSummary: SessionSummary | null = null;
@@ -503,6 +506,15 @@ export default function Home() {
                                     {/* Start/Pause Button OR Stack Habit and Share */}
                                     {isCompleted ? (
                                         <View style={{ alignItems: 'center', width: '100%' }}>
+
+                                            {/* Self-compassion prompt — one line drawn from the 60-line library */}
+                                            {compassionPrompt ? (
+                                                <View style={styles.compassionCard}>
+                                                    <Text style={styles.compassionText}>
+                                                        “{compassionPrompt}”
+                                                    </Text>
+                                                </View>
+                                            ) : null}
 
                                             {/* Inline Habit Selection */}
                                             <Text style={{ color: colors.textSecondary, marginBottom: 10, marginTop: 10, fontWeight: '600' }}>Choose Activity</Text>
@@ -970,6 +982,26 @@ const styles = StyleSheet.create({
         textShadowColor: '#004d40',
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 1,
+    },
+    compassionCard: {
+        alignSelf: 'stretch',
+        marginTop: 12,
+        marginBottom: 8,
+        marginHorizontal: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.35)',
+        backgroundColor: 'rgba(26,67,49,0.55)',
+    },
+    compassionText: {
+        color: '#FFF8DC',
+        fontSize: 15,
+        fontWeight: '500',
+        textAlign: 'center',
+        lineHeight: 22,
+        fontStyle: 'italic',
     },
     habitGrid: {
         flexDirection: 'row',

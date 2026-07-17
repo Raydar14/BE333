@@ -171,7 +171,7 @@ export default function Dashboard() {
                         resizeMode="contain"
                     />
                     <Text style={styles.lotusTitle}>Day {stats?.dayOfPractice || 1} of 21</Text>
-                    <LotusBloomMap bloomDays={stats?.bloomDays || 0} />
+                    <LotusBloomMap bloomDays={stats?.bloomDays || 0} dayOfPractice={stats?.dayOfPractice || 0} />
                 </View>
 
                 {/* Awards / Trophy Case */}
