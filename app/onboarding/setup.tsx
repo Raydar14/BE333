@@ -7,7 +7,6 @@ import { ShimmerButton } from '../../components/ShimmerButton';
 import { Leaf, Clock, Sun, Moon, Coffee } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NotificationService } from '../../services/NotificationService';
-import BrandLogo from '../../components/BrandLogo';
 
 export default function OnboardingSetup() {
     const { colors } = useTheme();
@@ -190,9 +189,11 @@ export default function OnboardingSetup() {
         <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.logoContainer}>
-                    <View style={{ width: 250, height: 180, marginBottom: 10 }}>
-                        <BrandLogo />
-                    </View>
+                    <Image
+                        source={require('../../assets/images/brand_logo_floral.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </View>
 
                 <Text style={[styles.headerTitle, { color: colors.primary }]}>Design Your Rituals</Text>

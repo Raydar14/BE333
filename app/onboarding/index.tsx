@@ -5,7 +5,6 @@ import { ShimmerButton } from '../../components/ShimmerButton';
 import { BreathingLeaves } from '../../components/BreathingLeaves';
 import { Leaf } from 'lucide-react-native';
 import Svg, { Path, Line } from 'react-native-svg';
-import BrandLogo from '../../components/BrandLogo';
 
 // Tree Roots visual connector
 function TreeRoots({ color }: { color: string }) {
@@ -34,7 +33,11 @@ export default function OnboardingIntro() {
                 <View style={styles.container}>
                     <View style={styles.content}>
                         <View style={{ height: 260, alignItems: 'center', justifyContent: 'center', marginBottom: -60 }}>
-                            <BrandLogo style={styles.logo} />
+                            <Image
+                                source={require('../../assets/images/brand_logo_floral.png')}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
                             <BreathingLeaves isActive={true} phase="idle" />
                         </View>
 
