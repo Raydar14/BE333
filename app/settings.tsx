@@ -22,7 +22,6 @@ export default function Settings() {
         breathingPattern, setBreathingPattern,
         deep3Enabled, setDeep3Enabled,
         deep3Duration, setDeep3Duration,
-        bellsEnabled, setBellsEnabled,,
         bellsEnabled, setBellsEnabled,
     } = useSettings();
     const {
