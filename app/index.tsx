@@ -19,6 +19,7 @@ import { SessionPhaseGuide } from '../components/SessionPhaseGuide';
 import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly component
 import { PetalAwardModal } from '../components/PetalAwardModal';
 import { getRandomPrompt } from '../content/selfCompassionPrompts';
+import { BellService } from '../services/BellService';
 
 import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
 import { DeviceScanner } from '../components/DeviceScanner';
@@ -47,7 +48,8 @@ export default function Home() {
         breathingPattern,
         deep3Enabled,
         deep3Duration,
-        setDeep3Enabled
+        setDeep3Enabled,
+        bellsEnabled,
     } = useSettings();
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -85,6 +87,8 @@ export default function Home() {
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const breathingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // Guard so the midpoint bell only fires once per session.
+    const midBellPlayedRef = useRef(false);
 
     // Biofeedback state
     const {
@@ -265,6 +269,17 @@ export default function Home() {
         }
     }, [timeLeft, isActive, timerMode]);
 
+    // Midpoint bell — fires once as timeLeft crosses the halfway mark of a
+    // countdown session. Manual: bells at 0:00, 1:30, 3:00 for a 3-min pause.
+    useEffect(() => {
+        if (!isActive || timerMode !== 'countdown' || !bellsEnabled) return;
+        const midpoint = Math.floor(timerDuration / 2);
+        if (!midBellPlayedRef.current && timeLeft > 0 && timeLeft <= midpoint) {
+            midBellPlayedRef.current = true;
+            BellService.playMid();
+        }
+    }, [timeLeft, isActive, timerMode, timerDuration, bellsEnabled]);
+
 
 
     async function handleComplete() {
@@ -275,6 +290,8 @@ export default function Home() {
         setIsCompleted(true);
         setCompassionPrompt(getRandomPrompt());
         Vibration.vibrate();
+        if (bellsEnabled) BellService.playEnd();
+        midBellPlayedRef.current = false;
 
         let bioSummary: SessionSummary | null = null;
         if (isBiofeedbackConnected) {
@@ -352,6 +369,15 @@ export default function Home() {
             if (shouldStartBio) {
                 startSessionTracking();
             }
+
+            // Start bell — plays once at the beginning of a fresh countdown session.
+            const isFreshStart = newActive &&
+                timerMode === 'countdown' &&
+                timeLeft === timerDuration;
+            if (isFreshStart) {
+                midBellPlayedRef.current = false;
+                if (bellsEnabled) BellService.playStart();
+            }
         }
     };
 
@@ -371,6 +397,7 @@ export default function Home() {
         setIsCompleted(false);
         setTimeLeft(timerMode === 'open' ? 0 : timerDuration);
         setBiofeedbackSummary(null);
+        midBellPlayedRef.current = false;
         if (isBiofeedbackConnected) {
             stopSessionTracking();
         }

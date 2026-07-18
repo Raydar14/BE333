@@ -54,6 +54,8 @@ type SettingsContextType = {
     setShowBreathingLotus: (show: boolean) => void;
     bellyVisualGender: 'male' | 'female';
     setBellyVisualGender: (gender: 'male' | 'female') => void;
+    bellsEnabled: boolean;
+    setBellsEnabled: (enabled: boolean) => void;
 };
 
 const defaultHabitLinks: HabitLinks = {
@@ -94,6 +96,8 @@ const SettingsContext = createContext<SettingsContextType>({
     setShowBreathingLotus: () => { },
     bellyVisualGender: 'female',
     setBellyVisualGender: () => { },
+    bellsEnabled: true,
+    setBellsEnabled: () => { },
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -122,6 +126,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [deep3Duration, setDeep3DurationState] = useState(15);
     const [showBreathingLotus, setShowBreathingLotusState] = useState(false);
     const [bellyVisualGender, setBellyVisualGenderState] = useState<'male' | 'female'>('female');
+    const [bellsEnabled, setBellsEnabledState] = useState(true);
 
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
 
@@ -136,6 +141,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 'snoozeUntil', 'showBreathingGuide', 'showNatureVisuals', 'showHabitStacking',
                 'timerMode', 'socialLinks', 'breathingPattern', 'deep3Enabled',
                 'deep3Duration', 'showBreathingLotus', 'bellyVisualGender',
+                'bellsEnabled',
             ] as const;
 
             const values = await AsyncStorage.multiGet(keys);
@@ -160,6 +166,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (map.deep3Duration) setDeep3DurationState(parseInt(map.deep3Duration, 10));
             if (map.showBreathingLotus !== null) setShowBreathingLotusState(JSON.parse(map.showBreathingLotus!));
             if (map.bellyVisualGender) setBellyVisualGenderState(map.bellyVisualGender as 'male' | 'female');
+            if (map.bellsEnabled !== null && map.bellsEnabled !== undefined) setBellsEnabledState(JSON.parse(map.bellsEnabled));
         } catch (e) {
             console.error('Failed to load settings:', e);
         }
@@ -250,6 +257,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         persist('bellyVisualGender', gender);
     }, []);
 
+    const setBellsEnabled = useCallback((enabled: boolean) => {
+        setBellsEnabledState(enabled);
+        persist('bellsEnabled', JSON.stringify(enabled));
+    }, []);
+
     const value = useMemo(() => ({
         timerDuration, setTimerDuration,
         habitCue, setHabitCue,
@@ -266,15 +278,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         deep3Duration, setDeep3Duration,
         showBreathingLotus, setShowBreathingLotus,
         bellyVisualGender, setBellyVisualGender,
+        bellsEnabled, setBellsEnabled,
     }), [
         timerDuration, habitCue, habitLinks, notificationMethod,
         snoozeUntil, isSnoozed, showBreathingGuide, showNatureVisuals,
         showHabitStacking, timerMode, socialLinks, breathingPattern,
         deep3Enabled, deep3Duration, showBreathingLotus, bellyVisualGender,
+        bellsEnabled,
         setTimerDuration, setHabitCue, updateHabitLink, setNotificationMethod,
         setSnoozeUntil, setShowBreathingGuide, setShowNatureVisuals, setShowHabitStacking,
         setTimerMode, updateSocialLink, setBreathingPattern, setDeep3Enabled,
         setDeep3Duration, setShowBreathingLotus, setBellyVisualGender,
+        setBellsEnabled,
     ]);
 
     return (

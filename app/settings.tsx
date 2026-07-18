@@ -21,7 +21,9 @@ export default function Settings() {
         showNatureVisuals, setShowNatureVisuals,
         breathingPattern, setBreathingPattern,
         deep3Enabled, setDeep3Enabled,
-        deep3Duration, setDeep3Duration
+        deep3Duration, setDeep3Duration,
+        bellsEnabled, setBellsEnabled,,
+        bellsEnabled, setBellsEnabled,
     } = useSettings();
     const {
         audioFeedbackEnabled,
@@ -120,6 +122,21 @@ export default function Settings() {
                             onValueChange={setShowNatureVisuals}
                             trackColor={{ false: "#767577", true: colors.primary }}
                             thumbColor={showNatureVisuals ? "#fff" : "#f4f3f4"}
+                        />
+                    </View>
+
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Session Bells</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                Soft chimes at start, midpoint & end
+                            </Text>
+                        </View>
+                        <Switch
+                            value={bellsEnabled}
+                            onValueChange={setBellsEnabled}
+                            trackColor={{ false: "#767577", true: colors.primary }}
+                            thumbColor={bellsEnabled ? "#fff" : "#f4f3f4"}
                         />
                     </View>
                 </View>
