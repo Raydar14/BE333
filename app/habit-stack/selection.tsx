@@ -6,6 +6,7 @@ import { Button } from '../../components/Button';
 import { usePurchase } from '../../contexts/PurchaseContext';
 import { ProFeatureLock } from '../../components/ProFeatureLock';
 import { HabitActivity } from '../../hooks/useHabitStack';
+import { useSettings } from '../../contexts/SettingsContext';
 
 type TimerMode = 'timer' | 'count_up';
 
@@ -18,6 +19,8 @@ const ACTIVITIES: HabitActivity[] = [
 export default function HabitSelectionScreen() {
     const router = useRouter();
     const { isPro } = usePurchase();
+    const { hidePrayers } = useSettings();
+    const visibleActivities = hidePrayers ? ACTIVITIES.filter(a => a !== 'Prayer') : ACTIVITIES;
 
     const [selectedActivity, setSelectedActivity] = useState<HabitActivity | null>(null);
     const [mode, setMode] = useState<TimerMode>('timer');
@@ -53,7 +56,7 @@ export default function HabitSelectionScreen() {
                 {/* Activity Grid */}
                 <Text style={styles.sectionTitle}>1. Choose Activity</Text>
                 <View style={styles.grid}>
-                    {ACTIVITIES.map((activity) => (
+                    {visibleActivities.map((activity) => (
                         <TouchableOpacity
                             key={activity}
                             style={[

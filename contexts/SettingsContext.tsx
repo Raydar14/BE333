@@ -56,6 +56,8 @@ type SettingsContextType = {
     setBellyVisualGender: (gender: 'male' | 'female') => void;
     bellsEnabled: boolean;
     setBellsEnabled: (enabled: boolean) => void;
+    hidePrayers: boolean;
+    setHidePrayers: (hide: boolean) => void;
 };
 
 const defaultHabitLinks: HabitLinks = {
@@ -98,6 +100,8 @@ const SettingsContext = createContext<SettingsContextType>({
     setBellyVisualGender: () => { },
     bellsEnabled: true,
     setBellsEnabled: () => { },
+    hidePrayers: false,
+    setHidePrayers: () => { },
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -127,6 +131,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [showBreathingLotus, setShowBreathingLotusState] = useState(false);
     const [bellyVisualGender, setBellyVisualGenderState] = useState<'male' | 'female'>('female');
     const [bellsEnabled, setBellsEnabledState] = useState(true);
+    const [hidePrayers, setHidePrayersState] = useState(false);
 
     const isSnoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
 
@@ -141,7 +146,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 'snoozeUntil', 'showBreathingGuide', 'showNatureVisuals', 'showHabitStacking',
                 'timerMode', 'socialLinks', 'breathingPattern', 'deep3Enabled',
                 'deep3Duration', 'showBreathingLotus', 'bellyVisualGender',
-                'bellsEnabled',
+                'bellsEnabled', 'hidePrayers',
             ] as const;
 
             const values = await AsyncStorage.multiGet(keys);
@@ -167,6 +172,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (map.showBreathingLotus !== null) setShowBreathingLotusState(JSON.parse(map.showBreathingLotus!));
             if (map.bellyVisualGender) setBellyVisualGenderState(map.bellyVisualGender as 'male' | 'female');
             if (map.bellsEnabled !== null && map.bellsEnabled !== undefined) setBellsEnabledState(JSON.parse(map.bellsEnabled));
+            if (map.hidePrayers !== null && map.hidePrayers !== undefined) setHidePrayersState(JSON.parse(map.hidePrayers));
         } catch (e) {
             console.error('Failed to load settings:', e);
         }
@@ -262,6 +268,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         persist('bellsEnabled', JSON.stringify(enabled));
     }, []);
 
+    const setHidePrayers = useCallback((hide: boolean) => {
+        setHidePrayersState(hide);
+        persist('hidePrayers', JSON.stringify(hide));
+    }, []);
+
     const value = useMemo(() => ({
         timerDuration, setTimerDuration,
         habitCue, setHabitCue,
@@ -279,17 +290,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         showBreathingLotus, setShowBreathingLotus,
         bellyVisualGender, setBellyVisualGender,
         bellsEnabled, setBellsEnabled,
+        hidePrayers, setHidePrayers,
     }), [
         timerDuration, habitCue, habitLinks, notificationMethod,
         snoozeUntil, isSnoozed, showBreathingGuide, showNatureVisuals,
         showHabitStacking, timerMode, socialLinks, breathingPattern,
         deep3Enabled, deep3Duration, showBreathingLotus, bellyVisualGender,
-        bellsEnabled,
+        bellsEnabled, hidePrayers,
         setTimerDuration, setHabitCue, updateHabitLink, setNotificationMethod,
         setSnoozeUntil, setShowBreathingGuide, setShowNatureVisuals, setShowHabitStacking,
         setTimerMode, updateSocialLink, setBreathingPattern, setDeep3Enabled,
         setDeep3Duration, setShowBreathingLotus, setBellyVisualGender,
-        setBellsEnabled,
+        setBellsEnabled, setHidePrayers,
     ]);
 
     return (

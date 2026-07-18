@@ -23,6 +23,7 @@ export default function Settings() {
         deep3Enabled, setDeep3Enabled,
         deep3Duration, setDeep3Duration,
         bellsEnabled, setBellsEnabled,
+        hidePrayers, setHidePrayers,
     } = useSettings();
     const {
         audioFeedbackEnabled,
@@ -136,6 +137,21 @@ export default function Settings() {
                             onValueChange={setBellsEnabled}
                             trackColor={{ false: "#767577", true: colors.primary }}
                             thumbColor={bellsEnabled ? "#fff" : "#f4f3f4"}
+                        />
+                    </View>
+
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Hide Prayer Stack</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                Skip the prayer texts in the habit-stack menu
+                            </Text>
+                        </View>
+                        <Switch
+                            value={hidePrayers}
+                            onValueChange={setHidePrayers}
+                            trackColor={{ false: "#767577", true: colors.primary }}
+                            thumbColor={hidePrayers ? "#fff" : "#f4f3f4"}
                         />
                     </View>
                 </View>

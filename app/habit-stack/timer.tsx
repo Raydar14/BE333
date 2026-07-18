@@ -8,6 +8,9 @@ import { useHabitStack, HabitActivity } from '../../hooks/useHabitStack';
 import { useSettings } from '../../contexts/SettingsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Home } from 'lucide-react-native';
+import { HabitStackContent } from '../../components/HabitStackContent';
+import { useReflectionSaver } from '../../hooks/useReflectionSaver';
+import { HabitStackActivity } from '../../content/habitStack';
 
 export default function HabitTimerScreen() {
     const router = useRouter();
@@ -25,7 +28,8 @@ export default function HabitTimerScreen() {
     const [isCompleted, setIsCompleted] = useState(false);
     const [hasAutoSaved, setHasAutoSaved] = useState(false);
 
-    const { showBreathingGuide, showNatureVisuals } = useSettings();
+    const { showBreathingGuide, showNatureVisuals, hidePrayers } = useSettings();
+    const { onEntryChange, flushNow } = useReflectionSaver(activity as HabitStackActivity);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -60,6 +64,7 @@ export default function HabitTimerScreen() {
             setHasAutoSaved(true);
             const finalDuration = mode === 'timer' ? initialDuration : secondsElapsed;
             await logHabitSession(activity, finalDuration);
+            await flushNow();
         }
     };
 
@@ -71,6 +76,7 @@ export default function HabitTimerScreen() {
             setHasAutoSaved(true);
             const finalDuration = secondsElapsed;
             await logHabitSession(activity, finalDuration);
+            await flushNow();
         }
     };
 
@@ -137,6 +143,17 @@ export default function HabitTimerScreen() {
                             <View pointerEvents="none" style={styles.innerGlow} />
                         </View>
                     </View>
+
+                    {/* Activity-specific content (Journaling prompts, Yoga poses, etc.) */}
+                    {!isCompleted && (
+                        <HabitStackContent
+                            activity={activity as HabitStackActivity}
+                            elapsedSec={mode === 'timer' ? initialDuration - secondsLeft : secondsElapsed}
+                            totalDurationSec={mode === 'timer' ? initialDuration : Math.max(secondsElapsed, 180)}
+                            onEntryChange={onEntryChange}
+                            hidePrayers={hidePrayers}
+                        />
+                    )}
 
                     {/* Control Button - Moved Clearly Below Visuals */}
                     {!isCompleted && (

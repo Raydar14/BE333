@@ -26,23 +26,36 @@ items ship or new ones surface.
 - [ ] **Reset & Rest Ritual** — 3-day pause after 3rd streak break; UI +
   state machine + 1-min breath + kind message on restart.
 
-## Wave 2 — Habit-stack content depth
-Each activity should surface real content, not just a button.
+## Wave 2 — Habit-stack content depth (mostly done — polish remains)
+Each activity now surfaces real content. Polish items below.
 
-- [ ] **Chanting** — 4 tracks (OM, So Hum, humming, silent). Structure:
-  20s intro / ~2min chant with subtle bells every 30s / 40s close.
-- [ ] **Prayer** — 6 texts: secular, interfaith, Christian, Jewish, Muslim,
-  Hindu/Buddhist. Global "hide prayers" toggle.
-- [ ] **Journaling** — 40 prompts across awareness / emotion / choice /
-  values / reframing buckets. Autosave. 500-char soft cap.
-- [ ] **Poetry** — 30 prompts, line counter, export to "My Reflections."
-- [ ] **Day planning** — 6 mini-templates, one-tap carryover to tomorrow.
-- [ ] **Gratitude** — 30 rotating micro-prompts, 1-3 entries, optional photo.
-- [ ] **Mantra practices** — 20 mantras with meanings.
-- [ ] **Stretching** — 3 illustrated sequences (desk / neck-shoulders /
-  back-hips), 6 moves × 30s each.
-- [ ] **Yoga** — Sun Salutation A + 3 vinyasas (Clear the Mind, Nervous
-  System Reset, Root & Rise). Illustrated poses.
+- [x] **Chanting** — 4 tracks (OM, So Hum, humming, silent). Text scripts
+  shipped; **audio recordings still TODO** (see Audio Assets).
+- [x] **Prayer** — 6 texts: secular, interfaith, Christian, Jewish, Muslim,
+  Hindu/Buddhist. Global "hide prayers" toggle in Settings.
+- [x] **Journaling** — 40 prompts across the 5 buckets. Autosave to
+  `users/{uid}/reflections`. 500-char soft cap.
+- [x] **Poetry** — 30 prompts. Autosave shipped.
+  - [ ] Line counter UI (currently only char counter).
+  - [ ] "My Reflections" viewer to browse/export saved poems.
+- [x] **Day planning** — 6 mini-templates, autosave-composed entry.
+  - [ ] One-tap carryover to tomorrow (needs viewer + next-day surfacing).
+- [x] **Gratitude** — 30 rotating micro-prompts. Autosave shipped.
+  - [ ] Optional photo attach.
+- [x] **Mantra practices** — 20 mantras with meanings; 6 flagged
+  `hasAudio: true` awaiting audio files.
+- [x] **Stretching** — 3 sequences × 6 moves × 30 sec each, with per-pose
+  cues; highlights current pose as the timer advances.
+  - [ ] Pose illustrations (currently text cues only).
+- [x] **Yoga** — Sun Salutation A + 3 vinyasas with pose-by-pose cues.
+  - [ ] Pose illustrations.
+
+### Wave 2 follow-up
+- [ ] **My Reflections viewer** — screen to browse everything written in
+  Journaling / Poetry / Gratitude / Day Planning. Supports filtering by
+  activity and CSV / plain-text export.
+- [ ] **Day planning carryover** — surface yesterday's plan on today's
+  Day Planning template with a one-tap "carry forward" action.
 
 ## Wave 3 — Social, therapist, advanced
 - [ ] **BE Buddy Challenge scoring** — increment `myMissedSessions`
