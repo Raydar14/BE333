@@ -96,7 +96,7 @@ export function getRandomPrompt(): string {
 }
 
 // Bucket-specific draw — useful for future contextual prompts
-// (e.g., serve "beginningAgain" after a Reset & Rest Ritual).
+// (e.g., serve "beginningAgain" after a missed day).
 export function getRandomPromptFromBucket(bucket: PromptBucket): string {
     const list = SELF_COMPASSION_PROMPTS[bucket];
     if (!list || list.length === 0) return getRandomPrompt();

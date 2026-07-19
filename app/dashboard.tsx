@@ -122,8 +122,7 @@ export default function Dashboard() {
         );
     }
 
-    const isResting = stats.practiceState === 'resting_ritual';
-    const targetPauses = isPro ? 2 : 3;
+    const targetPauses = 3;
 
     return (
         <View style={styles.wrapper}>
@@ -248,35 +247,12 @@ export default function Dashboard() {
                 </View>
 
                 {/* 2. Trends Section */}
-                {
-                    !isResting && (
-                        <View style={styles.section}>
-                            <TrendChart
-                                currentPauses={stats.currentPauses}
-                                history={stats.recentHistory || []}
-                            />
-                        </View>
-                    )
-                }
-
-                {/* Resting Ritual Card (Cycle Failed State) */}
-                {
-                    isResting && (
-                        <View style={[styles.section, styles.restingCard]}>
-                            <Text style={styles.restingTitle}>Cycle Interrupted</Text>
-                            <Text style={styles.restingBody}>
-                                You've missed 3 sessions. It happens to the best of us!
-                                {"\n"}Ready to begin a fresh 21-day journey?
-                            </Text>
-                            <PremiumButton
-                                title="Start New Cycle"
-                                variant="primary"
-                                onPress={startNewPractice}
-                                style={{ marginTop: 20, width: '100%' }}
-                            />
-                        </View>
-                    )
-                }
+                <View style={styles.section}>
+                    <TrendChart
+                        currentPauses={stats.currentPauses}
+                        history={stats.recentHistory || []}
+                    />
+                </View>
 
                 {/* 3. Challenge Section */}
                 <View style={styles.section}>
@@ -478,26 +454,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: Colors.text,
-    },
-    restingCard: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        padding: 20,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: Colors.border,
-        alignItems: 'center',
-    },
-    restingTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: Colors.text,
-        marginBottom: 10,
-    },
-    restingBody: {
-        fontSize: 16,
-        color: Colors.textSecondary,
-        textAlign: 'center',
-        lineHeight: 24,
     },
     inviteCard: {
         backgroundColor: Colors.surface,

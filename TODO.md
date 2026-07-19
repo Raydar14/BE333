@@ -23,8 +23,8 @@ items ship or new ones surface.
 - [x] Milestone-specific messages in PetalAwardModal (Day 1, 3, 7, 11, 14, 19, 21).
 - [x] Chakra strip on Lotus Bloom Map (days 15-21, Root → Crown).
 - [x] Session bells wired at 0:00, midpoint, end (placeholder audio).
-- [ ] **Reset & Rest Ritual** — 3-day pause after 3rd streak break; UI +
-  state machine + 1-min breath + kind message on restart.
+- [x] ~~Reset & Rest Ritual~~ — removed by design decision; concept
+  dropped from app and Manual.
 
 ## Wave 2 — Habit-stack content depth (mostly done — polish remains)
 Each activity now surfaces real content. Polish items below.

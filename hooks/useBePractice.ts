@@ -9,7 +9,7 @@ import { db } from '../lib/firebase';
 export type PracticeStage = '333' | '666' | '999';
 
 export interface BePracticeStats {
-    practiceState: 'active' | 'resting_ritual' | 'completed';
+    practiceState: 'active' | 'completed';
     startDate: string;
     dayOfPractice: number;
     bloomDays: number;
@@ -17,7 +17,6 @@ export interface BePracticeStats {
     streakBreaksUsed: number;
     recentHistory: { date: string; pauses: number }[];
     lastActiveDate: string;
-    resetRitualStartDate?: string | null;
     // Manual: 333 → 666 (6 min × 3) → 999 (9 min × 3).
     // Optional so existing docs default to 333.
     practiceStage?: PracticeStage;
@@ -70,7 +69,6 @@ const DEFAULT_STATS: BePracticeStats = {
     streakBreaksUsed: 0,
     recentHistory: [],
     lastActiveDate: getTodayStr(),
-    resetRitualStartDate: null,
     practiceStage: '333',
     completedStages: [],
 };
