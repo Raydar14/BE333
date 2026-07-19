@@ -20,6 +20,7 @@ import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly 
 import { PetalAwardModal } from '../components/PetalAwardModal';
 import { getRandomPrompt } from '../content/selfCompassionPrompts';
 import { BellService } from '../services/BellService';
+import { EMACheckIn } from '../components/EMACheckIn';
 
 import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
 import { DeviceScanner } from '../components/DeviceScanner';
@@ -542,6 +543,10 @@ export default function Home() {
                                                     </Text>
                                                 </View>
                                             ) : null}
+
+                                            {/* EMA post-session check-in (stress / mood / focus + one word) */}
+                                            <EMACheckIn sessionDurationSec={timerDuration} />
+
 
                                             {/* Inline Habit Selection */}
                                             <Text style={{ color: colors.textSecondary, marginBottom: 10, marginTop: 10, fontWeight: '600' }}>Choose Activity</Text>

@@ -57,21 +57,29 @@ Each activity now surfaces real content. Polish items below.
 - [ ] **Day planning carryover** — surface yesterday's plan on today's
   Day Planning template with a one-tap "carry forward" action.
 
-## Wave 3 — Social, therapist, advanced
-- [ ] **BE Buddy Challenge scoring** — increment `myMissedSessions`
-  when a day ends with < 3 pauses; at 3 misses mark that person's Round
-  as lost but Practice continues; offer rematch after Practice ends.
-- [ ] **BE Guide View / Sneak Peek** — therapist-facing dashboard of
-  linked client's Lotus Bloom Map + recent Practice summary. On-demand
-  "Send Sneak Peek Now" from client. Guide-initiated request → client
-  approves.
-- [ ] **EMA check-in** — one-tap post-session capture: stress /
-  mood / focus + one word.
+## Wave 3 — Social, therapist, advanced (mostly done)
+- [x] **BE Buddy Challenge scoring** — `myMissedSessions` increments
+  during the day-rollover check in `useBePractice.checkDailyLogic`.
+  At 3 misses the Round is marked lost and the buddy's Round is
+  marked won (both writes atomic-ish).
+  - [ ] Rematch offer flow after a completed Practice.
+- [x] **BE Guide View (MVP)** — new `/guide` (list of linked clients)
+  and `/guide/[uid]` (client detail with Lotus Bloom Map + recent
+  history + snapshot stats). Guide-only route guard. Client-side
+  `Link a BE Guide` section in Settings + share-progress toggle.
+  - [ ] On-demand **Sneak Peek Report** with client approval.
+  - [ ] Guide-initiated request → client approves before send.
+- [x] **EMA check-in** — three-tap stress / mood / focus + one-word
+  capture on session completion; writes to `users/{uid}/emaEntries`.
 - [ ] **Implementation-intention notifications** — dynamic reminders
   keyed to a user's chosen anchor ("After I make coffee, I will…").
-- [ ] **Progression stages** — 666 (6 min × 3) unlock after first
-  Practice, 999 (9 min × 3) after 666. Show as tiers on onboarding
-  review screen.
+- [x] **Progression stages 333 / 666 / 999** — `practiceStage` +
+  `completedStages` on `bePractice`; dashboard shows current stage;
+  Practice-complete card offers "Advance" (333 → 666 → 999) or
+  "Repeat". Pause duration helper (`pauseDurationSec`) exposed.
+  - [ ] Wire timer duration to auto-follow the stage for non-Pro
+    users (currently the Settings duration stays as user's last value).
+  - [ ] Onboarding review screen previews the tier ladder.
 - [ ] **Day 1 launch coupon** — code redemption flow granting free
   User Pro annual or Therapist monthly.
 

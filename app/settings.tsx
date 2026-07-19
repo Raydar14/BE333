@@ -7,6 +7,9 @@ import { Colors } from '../constants/Colors';
 import { ProFeatureLock } from '../components/ProFeatureLock';
 import { Button } from '../components/Button';
 import { ArrowLeft } from 'lucide-react-native';
+import { useState } from 'react';
+import { Alert } from 'react-native';
+import { useGuideLink } from '../hooks/useBeGuide';
 
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
@@ -34,6 +37,27 @@ export default function Settings() {
         toggleDemoMode
     } = useBiofeedback();
     const router = useRouter();
+
+    // BE Guide link (therapist-facing sharing)
+    const {
+        linkedGuideEmail,
+        shareWithGuide,
+        loading: guideLoading,
+        linkGuide,
+        unlinkGuide,
+        setShareWithGuide,
+    } = useGuideLink();
+    const [guideEmailInput, setGuideEmailInput] = useState('');
+    const [guideLinking, setGuideLinking] = useState(false);
+
+    const handleLinkGuide = async () => {
+        if (!guideEmailInput.trim()) return;
+        setGuideLinking(true);
+        const { ok, message } = await linkGuide(guideEmailInput);
+        setGuideLinking(false);
+        Alert.alert(ok ? 'Linked' : 'Cannot link', message);
+        if (ok) setGuideEmailInput('');
+    };
 
     // Helper to convert seconds to minutes for display
     const durationMins = Math.floor(timerDuration / 60);
@@ -154,6 +178,72 @@ export default function Settings() {
                             thumbColor={hidePrayers ? "#fff" : "#f4f3f4"}
                         />
                     </View>
+                </View>
+
+                {/* BE Guide Link — share progress with a therapist / coach */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Link a BE Guide</Text>
+                    <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 12 }]}>
+                        Share your practice with a therapist, coach, or mental-health professional.
+                    </Text>
+
+                    {guideLoading ? (
+                        <Text style={[styles.hint, { color: colors.textSecondary }]}>Loading…</Text>
+                    ) : linkedGuideEmail ? (
+                        <>
+                            <View style={styles.settingRow}>
+                                <View style={{ flex: 1, paddingRight: 10 }}>
+                                    <Text style={[styles.label, { color: colors.text }]}>{linkedGuideEmail}</Text>
+                                    <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                        Currently linked BE Guide
+                                    </Text>
+                                </View>
+                                <TouchableOpacity onPress={unlinkGuide}>
+                                    <Text style={{ color: '#E57373', fontWeight: '600' }}>Unlink</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.settingRow}>
+                                <View style={{ flex: 1, paddingRight: 10 }}>
+                                    <Text style={[styles.label, { color: colors.text }]}>Share Progress</Text>
+                                    <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                        Send Bloom Days, Missed Pauses & Reset Rituals live
+                                    </Text>
+                                </View>
+                                <Switch
+                                    value={shareWithGuide}
+                                    onValueChange={setShareWithGuide}
+                                    trackColor={{ false: "#767577", true: colors.primary }}
+                                    thumbColor={shareWithGuide ? "#fff" : "#f4f3f4"}
+                                />
+                            </View>
+                        </>
+                    ) : (
+                        <View>
+                            <TextInput
+                                value={guideEmailInput}
+                                onChangeText={setGuideEmailInput}
+                                placeholder="Guide's email address"
+                                placeholderTextColor={colors.textSecondary}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: colors.border,
+                                    borderRadius: 10,
+                                    padding: 12,
+                                    color: colors.text,
+                                    backgroundColor: colors.surface,
+                                    marginBottom: 10,
+                                }}
+                            />
+                            <Button
+                                title={guideLinking ? 'Linking…' : 'Link BE Guide'}
+                                onPress={handleLinkGuide}
+                                disabled={guideLinking || !guideEmailInput.trim()}
+                            />
+                        </View>
+                    )}
                 </View>
 
                 {/* Breathing Logic Settings (NEW) */}

@@ -13,6 +13,7 @@ import { LotusBloomMap } from '../components/LotusBloomMap';
 import { BuddyBoard } from '../components/BuddyBoard';
 import { TrendChart } from '../components/TrendChart';
 import { GuideSection } from '../components/GuideSection';
+import { useUserRole } from '../hooks/useBeGuide';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'expo-router';
@@ -26,8 +27,9 @@ import { storage } from '../lib/firebase';
 
 export default function Dashboard() {
     const { user } = useAuth();
-    const { stats, loading: practiceLoading, startNewPractice } = useBePractice();
+    const { stats, loading: practiceLoading, startNewPractice, completeStageAndAdvance } = useBePractice();
     const { buddyState, buddyStats } = useBeBuddy();
+    const role = useUserRole();
     const { isPro } = usePurchase();
     const { socialLinks } = useSettings();
 
@@ -171,7 +173,52 @@ export default function Dashboard() {
                         resizeMode="contain"
                     />
                     <Text style={styles.lotusTitle}>Day {stats?.dayOfPractice || 1} of 21</Text>
+                    <Text style={styles.stageLabel}>
+                        Stage {stats?.practiceStage || '333'} · {
+                            stats?.practiceStage === '999' ? '9 min × 3'
+                                : stats?.practiceStage === '666' ? '6 min × 3'
+                                    : '3 min × 3'
+                        }
+                    </Text>
                     <LotusBloomMap bloomDays={stats?.bloomDays || 0} dayOfPractice={stats?.dayOfPractice || 0} />
+
+                    {role === 'therapist' && (
+                        <TouchableOpacity
+                            style={styles.guideNav}
+                            onPress={() => router.push('/guide')}
+                        >
+                            <Users size={16} color="#FFD700" />
+                            <Text style={styles.guideNavText}>Open BE Guide View</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Practice complete → offer next stage or restart */}
+                    {stats && stats.dayOfPractice > 21 && (
+                        <View style={styles.stageAdvanceCard}>
+                            <Text style={styles.stageAdvanceTitle}>Practice Complete</Text>
+                            <Text style={styles.stageAdvanceBody}>
+                                Twenty-one days of Stage {stats.practiceStage || '333'}. What's next?
+                            </Text>
+                            {stats.practiceStage !== '999' && (
+                                <TouchableOpacity
+                                    style={styles.stageAdvanceBtn}
+                                    onPress={() => completeStageAndAdvance()}
+                                >
+                                    <Text style={styles.stageAdvanceBtnText}>
+                                        Advance to Stage {stats.practiceStage === '666' ? '999' : '666'}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity
+                                style={[styles.stageAdvanceBtn, styles.stageAdvanceBtnSecondary]}
+                                onPress={() => startNewPractice({ stage: stats.practiceStage || '333' })}
+                            >
+                                <Text style={styles.stageAdvanceBtnText}>
+                                    Repeat Stage {stats.practiceStage || '333'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
 
                 {/* Awards / Trophy Case */}
@@ -335,6 +382,76 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 30,
         // Removed redundant text
+    },
+    guideNav: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginTop: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.4)',
+        backgroundColor: 'rgba(255,215,0,0.1)',
+        alignSelf: 'center',
+    },
+    guideNavText: {
+        color: '#FFD700',
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 0.3,
+    },
+    stageLabel: {
+        fontSize: 12,
+        color: '#DAA520',
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginTop: 4,
+        marginBottom: 4,
+        textTransform: 'uppercase',
+    },
+    stageAdvanceCard: {
+        marginTop: 20,
+        padding: 18,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.4)',
+        backgroundColor: 'rgba(26,67,49,0.6)',
+        width: '100%',
+    },
+    stageAdvanceTitle: {
+        color: '#FFD700',
+        fontSize: 18,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+        marginBottom: 6,
+        textAlign: 'center',
+    },
+    stageAdvanceBody: {
+        color: 'rgba(255,255,255,0.85)',
+        fontSize: 13,
+        textAlign: 'center',
+        marginBottom: 14,
+        lineHeight: 20,
+    },
+    stageAdvanceBtn: {
+        marginTop: 8,
+        paddingVertical: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#FFD700',
+        backgroundColor: 'rgba(255,215,0,0.2)',
+        alignItems: 'center',
+    },
+    stageAdvanceBtnSecondary: {
+        backgroundColor: 'rgba(0,0,0,0.2)',
+    },
+    stageAdvanceBtnText: {
+        color: '#FFD700',
+        fontSize: 14,
+        fontWeight: '700',
+        letterSpacing: 0.4,
     },
     lotusTitle: {
         fontSize: 18,
