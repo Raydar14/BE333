@@ -91,19 +91,37 @@ The visual system is designed to feel rhythmic, patterned, clean, and accessible
 
 ### Brand Colors
 
+Palette below matches `constants/Colors.ts` verbatim. When updating either
+side, update both in the same commit.
+
 | Color | Hex | Usage |
 |---|---|---|
-| Deep Lotus Green | `#2D6A4F` | Grounding background and main accent. |
-| Bloom Gold | `#F2C94C` | Highlight, icon glow, and celebratory milestone indicator. |
-| Royal Purple (accent) | `#4B006E` | Optional deep accent for chakra/energy moments. |
-| Plant Green (breathing) | `#4A9977` | Glowing ring and synced breathing animation around the timer. |
+| Deep Lotus Green | `#1A4331` | Primary background, main brand green. |
+| Lotus Green (mid) | `#2C6E52` | Cards, surfaces, secondary green. |
+| Plant Green (breathing) | `#4A9977` | Glowing ring and synced breathing animation around the timer; session-phase indicators. |
+| Bloom Gold | `#E1B725` | Highlights, icons, milestone accents; primary gold for UI. |
+| Soft Gold | `#F5D765` | Glows, hover states, secondary gold. |
+| Hero Gold | `#FFD700` | Reserved for the logo mark and top-tier celebratory moments (e.g., Petal Award). |
+| Royal Purple (accent) | `#4B006E` | Optional deep accent for future chakra/energy moments. Not currently used in UI. |
 
 ### Logo & Icon
 
+The mark is a **gold lotus above a serif wordmark**. Composition and
+color choices are documented so future edits stay consistent — where a
+description conflicts with what is shipped, the shipped mark is the
+source of truth and this section should be updated to match.
+
 | Element | Description |
 |---|---|
-| Main logo | BE333 with slightly overlapping letters and numbers aligned on a single plane, using alternating brand colors for a rhythmic, patterned look. |
-| Icon | The numerals "333" set in front of a stylized lotus with an aura glow in Bloom Gold. |
+| Main logo | A Hero Gold (`#FFD700`) stylized lotus centered above the wordmark **BE333**. Serif typeface (Marcellus-style). "BE" is Deep Lotus Green fill with a gold outline; "333" is gold fill with a green outline. A decorative gold vine wraps the left side of the "B," and a small cluster of white lotus flowers with gold leaves sits at the baseline of the "B." |
+| Icon (app / favicon) | Small-use variant: the lotus alone, in Hero Gold on a Deep Lotus Green background. Wordmark is dropped for icons ≤ 128 px so it remains legible. |
+| Wordmark-only variant | For contexts where the lotus is redundant (e.g., in-app headers already framed by lotus imagery), use **BE333** in serif type with the same color treatment as the main logo. |
+
+**Known design tensions** (candidates for a future logo refresh — not
+blockers): the main lotus and the small flower cluster use two different
+illustration styles; the fill/outline inversion between BE and 333
+creates two visual weights; the vine ornament is left-side-only. These
+are documented so any redesign is intentional, not accidental drift.
 
 ### Fonts & Typography
 
@@ -211,7 +229,7 @@ A breathing visualization built around a lotus at the person's core. The lotus s
 - Exhale (6.5s): the circle expands / grows.
 - Pause (0.5s).
 
-A glowing green ring (Plant Green `#4A9977`) surrounds the timer with layered glow rings for depth; the timer border also turns bright green. The circle pulses with the breath.
+A glowing Plant Green ring (`#4A9977`) surrounds the timer with layered glow rings for depth; the timer border also turns bright green. The circle pulses with the breath.
 
 There should be 14 leaves and 7 flowers to match the 21-day set; guidance text sits above the head of the figure.
 
