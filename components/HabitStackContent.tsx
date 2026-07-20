@@ -23,23 +23,79 @@ import {
     STRETCHING_SEQUENCES,
     YOGA_SEQUENCES,
 } from '../content/habitStack';
+import {
+    WORK_CATEGORIES,
+    WORK_CATEGORY_LABELS,
+    WorkCategory,
+    defaultCategoryFor,
+} from '../content/myWork';
 
 interface HabitStackContentProps {
     activity: HabitStackActivity;
     elapsedSec: number;
     totalDurationSec: number;
     onEntryChange?: (text: string) => void;
+    onCategoryChange?: (category: WorkCategory) => void;
     hidePrayers?: boolean;
+}
+
+// Shared: pill row that lets the user tag a writing entry to one of the
+// four "My Work" categories. Rendered above prompt-write and day-planning.
+function CategoryPicker({
+    activity,
+    onChange,
+}: {
+    activity: HabitStackActivity;
+    onChange?: (cat: WorkCategory) => void;
+}) {
+    const [selected, setSelected] = useState<WorkCategory>(defaultCategoryFor(activity));
+    return (
+        <View style={styles.categoryRow}>
+            <Text style={styles.categoryLabel}>Save to</Text>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryScroll}
+            >
+                {WORK_CATEGORIES.map((c) => {
+                    const isActive = selected === c;
+                    return (
+                        <TouchableOpacity
+                            key={c}
+                            onPress={() => {
+                                setSelected(c);
+                                onChange?.(c);
+                            }}
+                            style={[styles.categoryPill, isActive && styles.categoryPillActive]}
+                        >
+                            <Text
+                                style={[
+                                    styles.categoryPillText,
+                                    isActive && styles.categoryPillTextActive,
+                                ]}
+                            >
+                                {WORK_CATEGORY_LABELS[c]}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
+        </View>
+    );
 }
 
 // Journaling / Poetry / Gratitude — shared "prompt + write" renderer.
 function PromptWrite({
+    activity,
     prompts,
     onEntryChange,
+    onCategoryChange,
     maxLen = 500,
 }: {
+    activity: HabitStackActivity;
     prompts: string[];
     onEntryChange?: (text: string) => void;
+    onCategoryChange?: (cat: WorkCategory) => void;
     maxLen?: number;
 }) {
     const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * prompts.length));
@@ -63,11 +119,12 @@ function PromptWrite({
                     <RefreshCw size={16} color="#DAA520" />
                 </TouchableOpacity>
             </View>
+            <CategoryPicker activity={activity} onChange={onCategoryChange} />
             <TextInput
                 value={text}
                 onChangeText={handleTextChange}
                 multiline
-                placeholder="Write freely. This autosaves."
+                placeholder="Write freely. This autosaves to My Work."
                 placeholderTextColor="rgba(255,255,255,0.35)"
                 maxLength={maxLen + 200}
                 style={styles.textInput}
@@ -81,7 +138,13 @@ function PromptWrite({
 }
 
 // Day Planning — pick a template, fill fields.
-function DayPlanning({ onEntryChange }: { onEntryChange?: (text: string) => void }) {
+function DayPlanning({
+    onEntryChange,
+    onCategoryChange,
+}: {
+    onEntryChange?: (text: string) => void;
+    onCategoryChange?: (cat: WorkCategory) => void;
+}) {
     const [templateIdx, setTemplateIdx] = useState(0);
     const [fields, setFields] = useState<Record<string, string>>({});
     const template = DAY_PLAN_TEMPLATES[templateIdx];
@@ -111,6 +174,8 @@ function DayPlanning({ onEntryChange }: { onEntryChange?: (text: string) => void
                     <RefreshCw size={16} color="#DAA520" />
                 </TouchableOpacity>
             </View>
+
+            <CategoryPicker activity="Day Planning" onChange={onCategoryChange} />
 
             {template.fields.map((f) => (
                 <View key={f.label} style={{ marginTop: 12 }}>
@@ -343,6 +408,7 @@ export function HabitStackContent({
     elapsedSec,
     totalDurationSec,
     onEntryChange,
+    onCategoryChange,
     hidePrayers,
 }: HabitStackContentProps) {
     const kind = contentKindFor(activity);
@@ -354,10 +420,18 @@ export function HabitStackContent({
                     : activity === 'Poetry' ? POETRY_PROMPTS
                         : GRATITUDE_PROMPTS;
             const maxLen = activity === 'Journaling' ? 500 : activity === 'Poetry' ? 500 : 300;
-            return <PromptWrite prompts={prompts} onEntryChange={onEntryChange} maxLen={maxLen} />;
+            return (
+                <PromptWrite
+                    activity={activity}
+                    prompts={prompts}
+                    onEntryChange={onEntryChange}
+                    onCategoryChange={onCategoryChange}
+                    maxLen={maxLen}
+                />
+            );
         }
         case 'templates':
-            return <DayPlanning onEntryChange={onEntryChange} />;
+            return <DayPlanning onEntryChange={onEntryChange} onCategoryChange={onCategoryChange} />;
         case 'read-list':
             return (
                 <ReadList
@@ -433,6 +507,42 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.5)',
         fontSize: 11,
         textAlign: 'right',
+    },
+    categoryRow: {
+        marginTop: 12,
+        marginBottom: 4,
+    },
+    categoryLabel: {
+        color: 'rgba(255,255,255,0.55)',
+        fontSize: 10,
+        fontWeight: '700',
+        letterSpacing: 0.8,
+        marginBottom: 6,
+        textTransform: 'uppercase',
+    },
+    categoryScroll: {
+        gap: 6,
+        paddingRight: 6,
+    },
+    categoryPill: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.15)',
+    },
+    categoryPillActive: {
+        backgroundColor: 'rgba(255,215,0,0.25)',
+        borderColor: '#FFD700',
+    },
+    categoryPillText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    categoryPillTextActive: {
+        color: '#FFF8DC',
     },
     templateTitle: {
         color: '#FFD700',

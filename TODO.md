@@ -51,9 +51,10 @@ Each activity now surfaces real content. Polish items below.
   - [ ] Pose illustrations.
 
 ### Wave 2 follow-up
-- [ ] **My Reflections viewer** — screen to browse everything written in
-  Journaling / Poetry / Gratitude / Day Planning. Supports filtering by
-  activity and CSV / plain-text export.
+- [x] **My Work viewer** — renamed from "My Reflections". Users pick a
+  category per entry (Insight Diary · Insightful Notes · Inspiring
+  Messages · Self-Advice); the `/my-work` screen filters by category and
+  offers a plain-text share/export. Dashboard has "Open My Work" nav.
 - [ ] **Day planning carryover** — surface yesterday's plan on today's
   Day Planning template with a one-tap "carry forward" action.
 

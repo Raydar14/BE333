@@ -29,7 +29,7 @@ export default function HabitTimerScreen() {
     const [hasAutoSaved, setHasAutoSaved] = useState(false);
 
     const { showBreathingGuide, showNatureVisuals, hidePrayers } = useSettings();
-    const { onEntryChange, flushNow } = useReflectionSaver(activity as HabitStackActivity);
+    const { onEntryChange, flushNow, setCategory } = useReflectionSaver(activity as HabitStackActivity);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -151,6 +151,7 @@ export default function HabitTimerScreen() {
                             elapsedSec={mode === 'timer' ? initialDuration - secondsLeft : secondsElapsed}
                             totalDurationSec={mode === 'timer' ? initialDuration : Math.max(secondsElapsed, 180)}
                             onEntryChange={onEntryChange}
+                            onCategoryChange={setCategory}
                             hidePrayers={hidePrayers}
                         />
                     )}
