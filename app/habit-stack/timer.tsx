@@ -85,6 +85,23 @@ export default function HabitTimerScreen() {
         router.push('/dashboard'); // Or direct to home if that's the flow
     };
 
+    // "Movement is essential" — after a stack completes, keep the door open
+    // to another 3-minute habit instead of forcing the practice to end.
+    const NEXT_STACK_ACTIVITIES: HabitStackActivity[] = [
+        'Yoga', 'Stretching', 'Chanting', 'Singing',
+        'Journaling', 'Gratitude', 'Poetry', 'Day Planning', 'Prayer', 'Mantra',
+    ];
+    const startNextStack = (nextActivity: HabitStackActivity) => {
+        router.replace({
+            pathname: '/habit-stack/timer',
+            params: {
+                activity: nextActivity,
+                mode: 'timer',
+                durationSeconds: 180,
+            },
+        });
+    };
+
     const formatTime = (totalSeconds: number) => {
         const min = Math.floor(totalSeconds / 60);
         const sec = totalSeconds % 60;
@@ -182,11 +199,31 @@ export default function HabitTimerScreen() {
                     {isCompleted ? (
                         <View style={styles.controls}>
                             <Text style={styles.completeText}>Great work! Auto-saved.</Text>
+                            <Text style={styles.stackPromptText}>
+                                Keep the momentum. Stack another 3-minute habit:
+                            </Text>
+                            <View style={styles.stackGrid}>
+                                {NEXT_STACK_ACTIVITIES
+                                    .filter((a) => !(a === 'Prayer' && hidePrayers))
+                                    .map((a) => (
+                                        <TouchableOpacity
+                                            key={a}
+                                            onPress={() => startNextStack(a)}
+                                            style={[
+                                                styles.stackCard,
+                                                a === (activity as HabitStackActivity) && styles.stackCardCurrent,
+                                            ]}
+                                        >
+                                            <Text style={styles.stackCardText}>{a}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                            </View>
                             <PremiumButton
                                 title="Return Home"
-                                variant="primary"
+                                variant="outline"
                                 onPress={returnHome}
-                                style={{ width: 220 }}
+                                style={{ width: 180, marginTop: 20 }}
+                                textStyle={{ color: Colors.textSecondary }}
                             />
                         </View>
                     ) : (
@@ -353,7 +390,38 @@ const styles = StyleSheet.create({
     completeText: {
         fontSize: 20,
         color: '#DAA520',
-        marginBottom: 20,
+        marginBottom: 12,
+        fontWeight: '600',
+    },
+    stackPromptText: {
+        fontSize: 14,
+        color: Colors.textSecondary,
+        textAlign: 'center',
+        marginBottom: 14,
+        maxWidth: 320,
+    },
+    stackGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: 8,
+        maxWidth: 360,
+    },
+    stackCard: {
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(218,165,32,0.4)',
+        backgroundColor: 'rgba(26,67,49,0.55)',
+    },
+    stackCardCurrent: {
+        borderColor: '#DAA520',
+        backgroundColor: 'rgba(218,165,32,0.15)',
+    },
+    stackCardText: {
+        color: '#FFF8DC',
+        fontSize: 13,
         fontWeight: '600',
     },
 });
