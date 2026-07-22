@@ -10,6 +10,7 @@ export const STRETCHING_SEQUENCES: Sequence[] = [
         name: 'Desk Release',
         purpose: 'Undo the shape of a screen day. Ideal for midday.',
         totalMinutes: 3,
+        posture: 'sitting',
         steps: [
             { name: 'Wrist Flex & Extend', durationSec: 30, cue: 'Arms forward, palms down. Bend wrists up, then down. Slow.' },
             { name: 'Shoulder Rolls', durationSec: 30, cue: 'Big slow circles. Five back, five forward. Full range.' },
@@ -24,6 +25,7 @@ export const STRETCHING_SEQUENCES: Sequence[] = [
         name: 'Neck & Shoulders',
         purpose: 'Melt the phone-neck. Great after long meetings.',
         totalMinutes: 3,
+        posture: 'mixed',
         steps: [
             { name: 'Neck Nods (yes)', durationSec: 30, cue: 'Slow chin-tuck, then look up. Small range, no force.' },
             { name: 'Neck Turns (no)', durationSec: 30, cue: 'Turn right — 15 sec. Then left. Slow.' },
@@ -38,6 +40,7 @@ export const STRETCHING_SEQUENCES: Sequence[] = [
         name: 'Back & Hips',
         purpose: 'Open the low back and hips. Good before bed or after driving.',
         totalMinutes: 3,
+        posture: 'mixed',
         steps: [
             { name: 'Child\'s Pose', durationSec: 30, cue: 'Knees wide, big toes together. Forehead to mat. Breathe.' },
             { name: 'Cat–Cow', durationSec: 30, cue: 'On hands and knees. Six full slow rounds with the breath.' },

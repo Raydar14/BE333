@@ -50,11 +50,16 @@ export interface SequenceStep {
     cue: string;
 }
 
+// Body position a sequence uses. Lets people practice at a desk, in an
+// airport, or on a mat — floor is not required for real movement.
+export type SequencePosture = 'standing' | 'sitting' | 'mixed';
+
 export interface Sequence {
     id: string;
     name: string;
     purpose: string;
     totalMinutes: number;
+    posture: SequencePosture;
     steps: SequenceStep[];
 }
 
