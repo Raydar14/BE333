@@ -184,6 +184,9 @@ The three daily Pauses are framed around the body's natural energy arc.
 - Self-compassion prompts — a gentle affirmation after each session, drawn from a 60-line library across six buckets.
 - Mantra library — psychologist-curated affirmations for self-compassion and resilience, one for each day of the practice.
 - **My Work** — every writing session (Journaling, Poetry, Gratitude, Day Planning) saves to a personal, filterable archive; users pick one of four categories per entry (see Part 5).
+- **Letter to Yourself** — during onboarding, users write a kind letter to their future self for the day they lapse. Surfaced automatically the first BE Pause after a Missed Day; if the user skipped writing one, a warm default in the BE333 voice appears. Stored in My Work under Self-Advice.
+- **Clean-slate returns** — missed sessions and Rest Days never erase a Bloom Petal. The practice always resumes at the next Pause without penalty; the visual state (petals, chakras) stays intact.
+- **Associative-learning cues** — every daily reminder is tied to an existing habit the user chose (Pavlovian anchoring). The cue and the practice fire together until returning to the breath feels automatic.
 - How-to guides — simple illustrated tips on posture, breathing, non-engagement, and non-judgment.
 
 ### Habit Linking vs. Habit Stacking
@@ -208,6 +211,7 @@ The signature pattern makes the exhale longer than the inhale, which is the key 
 
 - **Beginner option:** start with a 3-second inhale and 5-second exhale (with a 1-second pause). Keep the exhale longer than the inhale.
 - **Settings option:** allow a 3-1-5 ratio instead of 4-1-6.
+- **Activating option (6-1-4):** flips the ratio — inhale longer than exhale — for morning Rise sessions when the goal is energizing rather than calming. Not recommended for users managing panic or acute anxiety; the calming default (exhale-longer) remains the primary pattern.
 - **Cue the body:** "Imagine your exhale is a long, slow sigh of relief." This prevents forcing the breath.
 
 #### DEEP3 ignition (optional, read first)
@@ -248,7 +252,17 @@ Using the Web Bluetooth API, the app continuously reads HR / HRV / breathing-rat
 
 A Cloud Function triggers on new/updated readings, computes moving averages, trend detection (is HR rising or falling?), anomaly detection, and combined stress indicators, then writes results back to a `session_analysis` subcollection. The client listens in real time and reflects the physiological state during the session — near-real-time feedback without a persistent open connection.
 
-### Social Layer — the BE Buddy Challenge
+### Social Layer — Share · Connect · Challenge
+
+Three actions, three levels of accountability, all optional:
+
+- **Share** — every session-completion screen offers a one-tap share (TikTok / Facebook / Instagram) of the finished BE Pause. Lightest touch; broadcast rather than relationship.
+- **Connect** — link a **BE Guide** (therapist, coach, or mental-health professional) so your Practice is visible in their dashboard live. Deepest bond; asymmetric relationship. See *Therapist Layer — the BE Guide View* below.
+- **Challenge** — invite a friend by email to run the same 21-Day Practice as a two-player Buddy Challenge. Peer-level; symmetric relationship.
+
+**Why it works — observer accountability.** Knowing a specific person will see your progress produces two effects, not one: more attempts (the Köhler Effect — nobody wants to be the weak link) and *deeper* cognitive engagement per attempt (you think more carefully about what you are doing when someone is watching). The app harnesses both.
+
+#### The BE Buddy Challenge
 
 A BE Buddy Challenge sits on top of a BE Practice. The Practice stays the same; the Challenge adds a two-player layer of accountability and playful competition.
 
@@ -344,16 +358,19 @@ A closer look at the mechanisms behind each feature, with the influencer marketi
 
 | Question | The verdict |
 |---|---|
+| Associative learning (Pavlov) | The foundational finding: pair a neutral cue (bell) with a meaningful event (food) enough times and the cue alone will trigger the response. BE333's habit linking rides this — pair an existing daily anchor (coffee, teeth-brushing, arriving at your car) with the 3-minute Pause until the anchor itself starts to summon the practice. |
+| "Neurons that fire together, wire together" (Hebb's rule) | Donald Hebb (1949): repeated co-activation of two neural circuits strengthens the connection between them. Every BE Pause done after the same anchor is a rep for that wiring. |
 | "Habit linking" | A marketing term, not a scientific one. The academic concept is **implementation intentions** ("if-then" planning), pioneered by Peter Gollwitzer (1999). Deciding when and where you will act dramatically increases success; habits are context-dependent, so linking to a stable existing cue works. |
-| Is meditation beneficial? | Yes. Beyond surveys, neuroimaging shows it physically alters brain structure (neuroplasticity) and reduces inflammation. Goyal et al. (2014, JAMA Internal Medicine) found moderate, reliable evidence that meditation reduces anxiety, depression, and pain. Lazar (2005) and Hölzel (2011) showed increased cortical thickness and gray-matter density after 8 weeks of MBSR. |
-| "Habit stacking" | Coined by S.J. Scott (2014); the method was formalized earlier by BJ Fogg as "Anchoring" (Tiny Habits) and popularized by James Clear (Atomic Habits). It works via synaptic pruning: the brain grafts a new habit onto an existing "super-highway" rather than building a dirt road. Lally (2010) "66 days" study found cue consistency is the biggest factor in automaticity. |
-| Is peer accountability effective? | Yes, but ignore the mythical "95% ASTD" statistic. Real research shows accountability works via the Köhler Effect (we work harder in a group to avoid being the weak link). Wing & Jeffery (1999) found people who joined with friends had far higher completion rates. |
+| Why does the old habit keep firing? | Old cues will keep triggering old responses until a new response is deliberately paired with them enough times to compete. That is why the app treats a lapse as a normal chapter of learning, not a failure: the old wiring is still doing its job — you just haven't out-repped it yet. |
+| Is meditation beneficial? | Yes. Neuroimaging shows it physically alters brain structure (neuroplasticity) and reduces inflammation. Goyal et al. (2014, JAMA Internal Medicine) found moderate, reliable evidence that meditation reduces anxiety, depression, and pain across hundreds of trials *(placeholder for the ~1,800-study review — citation pending)*. Lazar (2005) found long-term meditators had cortical thickness in attention and sensory-processing regions matching people ~20 years younger — meditation appears to counter age-related cortical thinning. Hölzel (2011) documented increased gray-matter density in the hippocampus (learning and memory) after 8 weeks of MBSR. Meditation also reliably reduces cortisol. |
+| "Habit stacking" & superadditivity | Coined by S.J. Scott (2014); the method was formalized earlier by BJ Fogg as "Anchoring" (Tiny Habits) and popularized by James Clear (Atomic Habits). It works via **synaptic pruning** — the brain grafts a new habit onto an existing "super-highway" rather than building a dirt road — and via **superadditivity**: two habits done together produce more benefit than the sum of their effects done separately, because the second habit inherits the first's neural context. Lally (2010) "66 days" study found cue consistency is the biggest factor in automaticity. |
+| Is peer accountability effective? | Yes, but ignore the mythical "95% ASTD" statistic. Real research shows accountability works via the **Köhler Effect** (we work harder in a group to avoid being the weak link). Wing & Jeffery (1999) found people who joined with friends had far higher completion rates. Beyond frequency, being watched also increases *explorative thoughts and cognitive effort per attempt* — knowing a therapist or buddy will see it makes the practice deeper, not just more consistent. |
 | Does breathing impact mental health? | Yes. Balban & Huberman (2023) showed 5 minutes of cyclic sighing outperformed mindfulness meditation for mood and respiratory rate. Breathing-based practice is validated even for PTSD (Seppälä, 2014). |
 | Benefits of being in nature | Nature restores directed attention (Attention Restoration Theory). Ulrich (1984) found patients with a view of trees recovered faster; Bratman (2015) showed a nature walk reduced activity in the brain region tied to depressive brooding. |
 | Is biofeedback helpful? | Yes. HRV biofeedback bridges the mind-body gap by making calm measurable; high HRV is a biomarker for stress resilience. Meta-analysis (Goessl, 2017) confirmed a large effect size for reducing stress and anxiety. |
 | Motivation vs. habits | Motivation is for starting; habit is for continuing. Intrinsic motivation (autonomy) creates stronger habits than external rewards or pressure. Relying on willpower long-term is a failing strategy (Wood & Rünger, 2016). |
-| Guilt, shame & reinforcement | Shame is toxic to habits — it triggers the "what-the-hell effect" (Abstinence Violation Effect). Guilt ("I did a bad thing") can be reparative, but shame ("I am bad") leads to withdrawal and relapse. Self-compassion after a slip makes people try harder next time (Breines & Chen, 2012). |
-| How to bounce back | Use the Fresh Start Effect (a temporal landmark) plus coping planning (planning for failure). Separate identity from failure: viewing a slip as a "lapse" rather than a "relapse" is the key to getting back on track (Marlatt). |
+| Guilt, shame & reinforcement | Shame is toxic to habits — it triggers the "what-the-hell effect" (Abstinence Violation Effect). Guilt ("I did a bad thing") can be reparative, but shame ("I am bad") leads to withdrawal and relapse. Self-compassion after a slip (Breines & Chen, 2012) produces a specific outcome pattern: **↑ motivation to try again, ↑ self-improvement, ↓ shame, ↓ withdrawal, ↓ guilt.** This is the exact opposite of what critics assume — self-compassion doesn't lower the bar, it raises the return rate. |
+| How to bounce back | Use the Fresh Start Effect (a temporal landmark) plus coping planning (planning for failure). Separate identity from failure: viewing a slip as a "lapse" rather than a "relapse" is the key to getting back on track (Marlatt). BE333's phrase for this: **plan for imperfection** — build the assumption of missed days into the design of the practice, not around it. |
 
 ### Concepts Often Missed When Designing Mindfulness
 
@@ -387,7 +404,7 @@ Each 3-minute core script follows the same arc:
 - **Body / breath (90 sec):** notice, return, kindness.
 - **Closing (30–40 sec):** one line of self-kindness.
 
-**Example closing lines** (mix and reuse): "I showed up for myself today." · "I can begin again at any moment." · "My breath is a safe place to rest."
+**Example closing lines** (mix and reuse): "I showed up for myself today." · "I can begin again at any moment." · "My breath is a safe place to rest." · "Ground down into the present moment." · "Returning to the practice is the practice."
 
 ### Core 3-Minute Script — Exhale-Longer (seated, eyes open or softly closed)
 
@@ -501,6 +518,18 @@ See Part 6 for the full 3-Minute Yoga Vinyasa Manual, which supplies the stretch
 - **Week 1:** breath basics (In 4… Out 6–8).
 - **Week 2:** body and sound (label feeling, hearing).
 - **Week 3:** open attention + kindness (let it be, be kind).
+
+**Letter to Yourself (missed-day recovery script)**
+
+During onboarding, offer the user a short writing prompt:
+
+> "Write a kind letter to your future self for the day you miss a Pause. What would you want to hear on that day? Two or three sentences is plenty."
+
+Store the entry in My Work under **Self-Advice**. Surface it automatically at the top of the first BE Pause after a Missed Day, with the eyebrow *"You wrote this for today."*
+
+If the user skipped the writing step, use this warm default in the BE333 voice:
+
+> Welcome back. A missed day isn't a broken practice — it's the practice, meeting you where you are. Petals stay. The breath is right here. Three minutes, and you're back.
 
 ### Global Content Standards
 
@@ -646,12 +675,16 @@ Psychologist-curated affirmations for self-compassion and resilience — one for
 
 BE333 is a psychologist-created mindfulness app that makes calm practical, compassionate, and sustainable: three minutes, three times a day, for three weeks. It stands apart by being doable — short enough to fit anywhere, frequent enough to change the nervous system, and gentle enough to keep people coming back.
 
+**The one-line positioning:** *Half science, half Dr. Powers* — every technique in the app comes from either the peer-reviewed literature or from Dr. Powers's clinical practice, and often from both.
+
 **Reasons it works (for copy)**
 
 - 3 minutes is short enough to be realistic but long enough to shift the nervous system.
-- Frequent repetition creates new neural pathways for calm and focus.
-- Habit linking ties practice to existing daily actions, increasing consistency.
-- Self-compassion prompts improve emotional resilience and reduce self-criticism.
+- Frequent repetition creates new neural pathways for calm and focus (Hebb's rule).
+- Habit linking ties practice to existing daily actions via associative learning, increasing consistency.
+- Habit stacking uses *superadditivity* — two habits done together produce more benefit than the sum of their effects done separately.
+- Observer accountability (therapist + Buddy) drives both more attempts and deeper engagement per attempt.
+- Self-compassion prompts and clean-slate returns raise the come-back rate after a lapse.
 
 ### Taglines
 
@@ -661,6 +694,10 @@ BE333 is a psychologist-created mindfulness app that makes calm practical, compa
 | Three minutes. Three times. Three weeks. | Small moments. Real change. |
 | Begin again, gently. | Make mindfulness a habit. |
 | Petal by petal, you bloom. | Practice peace three times a day. |
+| Returning to the practice *is* the practice. | The rhythm of returning. |
+| Share. Connect. Challenge. | Observer accountability, done kindly. |
+| Half science, half Dr. Powers. | Psychologist-created. Research-backed. |
+| Visual guidance to keep you on track. | Three minutes, three times a day. |
 
 ### App Store Copy
 
@@ -736,6 +773,15 @@ A rotating bank for social, ads, and in-app moments — the BE333 voice at its m
 - "It is not the length of the pause that rewires your brain, but the frequency of the reset."
 - "The magic isn't in the minutes; it is in the rhythm of returning."
 - "Growth happens in the pauses."
+- "Returning to the practice is the practice."
+- "Half science, half Dr. Powers."
+- "Share. Connect. Challenge."
+- "Observer accountability — because someone is watching, in the best possible way."
+- "Plan for imperfection."
+- "Clean slate every time you return."
+- "The cue and the breath fire together, until returning is automatic."
+- "Neurons that pause together, wire together."
+- "Two habits, one bond. That's superadditivity."
 
 ### Play Store Asset Requirements
 
