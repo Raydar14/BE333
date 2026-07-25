@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
 import { BreathingLeaves } from '../../components/BreathingLeaves';
+import { BE333Logo } from '../../components/BE333Logo';
 import { Leaf } from 'lucide-react-native';
 import Svg, { Path, Line } from 'react-native-svg';
 
@@ -33,11 +34,7 @@ export default function OnboardingIntro() {
                 <View style={styles.container}>
                     <View style={styles.content}>
                         <View style={{ height: 260, alignItems: 'center', justifyContent: 'center', marginBottom: -60 }}>
-                            <Image
-                                source={require('../../assets/images/brand_logo_floral.png')}
-                                style={styles.logo}
-                                resizeMode="contain"
-                            />
+                            <BE333Logo width={220} height={220} style={styles.logo} />
                             <BreathingLeaves isActive={true} phase="idle" />
                         </View>
 

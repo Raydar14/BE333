@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch, Platform, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Switch, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings, HabitLinkConfig } from '../../contexts/SettingsContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
+import { BE333Logo } from '../../components/BE333Logo';
 import { Leaf, Clock, Sun, Moon, Coffee } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NotificationService } from '../../services/NotificationService';
@@ -189,11 +190,7 @@ export default function OnboardingSetup() {
         <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.logoContainer}>
-                    <Image
-                        source={require('../../assets/images/brand_logo_floral.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+                    <BE333Logo width={180} height={180} style={styles.logo} />
                 </View>
 
                 <Text style={[styles.headerTitle, { color: colors.primary }]}>Design Your Rituals</Text>
