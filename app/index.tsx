@@ -21,6 +21,7 @@ import { PetalAwardModal } from '../components/PetalAwardModal';
 import { getRandomPrompt } from '../content/selfCompassionPrompts';
 import { BellService } from '../services/BellService';
 import { EMACheckIn } from '../components/EMACheckIn';
+import { BE333Logo } from '../components/BE333Logo';
 
 import { BiofeedbackSummary } from '../components/BiofeedbackSummary';
 import { DeviceScanner } from '../components/DeviceScanner';
@@ -461,11 +462,7 @@ export default function Home() {
                                 <Text style={styles.taglineText}>Pause.</Text>
                                 <Text style={styles.taglineText}>Breathe.</Text>
                             </View>
-                            <Image
-                                source={require('../assets/images/brand_logo_floral.png')}
-                                style={styles.logoMain}
-                                resizeMode="contain"
-                            />
+                            <BE333Logo width={300} height={300} style={styles.logoMain} />
                         </View>
 
                         {/* Breathing Leaves (Background) */}
@@ -810,7 +807,7 @@ const styles = StyleSheet.create({
     },
     logoMain: {
         width: 300,
-        height: 220,
+        height: 300,
         marginBottom: 0,
         resizeMode: 'contain',
     },
