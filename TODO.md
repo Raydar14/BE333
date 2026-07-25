@@ -83,6 +83,15 @@ Each activity now surfaces real content. Polish items below.
   - [ ] Onboarding review screen previews the tier ladder.
 - [ ] **Day 1 launch coupon** — code redemption flow granting free
   User Pro annual or Therapist monthly.
+- [ ] **Letter to Yourself** — onboarding writing prompt ("kind letter
+  to future me for the day I lapse") stored in My Work under
+  Self-Advice; auto-surfaced at the top of the first BE Pause after a
+  Missed Day. Warm default in the BE333 voice if the user skipped
+  writing one. See Manual Part 5 for the spec + default copy.
+- [ ] **6-1-4 activating breath pattern** — flips the ratio (inhale
+  longer than exhale) for morning Rise sessions. Add as a third choice
+  in Settings alongside 4-1-6 and 3-1-5, with a small note that it is
+  energizing rather than calming and not for panic/acute anxiety.
 
 ## Wave 4 — How-to guides & drop-ins
 - [ ] **9 how-to cards** — sit/posture, thoughts, sensations, worries,
