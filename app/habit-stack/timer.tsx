@@ -7,7 +7,7 @@ import { BreathingCircle } from '../../components/BreathingCircle';
 import { useHabitStack, HabitActivity } from '../../hooks/useHabitStack';
 import { useSettings } from '../../contexts/SettingsContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Home } from 'lucide-react-native';
+import { Home, Eye, EyeOff } from 'lucide-react-native';
 import { HabitStackContent } from '../../components/HabitStackContent';
 import { useReflectionSaver } from '../../hooks/useReflectionSaver';
 import { HabitStackActivity } from '../../content/habitStack';
@@ -39,6 +39,8 @@ export default function HabitTimerScreen() {
         isConnected: isBioConnected,
         startSessionTracking,
         stopSessionTracking,
+        showLiveBiofeedback,
+        setShowLiveBiofeedback,
     } = useBiofeedback();
 
     // Start biofeedback session tracking the moment a connected practice begins.
@@ -165,8 +167,32 @@ export default function HabitTimerScreen() {
                     <Text style={styles.activityTitle}>{activity}</Text>
                     <Text style={styles.modeLabel}>{mode === 'timer' ? 'Timer' : 'Stopwatch'}</Text>
 
-                    {/* Live HR / HRV — hidden until a device is connected */}
+                    {/* Live HR / HRV — hidden until a device is connected.
+                        Even when connected, the user can hide the panel
+                        mid-session to escape metric-watching. Data is still
+                        collected in the background for the summary card. */}
                     {isBioConnected && !isCompleted && (
+                        <View style={styles.bioToggleRow}>
+                            <TouchableOpacity
+                                onPress={() => setShowLiveBiofeedback(!showLiveBiofeedback)}
+                                style={styles.bioToggleBtn}
+                                activeOpacity={0.7}
+                            >
+                                {showLiveBiofeedback ? (
+                                    <>
+                                        <EyeOff size={14} color={Colors.textSecondary} />
+                                        <Text style={styles.bioToggleText}>Hide biofeedback</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye size={14} color={Colors.textSecondary} />
+                                        <Text style={styles.bioToggleText}>Show biofeedback</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {isBioConnected && !isCompleted && showLiveBiofeedback && (
                         <BiofeedbackIndicator />
                     )}
 
@@ -469,6 +495,27 @@ const styles = StyleSheet.create({
     stackCardText: {
         color: '#FFF8DC',
         fontSize: 13,
+        fontWeight: '600',
+    },
+    bioToggleRow: {
+        alignSelf: 'stretch',
+        alignItems: 'flex-end',
+        paddingHorizontal: 10,
+        marginTop: -6,
+        marginBottom: 6,
+    },
+    bioToggleBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+    },
+    bioToggleText: {
+        color: Colors.textSecondary,
+        fontSize: 11,
         fontWeight: '600',
     },
 });
