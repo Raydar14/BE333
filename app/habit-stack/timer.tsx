@@ -11,6 +11,10 @@ import { Home } from 'lucide-react-native';
 import { HabitStackContent } from '../../components/HabitStackContent';
 import { useReflectionSaver } from '../../hooks/useReflectionSaver';
 import { HabitStackActivity } from '../../content/habitStack';
+import { useBiofeedback } from '../../contexts/BiofeedbackContext';
+import { BiofeedbackIndicator } from '../../components/BiofeedbackIndicator';
+import { BiofeedbackSummary } from '../../components/BiofeedbackSummary';
+import { SessionSummary } from '../../services/BiofeedbackService';
 
 export default function HabitTimerScreen() {
     const router = useRouter();
@@ -27,9 +31,30 @@ export default function HabitTimerScreen() {
     const [isActive, setIsActive] = useState(true); // Start immediately
     const [isCompleted, setIsCompleted] = useState(false);
     const [hasAutoSaved, setHasAutoSaved] = useState(false);
+    const [bioSummary, setBioSummary] = useState<SessionSummary | null>(null);
 
     const { showBreathingGuide, showNatureVisuals, hidePrayers } = useSettings();
     const { onEntryChange, flushNow, setCategory } = useReflectionSaver(activity as HabitStackActivity);
+    const {
+        isConnected: isBioConnected,
+        startSessionTracking,
+        stopSessionTracking,
+    } = useBiofeedback();
+
+    // Start biofeedback session tracking the moment a connected practice begins.
+    // Guarded by isBioConnected so people without a strap see no change.
+    useEffect(() => {
+        if (isBioConnected) {
+            startSessionTracking();
+        }
+        return () => {
+            if (isBioConnected) {
+                stopSessionTracking();
+            }
+        };
+        // Intentionally only on mount / connection flip — session lifecycle
+        // matches the screen lifecycle for the habit stack.
+    }, [isBioConnected]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -59,6 +84,10 @@ export default function HabitTimerScreen() {
         setIsCompleted(true);
         Vibration.vibrate();
 
+        if (isBioConnected) {
+            setBioSummary(stopSessionTracking());
+        }
+
         // Autosave
         if (!hasAutoSaved) {
             setHasAutoSaved(true);
@@ -71,6 +100,11 @@ export default function HabitTimerScreen() {
     const handleFinishStopwatch = async () => {
         setIsActive(false);
         setIsCompleted(true);
+
+        if (isBioConnected) {
+            setBioSummary(stopSessionTracking());
+        }
+
         // Autosave for stopwatch
         if (!hasAutoSaved) {
             setHasAutoSaved(true);
@@ -130,6 +164,11 @@ export default function HabitTimerScreen() {
                 <View style={styles.content}>
                     <Text style={styles.activityTitle}>{activity}</Text>
                     <Text style={styles.modeLabel}>{mode === 'timer' ? 'Timer' : 'Stopwatch'}</Text>
+
+                    {/* Live HR / HRV — hidden until a device is connected */}
+                    {isBioConnected && !isCompleted && (
+                        <BiofeedbackIndicator />
+                    )}
 
                     {/* Premium Circle Visuals (Matched to Home) */}
                     <View style={styles.timerContainer}>
@@ -199,6 +238,14 @@ export default function HabitTimerScreen() {
                     {isCompleted ? (
                         <View style={styles.controls}>
                             <Text style={styles.completeText}>Great work! Auto-saved.</Text>
+
+                            {bioSummary && (
+                                <BiofeedbackSummary
+                                    summary={bioSummary}
+                                    durationSeconds={mode === 'timer' ? initialDuration : secondsElapsed}
+                                />
+                            )}
+
                             <Text style={styles.stackPromptText}>
                                 Keep the momentum. Stack another 3-minute habit:
                             </Text>
