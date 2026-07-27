@@ -64,12 +64,24 @@ Each activity now surfaces real content. Polish items below.
   At 3 misses the Round is marked lost and the buddy's Round is
   marked won (both writes atomic-ish).
   - [ ] Rematch offer flow after a completed Practice.
-- [x] **BE Guide View (MVP)** — new `/guide` (list of linked clients)
-  and `/guide/[uid]` (client detail with Lotus Bloom Map + recent
-  history + snapshot stats). Guide-only route guard. Client-side
-  `Link a BE Guide` section in Settings + share-progress toggle.
-  - [ ] On-demand **Sneak Peek Report** with client approval.
-  - [ ] Guide-initiated request → client approves before send.
+- [x] **BE Guide View (level-up)** — full therapist product now shipped:
+  extended signup (license, specialty, HIPAA acknowledgment); Pro
+  paywall gate on `/guide`; client capacity display + enforcement
+  (free 0, Pro 25, Lifetime 100); private per-client notes with
+  autosave; guide-generated invite codes with share and revoke;
+  client-side invite-code redemption in Settings; Privacy & Data
+  explainer in Settings; `GuideSection` dashboard card rewired to
+  real data. Manual Part 3 rewritten to match.
+  - [x] ~~On-demand Sneak Peek Report~~ — removed from Manual by design decision.
+  - [x] ~~Guide-initiated request~~ — removed from Manual by design decision.
+  - [ ] **Sync `purchaseTier` with RevenueCat** so capacity tier is
+    read from live subscription status. Currently defaults to `'pro'`
+    when the field is missing, so live guides can accept clients while
+    the sync is pending.
+  - [ ] Referral flow that works pre-signup (invite code creates a
+    pending link that fires when the client first signs up).
+  - [ ] Guide-side notes list view — see recent notes across all
+    clients on one screen.
 - [x] **EMA check-in** — three-tap stress / mood / focus + one-word
   capture on session completion; writes to `users/{uid}/emaEntries`.
 - [ ] **Implementation-intention notifications** — dynamic reminders

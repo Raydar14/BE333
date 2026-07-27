@@ -48,8 +48,10 @@ export default function Settings() {
         linkGuide,
         unlinkGuide,
         setShareWithGuide,
+        linkGuideByCode,
     } = useGuideLink();
     const [guideEmailInput, setGuideEmailInput] = useState('');
+    const [guideCodeInput, setGuideCodeInput] = useState('');
     const [guideLinking, setGuideLinking] = useState(false);
 
     const handleLinkGuide = async () => {
@@ -59,6 +61,15 @@ export default function Settings() {
         setGuideLinking(false);
         Alert.alert(ok ? 'Linked' : 'Cannot link', message);
         if (ok) setGuideEmailInput('');
+    };
+
+    const handleLinkByCode = async () => {
+        if (!guideCodeInput.trim()) return;
+        setGuideLinking(true);
+        const { ok, message } = await linkGuideByCode(guideCodeInput);
+        setGuideLinking(false);
+        Alert.alert(ok ? 'Linked' : 'Cannot link', message);
+        if (ok) setGuideCodeInput('');
     };
 
     // Helper to convert seconds to minutes for display
@@ -222,6 +233,9 @@ export default function Settings() {
                         </>
                     ) : (
                         <View>
+                            <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 6 }]}>
+                                Link by email:
+                            </Text>
                             <TextInput
                                 value={guideEmailInput}
                                 onChangeText={setGuideEmailInput}
@@ -236,16 +250,90 @@ export default function Settings() {
                                     padding: 12,
                                     color: colors.text,
                                     backgroundColor: colors.surface,
-                                    marginBottom: 10,
+                                    marginBottom: 8,
                                 }}
                             />
                             <Button
-                                title={guideLinking ? 'Linking…' : 'Link BE Guide'}
+                                title={guideLinking ? 'Linking…' : 'Link by email'}
                                 onPress={handleLinkGuide}
                                 disabled={guideLinking || !guideEmailInput.trim()}
                             />
+
+                            <Text style={[styles.hint, { color: colors.textSecondary, marginTop: 16, marginBottom: 6 }]}>
+                                Or redeem an invite code from your Guide:
+                            </Text>
+                            <TextInput
+                                value={guideCodeInput}
+                                onChangeText={(v) => setGuideCodeInput(v.toUpperCase())}
+                                placeholder="INVITE CODE"
+                                placeholderTextColor={colors.textSecondary}
+                                autoCapitalize="characters"
+                                maxLength={12}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: colors.border,
+                                    borderRadius: 10,
+                                    padding: 12,
+                                    color: colors.text,
+                                    backgroundColor: colors.surface,
+                                    marginBottom: 8,
+                                    fontFamily: 'monospace',
+                                    letterSpacing: 2,
+                                    fontSize: 16,
+                                }}
+                            />
+                            <Button
+                                title={guideLinking ? 'Linking…' : 'Redeem invite code'}
+                                onPress={handleLinkByCode}
+                                disabled={guideLinking || !guideCodeInput.trim()}
+                                variant="outline"
+                            />
+
+                            <Text style={{
+                                color: colors.textSecondary,
+                                fontSize: 11,
+                                fontStyle: 'italic',
+                                marginTop: 12,
+                                lineHeight: 16,
+                            }}>
+                                Your BE Guide will see Bloom Days, Missed Pauses, practice stage, and
+                                your Lotus Bloom Map — never your written entries in My Work or your
+                                biofeedback readings.
+                            </Text>
                         </View>
                     )}
+                </View>
+
+                {/* Privacy & Data */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Privacy & Data</Text>
+                    <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 8, lineHeight: 18 }]}>
+                        BE333 is a wellness-tracking tool, not a HIPAA-covered service. Here is
+                        exactly what a linked BE Guide can and cannot see:
+                    </Text>
+                    <View style={{
+                        padding: 12,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        backgroundColor: colors.surface,
+                    }}>
+                        <Text style={[styles.label, { color: colors.text, marginBottom: 4 }]}>
+                            ✓ Visible to your Guide
+                        </Text>
+                        <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 10, lineHeight: 16 }]}>
+                            Bloom Days · Missed Pauses · Rest Days · practice stage (333/666/999) ·
+                            Lotus Bloom Map · streak breaks used · today's Pauses.
+                        </Text>
+                        <Text style={[styles.label, { color: colors.text, marginBottom: 4 }]}>
+                            ✗ Never visible to your Guide
+                        </Text>
+                        <Text style={[styles.hint, { color: colors.textSecondary, lineHeight: 16 }]}>
+                            Written entries in My Work (Insight Diary, Insightful Notes, Inspiring
+                            Messages, Self-Advice) · EMA check-in responses · biofeedback readings
+                            (HR / HRV) · session-completion messages.
+                        </Text>
+                    </View>
                 </View>
 
                 {/* Breathing Logic Settings (NEW) */}

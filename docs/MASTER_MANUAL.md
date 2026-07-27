@@ -275,11 +275,60 @@ A BE Buddy Challenge sits on top of a BE Practice. The Practice stays the same; 
 
 Therapists get a role name and a feature that fit the app. The therapist role inside BE333 is a **BE Guide**; the feature is the **BE Guide View** (or Guide View); the client action is **"Link a BE Guide."** This lets a therapist track a client's mindfulness homework live, without paper or emails — a primary reason the app was designed.
 
-- **Account type:** at sign-up, "I am a BE Guide (Therapist, Coach, or Mental Health Professional)" sets the account to receive Sneak Peek reports from clients.
-- **Continuous sharing:** when on, the BE Guide receives regular Sneak Peek updates (Bloom Days and Missed Pauses). Can be turned off anytime.
-- **On-demand report:** "Send a Sneak Peek Report Now" sends a one-time report with the Lotus Bloom Map and a recent Practice summary.
-- **Guide requests:** when continuous sharing is off, the BE Guide can request a Sneak Peek. The client always sees and approves any report before it is sent.
-- **Framing:** this is a conversation starter about how mindfulness is fitting into a client's life, not a performance score.
+#### Signing up as a BE Guide
+
+At sign-up, choose the **Therapist** role. This unlocks the Guide View section of the app and adds three fields to the sign-up form:
+
+- **License / certification** (free-text, self-attested) — e.g., *"LMFT #12345, CA"* or *"ICF-PCC coach."* Not verified by BE333; used only to help clients decide whether to link with you.
+- **Primary specialty** (optional free-text) — e.g., *"Trauma-informed CBT,"* *"Adolescents,"* *"Somatic."*
+- **Data-handling acknowledgment** (required checkbox) — see *Privacy & data* below.
+
+Anyone who signs up as a therapist can browse the Guide View, but **linking clients requires the Therapist Pro subscription** (see Plans & Pricing). A therapist without an active Pro tier sees a paywall on the client dashboard.
+
+#### What a linked client shares
+
+When a client uses **Settings → Link a BE Guide** to enter your email (or redeem your invite code), they turn on continuous sharing by default. Each linked client can toggle sharing off at any time; when they do, their card in your Guide View shows a "Sharing paused" note and their stats stop refreshing.
+
+The BE Guide View surfaces, per client:
+
+- **Snapshot stats** — current day of Practice · Bloom Petals · practice stage (333 / 666 / 999) · streak breaks used out of 3 · today's Pauses out of 3 · practice state (active / completed)
+- **Lotus Bloom Map** — full visual with the same chakra unlock strip the client sees on their own dashboard
+- **Recent days history** — Bloom Day / Rest Day labels for the last three days, each with dots for the Pauses completed
+- **Sharing status** — a warning banner if the client has paused sharing
+- **Your notes** — a persistent free-text note pinned to that client (see *Guide tools* below)
+
+#### Guide tools
+
+- **Client notes.** Each client card in your dashboard has a private note field only you can see. Store session context, homework observations, or reminders here. Autosaves as you type; timestamped on last edit.
+- **Invite codes.** Generate a short shareable code from the Guide View — clients redeem it in Settings → Link a BE Guide as an alternative to typing your email. Useful for referrals, wait-room handouts, or QR codes in your office.
+
+#### Client capacity per tier
+
+| Tier | Linked clients |
+|---|---|
+| Free therapist (browsing only) | 0 — must upgrade to link |
+| Therapist Pro (monthly / yearly) | 25 |
+| Therapist Lifetime | 100 |
+
+If a client tries to link a Guide whose roster is full, the client sees *"This BE Guide has reached their client capacity."*
+
+#### Billing model
+
+The Therapist Pro subscription is paid by the **Guide**, not the client. Clients do not need a Pro subscription to link — the Guide pays for the seat and the client shares for free. This mirrors how a therapist would pay for a records / EHR system on behalf of their practice.
+
+#### Privacy & data
+
+BE333 is a wellness app, not a covered entity under HIPAA. Data shared with a BE Guide is limited to what the app collects: practice cadence (Bloom Days, Missed Pauses), practice stage, snapshot stats, and the Lotus Bloom Map. **The Guide never sees:** biofeedback readings, written entries in *My Work* (Insight Diary / Insightful Notes / Inspiring Messages / Self-Advice), EMA check-in responses, or session-completion messages. Notes the Guide writes about a client are visible only to that Guide and never to the client.
+
+At sign-up as a therapist, the acknowledgment checkbox says approximately:
+
+> I understand that BE333 is a wellness tracking tool, not a HIPAA-covered service, and that any client data I view here is a summary of practice cadence — not clinical documentation. I will treat client identifiers with the same care as any other client record.
+
+Clients see a matching note in Settings when they link a Guide, so both sides understand the scope.
+
+#### Framing (for copy and coaching)
+
+This is a conversation starter about how mindfulness is fitting into a client's life — not a performance score. The Guide View exists to make homework visible, not to grade it.
 
 ### Progression — Beyond the First 21 Days
 

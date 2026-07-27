@@ -1,9 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, NotebookPen } from 'lucide-react-native';
 import { Colors } from '../../constants/Colors';
-import { useLinkedClient, useUserRole } from '../../hooks/useBeGuide';
+import { useLinkedClient, useUserRole, useClientNotes } from '../../hooks/useBeGuide';
 import { LotusBloomMap } from '../../components/LotusBloomMap';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 
@@ -117,10 +119,67 @@ export default function GuideClientDetail() {
                     ))
                 )}
 
+                {/* Private notes — only the Guide sees these */}
+                <ClientNotesPanel clientUid={uid} clientDisplayName={client.displayName} />
+
                 <Text style={styles.disclaimer}>
                     Use this as a conversation starter, not a performance score.
                 </Text>
             </ScrollView>
+        </View>
+    );
+}
+
+// Debounced-autosave notes card. The client never sees this content.
+function ClientNotesPanel({
+    clientUid,
+    clientDisplayName,
+}: {
+    clientUid: string;
+    clientDisplayName: string;
+}) {
+    const { text, savedAt, save, loading } = useClientNotes(clientUid);
+    const [draft, setDraft] = useState('');
+    const [dirty, setDirty] = useState(false);
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Sync remote text into local draft when it first loads or clientUid changes.
+    useEffect(() => {
+        if (!dirty) setDraft(text);
+    }, [text, clientUid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleChange = (v: string) => {
+        setDraft(v);
+        setDirty(true);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            save(v, clientDisplayName);
+            setDirty(false);
+        }, 1200);
+    };
+
+    return (
+        <View style={styles.notesCard}>
+            <View style={styles.notesHeader}>
+                <NotebookPen size={14} color={Colors.secondary} />
+                <Text style={styles.notesTitle}>Private notes</Text>
+                <Text style={styles.notesStatus}>
+                    {dirty ? 'Saving…' : savedAt ? `Saved ${savedAt.toLocaleDateString()}` : ''}
+                </Text>
+            </View>
+            <Text style={styles.notesHint}>
+                Session context, homework observations, reminders. Only visible to you.
+            </Text>
+            <TextInput
+                value={draft}
+                onChangeText={handleChange}
+                multiline
+                placeholder={loading ? 'Loading notes…' : 'Start typing your notes on this client…'}
+                placeholderTextColor="rgba(255,255,255,0.35)"
+                style={styles.notesInput}
+                textAlignVertical="top"
+                editable={!loading}
+            />
         </View>
     );
 }
@@ -258,5 +317,50 @@ const styles = StyleSheet.create({
         marginTop: 30,
         textAlign: 'center',
         lineHeight: 18,
+    },
+    notesCard: {
+        marginTop: 24,
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(225,183,37,0.35)',
+        backgroundColor: 'rgba(26,67,49,0.5)',
+    },
+    notesHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 4,
+    },
+    notesTitle: {
+        color: Colors.secondary,
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+        textTransform: 'uppercase',
+        flex: 1,
+    },
+    notesStatus: {
+        color: Colors.textSecondary,
+        fontSize: 10,
+        fontStyle: 'italic',
+    },
+    notesHint: {
+        color: Colors.textSecondary,
+        fontSize: 11,
+        lineHeight: 15,
+        marginBottom: 8,
+    },
+    notesInput: {
+        minHeight: 120,
+        color: '#FFF8DC',
+        fontSize: 14,
+        lineHeight: 20,
+        padding: 10,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.12)',
+        backgroundColor: 'rgba(0,0,0,0.25)',
+        ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
     },
 });

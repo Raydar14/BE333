@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { Mail, Lock, User } from 'lucide-react-native';
+import { Mail, Lock, User, Award, Sparkles, ShieldCheck } from 'lucide-react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
@@ -16,40 +16,55 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<'user' | 'therapist'>('user');
     const [loading, setLoading] = useState(false);
+    // Therapist-only fields (see Manual Part 3 · Therapist Layer)
+    const [licenseInfo, setLicenseInfo] = useState('');
+    const [specialty, setSpecialty] = useState('');
+    const [hipaaAgreed, setHipaaAgreed] = useState(false);
     const router = useRouter();
 
     async function signUpWithEmail() {
+        if (role === 'therapist' && !hipaaAgreed) {
+            Alert.alert(
+                'One thing left',
+                'Please confirm the data-handling acknowledgment before creating your BE Guide account.'
+            );
+            return;
+        }
         setLoading(true);
         try {
-            // 1. Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // 2. Update Profile (Display Name)
-            await updateProfile(user, {
-                displayName: name
-            });
+            await updateProfile(user, { displayName: name });
 
-            // 3. Create User Document in Firestore
             const { doc, setDoc } = await import('firebase/firestore');
             const { db } = await import('../../lib/firebase');
 
-            await setDoc(doc(db, 'users', user.uid), {
+            const baseDoc: Record<string, unknown> = {
                 uid: user.uid,
                 email: user.email,
                 displayName: name,
                 createdAt: new Date().toISOString(),
                 provider: 'email',
-                role: role, // 'user' or 'therapist'
+                role: role,
                 isPremium: false,
-            });
+            };
+
+            if (role === 'therapist') {
+                baseDoc.licenseInfo = licenseInfo.trim() || null;
+                baseDoc.specialty = specialty.trim() || null;
+                baseDoc.hipaaAgreedAt = new Date().toISOString();
+                // Free tier by default; upgrading to Pro through PaywallModal
+                baseDoc.purchaseTier = 'free';
+            }
+
+            await setDoc(doc(db, 'users', user.uid), baseDoc);
 
             Alert.alert('Success', 'Account created! Signing you in...');
-            // Firebase automatically signs in after creation
             router.replace('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Signup Error:", error);
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', error instanceof Error ? error.message : 'Sign up failed');
         } finally {
             setLoading(false);
         }
@@ -109,6 +124,46 @@ export default function Signup() {
                         secureTextEntry
                         icon={Lock}
                     />
+
+                    {role === 'therapist' && (
+                        <View style={styles.therapistBlock}>
+                            <Text style={styles.therapistBlockTitle}>BE Guide details</Text>
+                            <Text style={styles.therapistBlockHint}>
+                                Shown to clients when they choose to link. Self-attested; not verified by BE333.
+                            </Text>
+
+                            <Input
+                                placeholder="License / certification (e.g., LMFT #12345, CA)"
+                                value={licenseInfo}
+                                onChangeText={setLicenseInfo}
+                                autoCapitalize="characters"
+                                icon={Award}
+                            />
+                            <Input
+                                placeholder="Primary specialty (optional)"
+                                value={specialty}
+                                onChangeText={setSpecialty}
+                                autoCapitalize="words"
+                                icon={Sparkles}
+                            />
+
+                            <TouchableOpacity
+                                style={styles.hipaaRow}
+                                onPress={() => setHipaaAgreed(!hipaaAgreed)}
+                                activeOpacity={0.7}
+                            >
+                                <View style={[styles.checkbox, hipaaAgreed && styles.checkboxOn]}>
+                                    {hipaaAgreed && <ShieldCheck size={14} color={Colors.primary} />}
+                                </View>
+                                <Text style={styles.hipaaText}>
+                                    I understand BE333 is a wellness-tracking tool, not a HIPAA-covered service.
+                                    Client data I view here is practice-cadence summary, not clinical
+                                    documentation. I will treat client identifiers with the same care as any
+                                    other client record.
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
                     <Button
                         title="Sign Up"
@@ -216,5 +271,54 @@ const styles = StyleSheet.create({
     roleTextActive: {
         color: Colors.secondary,
         fontWeight: 'bold',
-    }
+    },
+    therapistBlock: {
+        marginTop: 6,
+        marginBottom: 10,
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(225,183,37,0.35)',
+        backgroundColor: 'rgba(26,67,49,0.4)',
+        gap: 6,
+    },
+    therapistBlockTitle: {
+        color: Colors.secondary,
+        fontWeight: '700',
+        fontSize: 13,
+        letterSpacing: 0.4,
+        textTransform: 'uppercase',
+    },
+    therapistBlockHint: {
+        color: Colors.textSecondary,
+        fontSize: 12,
+        lineHeight: 17,
+        marginBottom: 4,
+    },
+    hipaaRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 10,
+        padding: 8,
+        marginTop: 4,
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 5,
+        borderWidth: 1.5,
+        borderColor: Colors.secondary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 1,
+    },
+    checkboxOn: {
+        backgroundColor: 'rgba(225,183,37,0.25)',
+    },
+    hipaaText: {
+        flex: 1,
+        color: Colors.text,
+        fontSize: 12,
+        lineHeight: 17,
+    },
 });
