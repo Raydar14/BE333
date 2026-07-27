@@ -732,6 +732,8 @@ BE333 is a psychologist-created mindfulness app that makes calm practical, compa
 | Share. Connect. Challenge. | Observer accountability, done kindly. |
 | Half science, half Dr. Powers. | Psychologist-created. Research-backed. |
 | Visual guidance to keep you on track. | Three minutes, three times a day. |
+| A busy brain isn't the obstacle. It's the equipment. | Wandering isn't failing. Returning is the rep. |
+| Do the thing you said you couldn't. | It takes three minutes. |
 
 ### App Store Copy
 
@@ -816,6 +818,136 @@ A rotating bank for social, ads, and in-app moments — the BE333 voice at its m
 - "The cue and the breath fire together, until returning is automatic."
 - "Neurons that pause together, wire together."
 - "Two habits, one bond. That's superadditivity."
+- "A busy brain isn't the obstacle. It's the equipment."
+- "Wandering isn't failing. Returning is the rep."
+- "You can't fail at noticing."
+- "Do the thing you said you couldn't. It takes three minutes."
+
+### Ad Concept · The BE Still Challenge
+
+Companion to the Video Scripts, B-Roll & Shot List, and Reels Tagline Bank. Two versions on identical footage — same format, same timer, same chime; opposite emotional bet.
+
+- **Version A — The Dare:** *"bet you can't"*
+- **Version B — The Surprise:** *"bet you can — and you'll surprise yourself"*
+
+**Working titles (A):** The BE Still Challenge · Can You Make It to 3:00? · The 3-Minute Dare · Still Here?
+**Working titles (B):** The "I Can't Meditate" Challenge · Surprise Yourself · Bet You Can · Told You So
+
+#### One-line pitch
+
+A full-screen countdown timer dares scrollers to sit still for three minutes over the most beautiful footage we own — and the ones who make it get their first real meditation, a chime, and a reward, right there in the feed.
+
+#### The insight
+
+Nobody thinks they need a meditation app — but nobody can sit still for three minutes either. This ad doesn't tell people that; it proves it to them, personally, in the middle of a doomscroll. The scroll itself becomes the "before" state, and the ad becomes the "after." The viewer's own restlessness is the hook, and the app is the answer.
+
+And the proof isn't a claim — it's felt. The ad ends with a guided body-check ("notice your shoulders, your jaw — feel the difference?") so the viewer experiences a before-and-after in their own body, in real time. No testimonial can compete with a difference you just felt yourself.
+
+The second insight is structural: **the ad IS the product.** Anyone who stays to the end hasn't watched a demo of BE333 — they've just completed their first BE333 session without downloading anything. The pitch and the free trial are the same 3 minutes.
+
+#### Why this works
+
+- **It's a challenge, not an ad.** Challenge formats are native to Reels/TikTok. The dare ("you won't make it") triggers the exact competitive itch that keeps people watching.
+- **It's algorithm-aligned.** Platforms rank on watch time and completion rate. This format is engineered to maximize both — every second the viewer accepts the dare is a ranking signal. A 3-minute Reel with high completion is rocket fuel.
+- **It flips the doomscroll.** The viewer is already scrolling; we don't interrupt the behavior, we hijack it into a scroll break. This is *"Stop the doomscroll. Start the bloom-scroll."* made literal.
+- **The reward loop mirrors the app.** Timer → practice → chime → bloom is exactly the in-app loop (BE Pause → lotus gains a petal). The ad trains the habit loop before the download.
+- **Built-in comment bait.** *"Did you make it?"* is an irresistible comment prompt — and comments compound reach.
+
+#### Format
+
+Vertical 9:16 · full 3:00 runtime (Reels supports up to 3 min) · burned-in captions · voice and text carry the same guidance in parallel, so the practice works sound-on with eyes closed, sound-on with eyes open, or fully muted.
+
+- **Visual:** one continuous, slowly evolving take from the Sanctuary shot bank — hero shot is the mossy green waterfall with mist and slow-motion water. No cuts after the open; stillness is the point.
+- **Timer:** large countdown from 3:00, styled in brand (Bloom Gold `#F2C94C` numerals on Deep Lotus Green `#2D6A4F` chip, or gold on the footage), positioned in the safe zone. **The timer is the protagonist.**
+
+#### Voice and text carry the same practice (from 1:00 on)
+
+Closing the eyes is an invitation, not a requirement — plenty of viewers will do the whole practice with their eyes soft on the water, and that counts. So from 1:00 on, the voice and the on-screen text carry the same guidance in parallel: the VO leads for anyone whose eyes are closed (everything they need is spoken, including *"open your eyes"* before the chime), and the text mirrors it — breath counts, the body-check, the payoff — so muted and eyes-open viewers get the full practice too. The text never comments on whether the viewer's eyes are open; it simply guides.
+
+#### Beat sheet — Version A · The Dare (3:00 cut)
+
+| Time | Timer | On-screen text | Audio / VO |
+|---|---|---|---|
+| 0:00–0:03 | 3:00 starts | "You won't make it 3 minutes without scrolling." | Waterfall ambience fades in. No music. |
+| 0:03–0:15 | counting | "Even watching this. Bet you're already twitchy." | Ambience only. |
+| 0:15–0:30 | counting | "The average scroller leaves in 1.7 seconds. You're beating them already." | Soft VO (optional): "Just watch the water." |
+| 0:30–1:00 | counting | "Thumb getting restless? That's not boredom. That's your nervous system asking for a break." | Ambience. |
+| 1:00–1:20 | 2:00 | "Still here? Close your eyes if you like — or keep them soft on the water. We'll keep the timer running." | VO: "If you're still here — close your eyes if you like, or just rest them on the water. I'll keep the timer running, and I'll tell you when it's done." |
+| 1:20–2:15 | counting | Breath cues mirror the voice: "In through your nose… 2… 3… 4" / "Out through your nose… 2… 3… 4… 5… 6" with the lotus breathing-belly graphic pulsing in time. | VO carries the practice — 3–4 slow cycles: "Breathe in through your nose… two… three… four. And out through your nose… two… three… four… five… six. You just gave yourself a scroll break." |
+| 2:15–2:35 | 0:45 | "Now notice: your shoulders. Your jaw. Your chest. Feel the difference?" | VO: "Notice your shoulders. Your jaw. The pace of your thoughts. Feel the difference? That's three minutes. You can feel the difference." |
+| 2:35–2:45 | 0:25 | "That calm? Your brain made it. You can feel the difference — and it's trainable." | VO: "Your brain built that calm on its own. Imagine it trained — three minutes, three times a day." |
+| 2:45–2:55 | 0:10 | "Almost there. Most people never get this far." | Ambience swells gently. VO: "Almost there…" |
+| 2:55–3:00 | 0:00 | CHIME. Lotus blooms on screen — petal-by-petal animation, chakra glow. "You made it. That was your first BE333." | VO: "Open your eyes." → signature chime (the in-app completion sound) as the lotus blooms. "You made it. That was your first BE333." |
+| End card (2s) | — | Lotus + logo · "Three minutes, three times a day. That's BE333." · "Link in bio" | VO: "BE333. Pause. Breathe. Be." |
+
+#### The reward moment
+
+The final 5 seconds must feel earned — this is the dopamine payoff the whole ad builds toward:
+
+- **Chime:** use the actual in-app completion chime so the sound becomes a brand asset (and later, a recognition trigger).
+- **Bloom:** the lotus gains petals in real time — the same animation the app uses, so day one in the app feels familiar.
+- **Affirmation line:** *"You made it. That was your first BE333."* — names what just happened: they didn't watch an ad, they meditated.
+- **Felt proof:** the chime lands right after the body-check, so the reward arrives *while the viewer can still feel the difference* in their own shoulders and jaw — the product's benefit and the ad's payoff are the same sensation.
+- **Optional deepener:** *"Comment 🪷 if you made it to the chime."* (comment-bait that also self-identifies warm leads.)
+
+#### Caption copy — Version A (ready to paste)
+
+> 99% of people can't watch this to the end without scrolling. The timer doesn't lie. If you hear the chime, you just did your first 3-minute meditation — and you can feel the difference. That's the whole app. 🪷 Comment 🪷 if you made it.
+> #BE333 #ScrollBreak #3MinuteChallenge #Mindfulness #NervousSystemReset
+
+#### Version B — The Surprise · *"you think you can't — watch yourself do it"*
+
+**The insight:** The number-one reason people never try meditation: *"I can't. My brain's too busy. I can't focus."* Version B meets that head-on — not with a dare, but with belief: that busy brain is *exactly* the point. Meditation was never about emptying your mind; it's noticing your mind wandered and coming back. The wandering isn't failure — returning is the rep. So this version expects the viewer to win, walks them through it, and lets them surprise themselves: *"You just meditated. With the brain you said was too busy."*
+
+Where Version A hooks the competitive skeptic (*"bet you can't"*), Version B hooks the self-doubter — arguably the bigger, warmer audience, and squarely in the brand's Compassion pillar. Same timer, same waterfall, same chime; the emotional bet flips from *prove us wrong* to *prove yourself wrong.*
+
+#### Beat sheet — Version B · The Surprise (3:00 cut)
+
+| Time | Timer | On-screen text | Audio / VO |
+|---|---|---|---|
+| 0:00–0:05 | 3:00 starts | *"I can't meditate. My brain's too busy."* — you, probably | VO: "You say you can't meditate?" Waterfall ambience fades in. |
+| 0:05–0:15 | counting | "Perfect. A busy brain is exactly the right equipment. Give us three minutes." | VO: "Perfect. You're exactly who this is for. Three minutes — let's prove you wrong." |
+| 0:15–0:40 | counting | "Nobody told you the secret: meditation isn't emptying your mind. It's noticing it wandered — and coming back." | VO: "Here's what nobody told you. Meditation isn't emptying your mind. It's noticing your mind wandered… and coming back. That's the whole skill." |
+| 0:40–1:00 | counting | "Your mind WILL wander in the next 3 minutes. Good. Every time you come back — that's a rep." | VO: "Your brain will wander during this. Probably a lot. That's not failing. Every time you notice and come back, that's one rep." |
+| 1:00–1:20 | 2:00 | "Close your eyes if you like — or keep them soft on the water. 🎧 sound on" | VO: "Close your eyes if you like, or just rest them on the water. I'll keep the timer running." |
+| 1:20–2:15 | counting | Breath cues mirror the voice: "In through your nose… 2… 3… 4" / "Out… 2… 3… 4… 5… 6" + pulsing lotus. Mid-way: "Thinking about your to-do list? You just NOTICED. That's a rep. Come back." | VO: 3–4 slow cycles. Mid-way: "Thinking about your list? Great — you just noticed. That's a rep. Come back to the breath." |
+| 2:15–2:35 | 0:45 | "Now notice: your shoulders. Your jaw. Your chest. Feel the difference?" | VO: "Notice your shoulders. Your jaw. The pace of your thoughts. Feel the difference? You did that." |
+| 2:35–2:45 | 0:25 | "You did that. With the brain you said was too busy." | VO: "You built that calm with the brain you said was too busy. Imagine it trained — three minutes, three times a day." |
+| 2:45–2:55 | 0:10 | "Almost there. You're doing the thing you said you couldn't." | Ambience swells gently. VO: "Almost there…" |
+| 2:55–3:00 | 0:00 | CHIME. Lotus blooms — petal-by-petal, chakra glow. "You just meditated. Told you." | VO: "Open your eyes." → chime as the lotus blooms. "You just meditated. Told you." |
+| End card (2s) | — | Lotus + logo · "Three minutes, three times a day. That's BE333." · "Link in bio" | VO: "BE333. Pause. Breathe. Be." |
+
+#### Caption copy — Version B (ready to paste)
+
+> If your brain is "too busy" to meditate — congratulations, you're qualified. Meditation isn't emptying your mind; it's noticing it wandered and coming back. Wandering isn't failing. Returning is the rep. Three minutes on the timer. Surprise yourself. 🪷 Comment 🪷 if you just did the thing you said you couldn't.
+> #BE333 #ICantMeditate #3MinuteChallenge #Mindfulness #BusyBrain
+
+#### When to run which version
+
+Run them as an A/B pair on the same footage — one edit day, two ads. Version A (the dare) travels on competitiveness: shares, stitches, "bet you can't" tags. Version B (the surprise) converts the *"I can't meditate"* objection directly — it's the version to retarget people who watched A past 1:00 but didn't click, and the better fit for warm audiences, therapist referrals, and the Compassion side of the feed. Watch which one produces more 🪷 comments and more link taps; the loser still wins as a top-of-funnel feeder for the other.
+
+#### Cut-down variants
+
+- **90-second version:** compress the open to 10s, one breath cycle instead of four, same chime ending. For paid placements where 3:00 is too long a buy.
+- **60-second version:** dare → 20s of stillness → "close your eyes" → one breath → chime. The challenge becomes *"one minute"* (*"Can't do 3? Start with 1."*).
+- **30-second teaser:** the dare + timer only, cut before payoff: *"Full 3-minute challenge on our page. Bring headphones."* Drives profile visits to the hero Reel.
+- **Series potential:** same format, rotating sanctuaries (waterfall / rain on leaves / still pond + lotus / golden-hour mist) — one recognizable challenge, endlessly repostable. *"Round 2. Harder than it looks."*
+
+#### Production notes
+
+- **Footage:** Sanctuary shot bank hero (mossy waterfall + mist). One continuous or invisibly-looped take; slow-motion water reads as premium and hypnotic. Film real (botanical garden, local waterfall) or license (Artgrid/Storyblocks; free: Pexels, Coverr — *"rainforest waterfall,"* *"misty jungle slow motion"*).
+- **Audio:** natural water ambience throughout — no music until (optionally) a low swell in the last 15s. The chime must be clean and isolated.
+- **Timer:** real-time and honest — do not skip time. Viewers will screen-record to verify; the honesty is part of the trust.
+- **Text:** all overlays in the safe zone; brand colors; large enough for mute autoplay.
+- **Breathing cue:** pair VO with the lotus breathing-belly animation so eyes-closed viewers get audio and eyes-open viewers get the visual.
+
+#### Measurement
+
+Primary: average watch time, completion rate (% reaching the chime), and completion-to-profile-visit rate. Secondary: 🪷 comments (self-reported completions = warmest retargeting pool), shares/sends (*"bet you can't do this"*), saves, and link-in-bio taps within 24h of posting. Success looks like completion rates far above the ~10% short-form norm — the dare structure should pull an unusually deep tail.
+
+#### Brand fit
+
+This concept operationalizes three lines already in the tagline bank: *"Stop the doomscroll. Start the bloom-scroll."* (the premise), *"Three minutes you do beats thirty minutes you don't."* (the proof), and *"Every pause is a rep for your resilience."* (the payoff). It is the **Chaos → Sanctuary** signature style with one twist — the chaos isn't on screen, it's the viewer's own thumb.
 
 ### Play Store Asset Requirements
 
