@@ -1,97 +1,161 @@
-// Yoga sequences — Sun Salutation A + 3 vinyasas per Master Manual Part 6,
-// plus a fully-standing sequence for practice at a desk, in an airport,
-// or anywhere getting on the floor isn't an option.
-// Names use both Sanskrit and English for accessibility.
+// Yoga sequences — per Master Manual Part 6 (Daily Sequences).
+// Three sessions × three versions = 9 sequences. Each session keeps one
+// breath pattern across all three versions.
+//   Morning Rise    — even 4/4 breath, one strength moment per version
+//   Mid-Day Reset   — slightly lengthened exhale, desk-friendly
+//   Evening Rest    — exhale twice as long as inhale, effortless by design
+// Every version runs ~3 minutes. Named in plain English throughout;
+// Sanskrit translations live in the Manual's Translation Key.
+//
+// Safety framework (Manual Part 6):
+// - Soft or bent knees on every fold
+// - No loaded spinal flexion, no forced hip rotation
+// - No core-gripping or tailbone-tucking cues
+// - All floor transitions happen via the side or via hands and knees
+// - Strength moments only appear in Morning Rise; Evening has no effort by design
 
 import { Sequence } from './types';
 
 export const YOGA_SEQUENCES: Sequence[] = [
+    // ────────────────────────────────────────────────────────────
+    // MORNING RISE — breath: even, 4 in / 4 out
+    // ────────────────────────────────────────────────────────────
     {
-        id: 'standing-anywhere',
-        name: 'Standing Anywhere Flow',
-        purpose: 'Move at a desk, in an airport, or between meetings — no floor needed.',
+        id: 'morning-rise-standing',
+        name: 'Morning Rise · Standing Up',
+        purpose: 'Bring the system online. Breath: even, 4 in / 4 out.',
         totalMinutes: 3,
         posture: 'standing',
         steps: [
-            { name: 'Tadasana (Mountain)', durationSec: 15, cue: 'Feet planted. Long spine. One centering breath.' },
-            { name: 'Uttanasana (Forward Fold)', durationSec: 15, cue: 'Exhale, hinge from the hips. Let the head hang. Soft knees are fine.' },
-            { name: 'Warrior 1 (Right)', durationSec: 20, cue: 'Rise up. Step right foot back, bend front knee, arms overhead.' },
-            { name: 'Tadasana (Mountain)', durationSec: 10, cue: 'Return to center. One breath.' },
-            { name: 'Warrior 1 (Left)', durationSec: 20, cue: 'Step left foot back this time. Arms lift. Steady gaze.' },
-            { name: 'Mountain on Tippy Toes', durationSec: 15, cue: 'Feet together. Rise onto the balls of the feet. Reach the crown up.' },
-            { name: 'Twist, Reach & Look Right', durationSec: 15, cue: 'Heels down. Twist through the ribs. Right arm reaches, gaze follows.' },
-            { name: 'Twist, Reach & Look Left', durationSec: 15, cue: 'Unwind through center. Twist the other way. Long side body.' },
-            { name: 'Twist, Reach & Look Right (again)', durationSec: 10, cue: 'Second pass, deeper. Move at the speed of your breath.' },
-            { name: 'Twist, Reach & Look Left (again)', durationSec: 10, cue: 'One more time. Notice what softens.' },
-            { name: 'Chin to Chest', durationSec: 10, cue: 'Head heavy, all the way down. Let the back of the neck lengthen.' },
-            { name: 'Head Back', durationSec: 10, cue: 'Slowly lift and tilt back as far as feels safe. Open the throat.' },
-            { name: 'Head Circles', durationSec: 20, cue: 'Slow circles one direction, then the other. No forcing.' },
-            { name: 'Long Gaze (Standing Rest)', durationSec: 15, cue: 'Feet still. Find something far away and rest your eyes there. This is your shavasana.' },
+            { name: 'Standing Full-Body Reach', durationSec: 25, cue: 'Arms sweep overhead, stretch long through the fingers, heels can lift. Inhale up, exhale float down. 3 rounds.' },
+            { name: 'Standing Cat-Cow', durationSec: 40, cue: 'Hands on thighs or a counter. Arch and round the spine with the breath. 6 rounds, slightly brisk.' },
+            { name: 'Shoulder Rolls + Neck Turns', durationSec: 30, cue: 'Five backward rolls. Then look slowly right and left, twice each way.' },
+            { name: 'Standing Side Reach', durationSec: 30, cue: 'Right and left. About 15 sec per side. One arm overhead, lean gently away.' },
+            { name: 'Chair Pose Pulses', durationSec: 35, cue: 'Sit back a few inches on the inhale, rise on the exhale. 4 slow rounds. Belly soft, arms optional.' },
+            { name: 'Tree Pose', durationSec: 25, cue: '10 to 15 sec per side. Fingertips on wall or counter as needed.' },
         ],
     },
     {
-        id: 'sun-salutation-a',
-        name: 'Sun Salutation A',
-        purpose: 'Full-body energizing and mental focus.',
+        id: 'morning-rise-laying',
+        name: 'Morning Rise · Laying Down',
+        purpose: 'Bring the system online, starting in bed. Breath: even, 4 in / 4 out. Ends standing.',
         totalMinutes: 3,
         posture: 'mixed',
         steps: [
-            { name: 'Tadasana (Mountain)', durationSec: 15, cue: 'Ground the feet. Long spine. Centering breath.' },
-            { name: 'Urdhva Hastasana (Upward Salute)', durationSec: 10, cue: 'Inhale, arms sweep up overhead.' },
-            { name: 'Uttanasana (Forward Fold)', durationSec: 15, cue: 'Exhale, fold from the hips. Soft knees are fine.' },
-            { name: 'Halfway Lift', durationSec: 10, cue: 'Inhale, halfway lift, long spine, fingertips or shins.' },
-            { name: 'Plank → Chaturanga', durationSec: 20, cue: 'Exhale, step or float back to plank. Lower with control.' },
-            { name: 'Upward Dog / Cobra', durationSec: 15, cue: 'Inhale, lift the chest. Elbows soft. Roll shoulders back.' },
-            { name: 'Downward Dog', durationSec: 30, cue: 'Exhale, hips high. Hold 3 slow breaths.' },
-            { name: 'Step forward → Halfway Lift', durationSec: 10, cue: 'Inhale, walk or jump feet in. Long spine again.' },
-            { name: 'Uttanasana', durationSec: 10, cue: 'Exhale, fold.' },
-            { name: 'Urdhva Hastasana', durationSec: 10, cue: 'Inhale, rise. Sweep arms overhead.' },
-            { name: 'Tadasana', durationSec: 15, cue: 'Exhale, hands to heart. Repeat, other leg leads.' },
+            { name: 'Full-Body Reach', durationSec: 25, cue: 'On the back, arms overhead. Stretch fingers to heels, point and flex the feet. 2 to 3 rounds. Inhale into the stretch, soften on the exhale.' },
+            { name: 'Knees-to-Chest Rock', durationSec: 25, cue: 'Loose hug, small side-to-side rocking. Easy breath.' },
+            { name: 'Reclined Twist', durationSec: 30, cue: 'Knees drop to one side, arms wide. Right and left, about 15 sec per side. No pulling.' },
+            { name: 'Bridge Lifts', durationSec: 35, cue: 'Knees bent, feet flat. Hips lift a few inches on the inhale, lower on the exhale. 4 slow rounds.' },
+            { name: 'Rise to Standing', durationSec: 10, cue: 'Roll to the side, press up to sitting, then stand. Head comes up last.' },
+            { name: 'Mountain + Standing Side Reach', durationSec: 30, cue: 'Right and left, about 15 sec per side. One arm overhead, lean gently away.' },
+            { name: 'Tree Pose', durationSec: 25, cue: '10 to 15 sec per side. One foot lifted. Fingertips on wall, dresser, or counter as needed.' },
         ],
     },
     {
-        id: 'clear-the-mind',
-        name: 'Vinyasa 1 · Clear the Mind',
-        purpose: 'Mental clarity, light energy boost.',
+        id: 'morning-rise-updown',
+        name: 'Morning Rise · Up&Down',
+        purpose: 'Bring the system online with a floor-to-standing arc. Breath: even, 4 in / 4 out.',
         totalMinutes: 3,
         posture: 'mixed',
         steps: [
-            { name: 'Tadasana', durationSec: 15, cue: 'Centering breath. Set a light intention.' },
-            { name: 'Flow to Downward Dog', durationSec: 60, cue: 'Urdhva → fold → halfway → plank → chaturanga → up dog → down dog. One breath per pose.' },
-            { name: 'Downward Dog hold', durationSec: 30, cue: 'Three long breaths. Pedal the feet if it feels good.' },
-            { name: 'Step forward → Halfway Lift', durationSec: 15, cue: 'Walk in slowly.' },
-            { name: 'Forward Fold', durationSec: 10, cue: 'Release the head.' },
-            { name: 'Urdhva Hastasana', durationSec: 10, cue: 'Inhale, rise.' },
-            { name: 'Tadasana', durationSec: 10, cue: 'Exhale, hands to heart. Notice.' },
+            { name: 'Easy Cross-Legged Seat', durationSec: 25, cue: 'On the floor, blanket under hips as needed. 3 even breaths. Shoulders roll back once.' },
+            { name: 'Cat-Cow', durationSec: 40, cue: 'From hands and knees. 6 rounds, slightly brisk. Inhale arch, exhale round.' },
+            { name: 'Sphinx', durationSec: 30, cue: 'Forearms down, chest gently lifted, legs heavy. Even breath.' },
+            { name: 'Downward-Facing Dog (knees bent)', durationSec: 40, cue: 'Knees bent, pedaling the feet. 20 to 30 sec. Then walk the feet forward and roll up to standing, head last.' },
+            { name: 'Standing Side Reach', durationSec: 30, cue: 'Right and left, about 15 sec per side.' },
+            { name: 'Tree Pose', durationSec: 25, cue: '10 to 15 sec per side. Wall or counter as needed.' },
+        ],
+    },
+
+    // ────────────────────────────────────────────────────────────
+    // MID-DAY RESET — breath: slightly lengthened exhale
+    // ────────────────────────────────────────────────────────────
+    {
+        id: 'midday-reset-standing',
+        name: 'Mid-Day Reset · Standing Up',
+        purpose: 'Clear tension, reset posture, return to the day. Breath: slightly lengthened exhale. Desk-friendly.',
+        totalMinutes: 3,
+        posture: 'mixed',
+        steps: [
+            { name: 'Mountain + Shoulder Rolls', durationSec: 40, cue: 'Five slow backward rolls. Then stand still and let the exhale lengthen.' },
+            { name: 'Cat-Cow', durationSec: 50, cue: 'Inhale to arch, exhale to round. Small range, about 8 slow rounds. Hands can go to a desk or counter instead of the floor.' },
+            { name: 'Thread the Needle', durationSec: 40, cue: 'From hands and knees, slide one arm under, shoulder rests down. Right and left, about 20 sec per side. Breath into the back ribs.' },
+            { name: 'Standing Side Reach', durationSec: 50, cue: 'Right and left, about 20 sec per side. Finish with two long exhales.' },
         ],
     },
     {
-        id: 'nervous-system-reset',
-        name: 'Vinyasa 2 · Nervous System Reset',
-        purpose: 'Calm the mind and body, relieve stress.',
+        id: 'midday-reset-laying',
+        name: 'Mid-Day Reset · Laying Down',
+        purpose: 'Clear tension, reset posture, without leaving the floor. Breath: slightly lengthened exhale.',
         totalMinutes: 3,
         posture: 'sitting',
         steps: [
-            { name: 'Sukhasana (Easy Seat)', durationSec: 30, cue: 'Sit cross-legged. One hand on belly, one on chest. Long exhales.' },
-            { name: 'Cat–Cow (5 rounds)', durationSec: 60, cue: 'Move at the speed of your breath. Inhale arch, exhale round.' },
-            { name: 'Thread the Needle (right)', durationSec: 40, cue: 'Right arm under, shoulder to mat. Rest cheek down.' },
-            { name: 'Thread the Needle (left)', durationSec: 40, cue: 'Left arm under. Even softer this side.' },
-            { name: "Child's Pose", durationSec: 30, cue: 'Rest. Ground the forehead. Breathe into the low back.' },
+            { name: 'Full-Body Reach on the Back', durationSec: 20, cue: 'Inhale into the stretch, soften on the exhale. 2 rounds.' },
+            { name: 'Knees-to-Chest Rock', durationSec: 30, cue: 'Loose hug, small rocking, easy breath.' },
+            { name: 'Reclined Twist', durationSec: 40, cue: 'Right and left, about 20 sec per side. Knees drop, arms wide.' },
+            { name: 'Reclined Figure-4', durationSec: 40, cue: 'Ankle over opposite knee, hands behind the thigh. Gentle. Right and left, about 20 sec per side.' },
+            { name: 'Legs-Up-the-Wall', durationSec: 50, cue: 'Or legs resting on the couch or chair seat. In 4, out 6. Then roll to the side and come up.' },
         ],
     },
     {
-        id: 'root-and-rise',
-        name: 'Vinyasa 3 · Root & Rise',
-        purpose: 'Grounding, strength, confidence.',
+        id: 'midday-reset-updown',
+        name: 'Mid-Day Reset · Up&Down',
+        purpose: 'Clear tension with a full standing-to-floor-to-standing arc. Breath: slightly lengthened exhale.',
+        totalMinutes: 3,
+        posture: 'mixed',
+        steps: [
+            { name: 'Mountain + Shoulder Rolls', durationSec: 30, cue: 'Five slow backward rolls. Exhale lengthening.' },
+            { name: 'Standing Side Reach', durationSec: 30, cue: 'Right and left, about 15 sec per side.' },
+            { name: 'Cat-Cow (from hands and knees)', durationSec: 45, cue: 'Lower to hands and knees, then 6 slow rounds.' },
+            { name: 'Thread the Needle', durationSec: 40, cue: 'Right and left, about 20 sec per side.' },
+            { name: 'Child\'s Pose', durationSec: 20, cue: 'Knees wide. Pillow under hips if the fold feels crowded. 3 long exhales.' },
+            { name: 'Rise to Mountain Pose', durationSec: 15, cue: 'Roll up slowly. Two long exhales to close.' },
+        ],
+    },
+
+    // ────────────────────────────────────────────────────────────
+    // EVENING REST — breath: exhale twice as long as inhale
+    // ────────────────────────────────────────────────────────────
+    {
+        id: 'evening-rest-standing',
+        name: 'Evening Rest · Standing Up',
+        purpose: 'Down-shift the nervous system toward sleep. Breath: exhale twice as long as the inhale.',
         totalMinutes: 3,
         posture: 'standing',
         steps: [
-            { name: 'Tadasana', durationSec: 15, cue: 'Ground the feet. Steady breath. Set an intention.' },
-            { name: 'Chair (Utkatasana)', durationSec: 30, cue: 'Sit back into imaginary chair. Arms overhead. Keep chest lifted.' },
-            { name: 'Forward Fold → Warrior II (R)', durationSec: 30, cue: 'Step right foot back. Bend front knee, arms wide, gaze over front hand.' },
-            { name: 'Reverse Warrior (R)', durationSec: 30, cue: 'Front arm rises, back hand slides down the leg. Long side body.' },
-            { name: 'Wide-Leg Fold (Prasarita)', durationSec: 30, cue: 'Turn to center, feet wide, hinge forward. Let the crown release.' },
-            { name: 'Warrior II + Reverse (L)', durationSec: 45, cue: 'Rise up. Repeat on the left side, same slow tempo.' },
+            { name: 'Mountain Pose', durationSec: 40, cue: 'Eyes soft or closed. Hand on belly. In 4, out 8. Three rounds.' },
+            { name: 'Slow Shoulder Rolls, Arms Heavy', durationSec: 30, cue: 'Five rolls. Then stand and let the arms weigh down. Jaw unclenched, teeth slightly parted.' },
+            { name: 'Standing Side Reach (Slow-Motion)', durationSec: 40, cue: 'Right and left, about 20 sec per side. Exhale long on the way over.' },
+            { name: 'Standing Forward Fold', durationSec: 30, cue: 'Knees generously bent. Arms dangling or holding opposite elbows. Gentle sway, head heavy. Hands can rest on a bed or chair seat for a supported half-fold instead.' },
+            { name: 'Return to Mountain', durationSec: 40, cue: 'Rolling up slowly, head last. One final round of in 4, out 8. Standing still.' },
+        ],
+    },
+    {
+        id: 'evening-rest-laying',
+        name: 'Evening Rest · Laying Down',
+        purpose: 'Down-shift toward sleep without leaving the bed. Breath: exhale twice as long as the inhale.',
+        totalMinutes: 3,
+        posture: 'sitting',
+        steps: [
+            { name: 'Supported Reclined Butterfly', durationSec: 60, cue: 'On the back, soles of feet together, knees resting on pillows (pillows required). Belly breathing — one hand on belly, one on chest, only the belly hand moves.' },
+            { name: 'Knees-to-Chest Rock', durationSec: 45, cue: 'Loose grip, shoulders down, tiny rocking.' },
+            { name: 'Reclined Twist', durationSec: 40, cue: 'Right and left, lazy version. Gravity does the work. About 20 sec per side.' },
+            { name: 'Corpse Pose / Sleep Position', durationSec: 35, cue: '4-7-8 breath (in 4, hold 7, out 8), two to three rounds. Or simplify to a long exhale if counting feels like work.' },
+        ],
+    },
+    {
+        id: 'evening-rest-updown',
+        name: 'Evening Rest · Up&Down',
+        purpose: 'One-way trip: starts standing, ends down for sleep. Breath: exhale twice as long as the inhale.',
+        totalMinutes: 3,
+        posture: 'mixed',
+        steps: [
+            { name: 'Mountain Pose', durationSec: 30, cue: 'Eyes soft. Hand on belly. In 4, out 8. Two rounds. Jaw unclenched, teeth slightly parted.' },
+            { name: 'Standing Forward Fold', durationSec: 25, cue: 'Knees generously bent. Arms dangling or hands resting on the bed or a chair seat. Gentle sway, head heavy.' },
+            { name: 'Easy Cross-Legged Seat', durationSec: 30, cue: 'Lower to sitting. Blanket or against the bed for back support. Long-exhale breathing, shoulders melting.' },
+            { name: 'Knees-to-Chest Rock', durationSec: 35, cue: 'Recline back. Loose grip, tiny rocking.' },
+            { name: 'Reclined Twist', durationSec: 40, cue: 'Right and left, lazy version. About 20 sec per side.' },
+            { name: 'Corpse Pose / Sleep Position', durationSec: 20, cue: '4-7-8 breath, two rounds. Or just the long exhale.' },
         ],
     },
 ];
