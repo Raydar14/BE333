@@ -13,8 +13,8 @@ export default function EveningLink() {
                 "Feed my pet",
                 "Shower"
             ]}
-            nextRoute="/onboarding/review"
-            isFinal={true}
+            nextRoute="/onboarding/letter"
+            isFinal={false}
         />
     );
 }

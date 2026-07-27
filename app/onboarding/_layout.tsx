@@ -7,6 +7,7 @@ export default function OnboardingLayout() {
             <Stack.Screen name="morning" />
             <Stack.Screen name="midday" />
             <Stack.Screen name="evening" />
+            <Stack.Screen name="letter" />
             <Stack.Screen name="review" />
         </Stack>
     );

@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useGuideLink } from '../hooks/useBeGuide';
+import { useLetterToYourself, DEFAULT_LETTER, ONBOARDING_PROMPT } from '../hooks/useLetterToYourself';
 
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
@@ -53,6 +54,26 @@ export default function Settings() {
     const [guideEmailInput, setGuideEmailInput] = useState('');
     const [guideCodeInput, setGuideCodeInput] = useState('');
     const [guideLinking, setGuideLinking] = useState(false);
+
+    // Letter to Yourself — read/write the single canonical letter.
+    const { letter, save: saveLetter, clear: clearLetter } = useLetterToYourself();
+    const [letterDraft, setLetterDraft] = useState<string | null>(null);
+    const [letterSaving, setLetterSaving] = useState(false);
+    const effectiveLetter = letterDraft ?? letter;
+
+    const handleLetterSave = async () => {
+        if (letterDraft === null) return;
+        setLetterSaving(true);
+        await saveLetter(letterDraft);
+        setLetterSaving(false);
+        setLetterDraft(null);
+    };
+    const handleLetterClear = async () => {
+        setLetterSaving(true);
+        await clearLetter();
+        setLetterSaving(false);
+        setLetterDraft(null);
+    };
 
     const handleLinkGuide = async () => {
         if (!guideEmailInput.trim()) return;
@@ -304,6 +325,90 @@ export default function Settings() {
                     )}
                 </View>
 
+                {/* Letter to Yourself — Manual Part 5 */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Letter to Yourself</Text>
+                    <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 8, lineHeight: 18 }]}>
+                        {ONBOARDING_PROMPT} This surfaces at the top of the first BE Pause after a Missed Day.
+                    </Text>
+                    <TextInput
+                        value={effectiveLetter}
+                        onChangeText={setLetterDraft}
+                        multiline
+                        placeholder="Two or three sentences is plenty…"
+                        placeholderTextColor="rgba(255,255,255,0.35)"
+                        maxLength={600}
+                        style={{
+                            minHeight: 120,
+                            color: colors.text,
+                            fontSize: 14,
+                            lineHeight: 20,
+                            padding: 12,
+                            borderRadius: 10,
+                            borderWidth: 1,
+                            borderColor: colors.border,
+                            backgroundColor: colors.surface,
+                        }}
+                        textAlignVertical="top"
+                    />
+                    <Text style={{
+                        marginTop: 4, textAlign: 'right', fontSize: 11,
+                        color: colors.textSecondary,
+                    }}>
+                        {effectiveLetter.length} / 600
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                        <TouchableOpacity
+                            onPress={handleLetterSave}
+                            disabled={letterDraft === null || letterSaving}
+                            style={[styles.optionButton, {
+                                flex: 1,
+                                backgroundColor: letterDraft === null ? colors.surface : colors.primary,
+                                opacity: letterSaving ? 0.6 : 1,
+                            }]}
+                        >
+                            <Text style={[styles.optionText, {
+                                color: letterDraft === null ? colors.textSecondary : '#fff',
+                            }]}>
+                                {letterSaving ? 'Saving…' : letter ? 'Update Letter' : 'Save Letter'}
+                            </Text>
+                        </TouchableOpacity>
+                        {letter && (
+                            <TouchableOpacity
+                                onPress={handleLetterClear}
+                                disabled={letterSaving}
+                                style={[styles.optionButton, {
+                                    backgroundColor: colors.surface,
+                                    borderWidth: 1, borderColor: colors.border,
+                                }]}
+                            >
+                                <Text style={[styles.optionText, { color: colors.textSecondary }]}>Clear</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                    {!letter && (
+                        <View style={{
+                            marginTop: 10, padding: 10, borderRadius: 8,
+                            backgroundColor: colors.surface,
+                            borderWidth: 1, borderColor: colors.border,
+                        }}>
+                            <Text style={[styles.hint, {
+                                color: colors.textSecondary, fontSize: 10,
+                                fontWeight: '700', letterSpacing: 0.8,
+                                textTransform: 'uppercase', marginBottom: 4,
+                            }]}>
+                                Default (used until you save your own)
+                            </Text>
+                            <Text style={[styles.hint, {
+                                color: colors.textSecondary, fontSize: 12,
+                                lineHeight: 18, fontStyle: 'italic',
+                            }]}>
+                                {DEFAULT_LETTER}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
                 {/* Privacy & Data */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>Privacy & Data</Text>
@@ -330,8 +435,8 @@ export default function Settings() {
                         </Text>
                         <Text style={[styles.hint, { color: colors.textSecondary, lineHeight: 16 }]}>
                             Written entries in My Work (Insight Diary, Insightful Notes, Inspiring
-                            Messages, Self-Advice) · EMA check-in responses · biofeedback readings
-                            (HR / HRV) · session-completion messages.
+                            Messages, Self-Advice) · your Letter to Yourself · EMA check-in
+                            responses · biofeedback readings (HR / HRV) · session-completion messages.
                         </Text>
                     </View>
                 </View>

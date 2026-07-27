@@ -13,6 +13,8 @@ import { useBiofeedback } from '../contexts/BiofeedbackContext';
 import { PremiumButton } from '../components/PremiumButton';
 import { ShimmerButton } from '../components/ShimmerButton';
 import { GuestBanner } from '../components/GuestBanner';
+import { LetterCard } from '../components/LetterCard';
+import { justReturnedFromMissedDay } from '../hooks/useLetterToYourself';
 import { BreathingLeaves } from '../components/BreathingLeaves';
 import { BiofeedbackChart } from '../components/BiofeedbackChart';
 import { SessionPhaseGuide } from '../components/SessionPhaseGuide';
@@ -487,6 +489,13 @@ export default function Home() {
                         </View>
 
                         {!user && <GuestBanner />}
+
+                        {/* Letter to Yourself — surfaced on the first BE Pause
+                            after a Missed Day. Hides once the user starts a
+                            session or completes today's first pause. */}
+                        {!isActive && !isCompleted && justReturnedFromMissedDay(stats) && (
+                            <LetterCard onEdit={() => router.push('/settings')} />
+                        )}
 
                         {/* Logo Area */}
                         <View style={styles.logoContainer}>
