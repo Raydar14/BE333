@@ -43,7 +43,7 @@ export default function Home() {
     const { colors } = useTheme();
     const { isPro } = usePurchase();
     const {
-        timerDuration,
+        timerDuration: settingsTimerDuration,
         showNatureVisuals,
         showBreathingGuide,
         timerMode,
@@ -102,7 +102,15 @@ export default function Home() {
         showLiveBiofeedback,
         setShowLiveBiofeedback,
     } = useBiofeedback();
-    const { stats, registerPause } = useBePractice();
+    const { stats, registerPause, pauseDurationSec } = useBePractice();
+
+    // Non-Pro users have their BE Pause length auto-follow the practice
+    // stage: 333 → 3 min, 666 → 6 min, 999 → 9 min. Pro users keep their
+    // Settings choice (they can override the stage default). Falls back to
+    // the Settings duration until bePractice stats load, which prevents a
+    // 0-second flash on cold start.
+    const timerDuration =
+        !isPro && pauseDurationSec ? pauseDurationSec : settingsTimerDuration;
 
     // Logic for Start Button
     const sessionsToday = stats?.currentPauses || 0;
