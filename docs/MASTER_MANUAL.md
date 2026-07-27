@@ -542,81 +542,113 @@ If the user skipped the writing step, use this warm default in the BE333 voice:
 
 ---
 
-## Part 6 · 3-Minute Yoga Vinyasa Manual
+## Part 6 · Daily Sequences
 
-For clarity, calm, and energy. These short flows complete in three minutes or less — ideal for busy days, mid-task resets, or centering before teaching. Each sequence targets a specific wellness goal and uses intentional, breath-linked movement. All poses are named in plain English; the traditional Sanskrit names appear in the Core Pose Reference at the end of this part.
+Three sessions, each in three versions: **Standing Up**, **Laying Down**, and **Up&Down**. Every sequence runs about 3 minutes. Each session keeps one breath pattern across all three versions. Morning uses even breath. Midday uses a slightly lengthened exhale. Evening uses an exhale twice as long as the inhale.
 
-### Sun Salutation A
+### Morning Rise
 
-**Purpose:** full-body energizing and mental focus. **Time:** ~3 minutes (both sides). One round = both right and left sides.
+**Breath:** even, 4 counts in, 4 counts out. **Purpose:** bring the system online. Every version ends upright, and each contains one strength moment.
 
-1. Mountain Pose — inhale, ground and center.
-2. Upward Salute (arms reach overhead) — inhale, arms rise.
-3. Standing Forward Fold — exhale, fold from the hips.
-4. Halfway Lift (flat back, hands to shins) — inhale, lengthen spine.
-5. Plank → Low Push-Up — exhale, step back and lower.
-6. Cobra or Upward-Facing Dog — inhale, lift chest.
-7. Downward-Facing Dog — exhale, hold 3 breaths (~30 sec).
-8. Step forward → Halfway Lift — inhale.
-9. Standing Forward Fold — exhale.
-10. Upward Salute — inhale, rise.
-11. Mountain Pose — exhale, return to center. Repeat with the opposite leg for step back/forward.
+#### Morning Rise · Standing Up (~3 min)
 
-| Segment | Duration |
-|---|---|
-| Mountain Pose + centering breath | 10 sec |
-| Flow to Downward Dog | ~60 sec |
-| Hold Downward Dog | ~30 sec |
-| Return to Mountain Pose | ~60 sec |
-| **Total (1 round)** | **~3 min** |
+1. **Standing Full-Body Reach** (arms sweep overhead, stretch long through the fingers, heels can lift) — inhale up, exhale arms float down, 3 rounds (25 sec)
+2. **Standing Cat-Cow** (hands on thighs or a counter, arch and round the spine with the breath) — 6 rounds, slightly brisk (40 sec)
+3. **Shoulder Rolls + Gentle Neck Turns** — five backward rolls, then look slowly right and left, twice each way (30 sec)
+4. **Standing Side Reach** — right and left, about 15 sec per side (30 sec)
+5. **Chair Pose Pulses** (sit back a few inches on the inhale, rise on the exhale, arms optional) — 4 slow rounds, natural sit-back, belly soft (35 sec)
+6. **Tree Pose** (fingertips on wall or counter as needed) — 10 to 15 sec per side (25 sec)
 
-### Vinyasa 1 · Clear the Mind
+#### Morning Rise · Laying Down (~3 min, starts in bed, ends standing)
 
-**Purpose:** mental clarity, light energy boost. **Time:** ~2.5 minutes.
+1. **Full-Body Reach** (on the back, arms overhead, stretch fingers to heels, point and flex the feet) — inhale into the stretch, soften on the exhale, 2 to 3 rounds (25 sec)
+2. **Knees-to-Chest Rock** (loose hug, small side-to-side rocking) — easy breath (25 sec)
+3. **Reclined Twist** (knees drop to one side, arms wide) — right and left, about 15 sec per side, no pulling (30 sec)
+4. **Bridge Lifts** (knees bent, feet flat, hips lift a few inches on the inhale, lower on the exhale) — 4 slow rounds (35 sec)
+5. **Roll to the side, press up to sitting, then stand** — head comes up last (10 sec)
+6. **Mountain Pose + Standing Side Reach** (one arm overhead, lean gently away) — right and left, about 15 sec per side (30 sec)
+7. **Tree Pose** (one foot lifted, fingertips on wall, dresser, or counter as needed) — 10 to 15 sec per side (25 sec)
 
-1. Mountain Pose — centering breath (15 sec).
-2. Upward Salute → Forward Fold → Halfway Lift → Plank → Low Push-Up → Upward Dog → Downward Dog — flow, 1 breath per pose (~60 sec).
-3. Downward Dog hold — 3 breaths (~30 sec).
-4. Step forward → Halfway Lift → Forward Fold → Upward Salute → Mountain Pose (~45 sec).
+#### Morning Rise · Up&Down (~3 min)
 
-### Vinyasa 2 · Nervous System Reset
+1. **Easy Cross-Legged Seat on the floor** (blanket under hips as needed) — 3 even breaths, shoulders roll back once (25 sec)
+2. **Cat-Cow from hands and knees** — 6 rounds, slightly brisk (40 sec)
+3. **Sphinx** (forearms down, chest gently lifted, legs heavy) — even breath (30 sec)
+4. **Downward-Facing Dog, knees bent, pedaling the feet** — 20 to 30 sec, then walk the feet forward and roll up to standing, head last (40 sec)
+5. **Standing Side Reach** — right and left, about 15 sec per side (30 sec)
+6. **Tree Pose** (wall or counter as needed) — 10 to 15 sec per side (25 sec)
 
-**Purpose:** calm the mind and body, relieve stress. **Time:** ~2.5–3 minutes.
+### Mid-Day Reset
 
-1. Easy Cross-Legged Seat — breathwork, or rest the hands on the knees with thumb and index finger touching (30 sec).
-2. Cat-Cow (arch and round the back on hands and knees) — 5 rounds, slow breath and movement (60 sec).
-3. Thread the Needle (from hands and knees, slide one arm under the body, shoulder to the floor) — right + left, ~40 sec per side.
-4. Child's Pose (hips back to heels, forehead resting) — rest and ground (20–30 sec).
+**Breath:** slightly lengthened exhale. **Purpose:** clear tension, reset posture, return to the day. Every version ends upright or rising.
 
-### Vinyasa 3 · Root & Rise
+#### Mid-Day Reset · Standing Up (~3 min, desk-friendly)
 
-**Purpose:** grounding, strength, confidence. **Time:** ~3 minutes.
+1. **Mountain Pose + Shoulder Rolls** — five slow backward rolls, then stand still and let the exhale lengthen (40 sec)
+2. **Cat-Cow** — inhale to arch, exhale to round, small range, about 8 slow rounds (50 sec). Hands can go to a desk or counter instead of the floor.
+3. **Thread the Needle** (from hands and knees, slide one arm under, shoulder rests down) — right and left, about 20 sec per side, breath into the back ribs (40 sec)
+4. **Standing Side Reach** — right and left, about 20 sec per side, finish with two long exhales (50 sec)
 
-1. Mountain Pose — breath and intention (15 sec).
-2. Chair Pose (sit back as if into a chair, arms up) — hold 20–30 sec.
-3. Forward Fold → step back to Warrior II (right) — ~30 sec.
-4. Reverse Warrior (right) — back hand slides down the leg, front arm reaches up and back (30 sec).
-5. Wide-Leg Forward Fold — 30 sec.
-6. Warrior II + Reverse Warrior (left) — 30 sec.
+#### Mid-Day Reset · Laying Down (~3 min)
 
-### Teaching & Practice Tips
+1. **Full-Body Reach on the back** — inhale into the stretch, soften on the exhale, 2 rounds (20 sec)
+2. **Knees-to-Chest Rock** — loose hug, small rocking, easy breath (30 sec)
+3. **Reclined Twist** — right and left, about 20 sec per side (40 sec)
+4. **Reclined Figure-4** (ankle over opposite knee, hands behind the thigh, gentle) — right and left, about 20 sec per side (40 sec)
+5. **Legs-Up-the-Wall** or legs resting on the couch or chair seat — in 4, out 6 (50 sec). Then roll to the side and come up.
 
-- Use 1-breath-per-pose cueing for faster pacing.
-- Slow the breath or hold poses longer for more grounding.
-- Modify or shorten if time or mobility is limited (e.g., skip the second side).
-- These flows are ideal for class openings, work breaks, or evening resets.
+#### Mid-Day Reset · Up&Down (~3 min)
 
-### Core Pose Reference (for illustration)
+1. **Mountain Pose + Shoulder Rolls** — five slow backward rolls, exhale lengthening (30 sec)
+2. **Standing Side Reach** — right and left, about 15 sec per side (30 sec)
+3. **Lower to hands and knees, then Cat-Cow** — 6 slow rounds (45 sec)
+4. **Thread the Needle** — right and left, about 20 sec per side (40 sec)
+5. **Child's Pose**, knees wide, pillow under hips if the fold feels crowded — 3 long exhales (20 sec)
+6. **Rise back to standing, roll up slowly, then Mountain Pose** — two long exhales to close (15 sec)
 
-| Group | Poses |
-|---|---|
-| Standing & transition | Mountain Pose (Tadasana), Upward Salute (Urdhva Hastasana), Standing Forward Fold (Uttanasana), Halfway Lift (Ardha Uttanasana), Chair Pose (Utkatasana). |
-| Flowing & strength | Plank (Phalakasana), Low Push-Up (Chaturanga Dandasana), Upward-Facing Dog, Cobra (Bhujangasana). |
-| Inversions & downward | Downward-Facing Dog (Adho Mukha Svanasana), Child's Pose (Balasana), Thread the Needle. |
-| Warrior & grounding | Warrior I & II (Virabhadrasana), Reverse Warrior, Wide-Leg Forward Fold (Prasarita). |
-| Seated & centering | Easy Cross-Legged Seat (Sukhasana), Seated Twist (Ardha Matsyendrasana), Tree Pose (Vrksasana), Hero's Pose (Virasana). |
+### Evening Rest
 
-**Name notes:** Sun Salutation A is traditionally called *Surya Namaskar A*. The thumb-to-index-finger hand position in Easy Seat is *Gyan Mudra*.
+**Breath:** exhale twice as long as the inhale, throughout. **Purpose:** down-shift the nervous system toward sleep. No effort anywhere, and each version gets progressively stiller.
+
+#### Evening Rest · Standing Up (~3 min)
+
+1. **Mountain Pose, eyes soft or closed, hand on belly** — in 4, out 8, three rounds (40 sec)
+2. **Slow Shoulder Rolls, then let the arms hang heavy** — five rolls, then stand and let the arms weigh down, jaw unclenched, teeth slightly parted (30 sec)
+3. **Standing Side Reach, slow-motion version** — right and left, about 20 sec per side, exhale long on the way over (40 sec)
+4. **Standing Forward Fold**, knees generously bent, arms dangling or holding opposite elbows — gentle sway, head heavy (30 sec). Hands can rest on a bed or chair seat for a supported half-fold instead.
+5. **Return to Mountain, rolling up slowly, head last** — one final round of in 4, out 8, standing still (40 sec)
+
+#### Evening Rest · Laying Down (~3 min, bed-friendly, flows into sleep)
+
+1. **Supported Reclined Butterfly** (on the back, soles of feet together, knees resting on pillows, pillows required) — belly breathing, one hand on belly, one on chest, only the belly hand moves (60 sec)
+2. **Knees-to-Chest Rock** — loose grip, shoulders down, tiny rocking (45 sec)
+3. **Reclined Twist** — right and left, lazy version, gravity does the work, about 20 sec per side (40 sec)
+4. **Corpse Pose or straight into sleep position** — 4-7-8 breath (in 4, hold 7, out 8), two to three rounds, or simplify to a long exhale if counting feels like work (35 sec)
+
+#### Evening Rest · Up&Down (~3 min, one-way trip: starts standing, ends down)
+
+1. **Mountain Pose, eyes soft, hand on belly** — in 4, out 8, two rounds, jaw unclenched, teeth slightly parted (30 sec)
+2. **Standing Forward Fold**, knees generously bent, arms dangling or hands resting on the bed or a chair seat — gentle sway, head heavy (25 sec)
+3. **Lower to sitting, then Easy Cross-Legged Seat** (blanket or against the bed for back support) — long-exhale breathing, shoulders melting (30 sec)
+4. **Recline back, then Knees-to-Chest Rock** — loose grip, tiny rocking (35 sec)
+5. **Reclined Twist** — right and left, lazy version, about 20 sec per side (40 sec)
+6. **Corpse Pose or sleep position** — 4-7-8 breath, two rounds, or just the long exhale (20 sec)
+
+### Translation Key Additions
+
+- *Viparita Karani* = Legs-Up-the-Wall
+- *Supta Kapotasana (modified)* = Reclined Figure-4
+- *Supta Matsyendrasana* = Reclined Twist
+- *Savasana* = Corpse Pose
+- *Supta Baddha Konasana* = Supported Reclined Butterfly
+- *Apanasana* = Knees-to-Chest
+- *Salamba Bhujangasana* = Sphinx
+- *Vrksasana* = Tree Pose
+- *Setu Bandha (dynamic)* = Bridge Lifts
+
+### Safety Notes
+
+All nine sequences follow the same framework: soft or bent knees on every fold, no loaded spinal flexion, no forced hip rotation, no core gripping or tailbone tucking cues, and all floor transitions happen via the side or via hands and knees. The only strength moments live in Morning Rise (Bridge Lifts, Chair Pulses, or the floor-to-stand transition). Evening Rest contains no effort by design.
 
 ---
 
