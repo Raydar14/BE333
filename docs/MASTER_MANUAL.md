@@ -544,59 +544,59 @@ If the user skipped the writing step, use this warm default in the BE333 voice:
 
 ## Part 6 · 3-Minute Yoga Vinyasa Manual
 
-For clarity, calm, and energy. These short flows complete in three minutes or less — ideal for busy days, mid-task resets, or centering before teaching. Each sequence targets a specific wellness goal and uses intentional, breath-linked movement.
+For clarity, calm, and energy. These short flows complete in three minutes or less — ideal for busy days, mid-task resets, or centering before teaching. Each sequence targets a specific wellness goal and uses intentional, breath-linked movement. All poses are named in plain English; the traditional Sanskrit names appear in the Core Pose Reference at the end of this part.
 
-### Sun Salutation A (Surya Namaskar A)
+### Sun Salutation A
 
 **Purpose:** full-body energizing and mental focus. **Time:** ~3 minutes (both sides). One round = both right and left sides.
 
-1. Tadasana (Mountain Pose) — inhale, ground and center.
-2. Urdhva Hastasana (Upward Salute) — inhale, arms rise.
-3. Uttanasana (Forward Fold) — exhale, fold from hips.
-4. Ardha Uttanasana (Halfway Lift) — inhale, lengthen spine.
-5. Plank → Chaturanga — exhale, step back and lower.
-6. Cobra or Upward Dog — inhale, lift chest.
-7. Downward Dog — exhale, hold 3 breaths (~30 sec).
+1. Mountain Pose — inhale, ground and center.
+2. Upward Salute (arms reach overhead) — inhale, arms rise.
+3. Standing Forward Fold — exhale, fold from the hips.
+4. Halfway Lift (flat back, hands to shins) — inhale, lengthen spine.
+5. Plank → Low Push-Up — exhale, step back and lower.
+6. Cobra or Upward-Facing Dog — inhale, lift chest.
+7. Downward-Facing Dog — exhale, hold 3 breaths (~30 sec).
 8. Step forward → Halfway Lift — inhale.
-9. Forward Fold — exhale.
-10. Urdhva Hastasana — inhale, rise.
-11. Tadasana — exhale, return to center. Repeat with the opposite leg for step back/forward.
+9. Standing Forward Fold — exhale.
+10. Upward Salute — inhale, rise.
+11. Mountain Pose — exhale, return to center. Repeat with the opposite leg for step back/forward.
 
 | Segment | Duration |
 |---|---|
-| Tadasana + centering breath | 10 sec |
+| Mountain Pose + centering breath | 10 sec |
 | Flow to Downward Dog | ~60 sec |
-| Hold Down Dog | ~30 sec |
-| Return to Tadasana | ~60 sec |
+| Hold Downward Dog | ~30 sec |
+| Return to Mountain Pose | ~60 sec |
 | **Total (1 round)** | **~3 min** |
 
 ### Vinyasa 1 · Clear the Mind
 
 **Purpose:** mental clarity, light energy boost. **Time:** ~2.5 minutes.
 
-1. Tadasana — centering breath (15 sec).
-2. Urdhva Hastasana → Uttanasana → Halfway Lift → Plank → Chaturanga → Upward Dog → Downward Dog — flow, 1 breath per pose (~60 sec).
+1. Mountain Pose — centering breath (15 sec).
+2. Upward Salute → Forward Fold → Halfway Lift → Plank → Low Push-Up → Upward Dog → Downward Dog — flow, 1 breath per pose (~60 sec).
 3. Downward Dog hold — 3 breaths (~30 sec).
-4. Step forward → Halfway Lift → Forward Fold → Urdhva Hastasana → Tadasana (~45 sec).
+4. Step forward → Halfway Lift → Forward Fold → Upward Salute → Mountain Pose (~45 sec).
 
 ### Vinyasa 2 · Nervous System Reset
 
 **Purpose:** calm the mind and body, relieve stress. **Time:** ~2.5–3 minutes.
 
-1. Easy Seat (Sukhasana) — breathwork or Gyan Mudra (30 sec).
-2. Cat-Cow (5 rounds) — slow breath and movement (60 sec).
-3. Thread the Needle (right + left) — ~40 sec per side.
-4. Child's Pose — rest and ground (20–30 sec).
+1. Easy Cross-Legged Seat — breathwork, or rest the hands on the knees with thumb and index finger touching (30 sec).
+2. Cat-Cow (arch and round the back on hands and knees) — 5 rounds, slow breath and movement (60 sec).
+3. Thread the Needle (from hands and knees, slide one arm under the body, shoulder to the floor) — right + left, ~40 sec per side.
+4. Child's Pose (hips back to heels, forehead resting) — rest and ground (20–30 sec).
 
 ### Vinyasa 3 · Root & Rise
 
 **Purpose:** grounding, strength, confidence. **Time:** ~3 minutes.
 
-1. Tadasana — breath and intention (15 sec).
-2. Chair Pose (Utkatasana) — hold 20–30 sec.
-3. Forward Fold → Step to Warrior II (right) — ~30 sec.
-4. Reverse Warrior (right) — 30 sec.
-5. Wide-Leg Forward Fold (Prasarita) — 30 sec.
+1. Mountain Pose — breath and intention (15 sec).
+2. Chair Pose (sit back as if into a chair, arms up) — hold 20–30 sec.
+3. Forward Fold → step back to Warrior II (right) — ~30 sec.
+4. Reverse Warrior (right) — back hand slides down the leg, front arm reaches up and back (30 sec).
+5. Wide-Leg Forward Fold — 30 sec.
 6. Warrior II + Reverse Warrior (left) — 30 sec.
 
 ### Teaching & Practice Tips
@@ -610,11 +610,13 @@ For clarity, calm, and energy. These short flows complete in three minutes or le
 
 | Group | Poses |
 |---|---|
-| Standing & transition | Tadasana (Mountain), Urdhva Hastasana (Upward Salute), Uttanasana (Forward Fold), Ardha Uttanasana (Halfway Lift), Chair (Utkatasana). |
-| Flowing & strength | Plank (Phalakasana), Chaturanga Dandasana, Upward-Facing Dog, Cobra (Bhujangasana). |
+| Standing & transition | Mountain Pose (Tadasana), Upward Salute (Urdhva Hastasana), Standing Forward Fold (Uttanasana), Halfway Lift (Ardha Uttanasana), Chair Pose (Utkatasana). |
+| Flowing & strength | Plank (Phalakasana), Low Push-Up (Chaturanga Dandasana), Upward-Facing Dog, Cobra (Bhujangasana). |
 | Inversions & downward | Downward-Facing Dog (Adho Mukha Svanasana), Child's Pose (Balasana), Thread the Needle. |
 | Warrior & grounding | Warrior I & II (Virabhadrasana), Reverse Warrior, Wide-Leg Forward Fold (Prasarita). |
-| Seated & centering | Easy Seat (Sukhasana), Seated Twist (Ardha Matsyendrasana), Tree (Vrksasana), Hero's Pose (Virasana). |
+| Seated & centering | Easy Cross-Legged Seat (Sukhasana), Seated Twist (Ardha Matsyendrasana), Tree Pose (Vrksasana), Hero's Pose (Virasana). |
+
+**Name notes:** Sun Salutation A is traditionally called *Surya Namaskar A*. The thumb-to-index-finger hand position in Easy Seat is *Gyan Mudra*.
 
 ---
 
