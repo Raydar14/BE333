@@ -60,7 +60,9 @@ export default function Home() {
 
     useProtectedRoute();
 
-    const [timeLeft, setTimeLeft] = useState(timerDuration);
+    // Initialized from the Settings value; the useEffect below adjusts to
+    // the stage-following effective timerDuration once bePractice loads.
+    const [timeLeft, setTimeLeft] = useState(settingsTimerDuration);
     const [isActive, setIsActive] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
 
