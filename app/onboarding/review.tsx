@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
 import { NotificationService } from '../../services/NotificationService';
+import { NOTIFICATION_COPY, bodyFor } from '../../content/notifications';
 import { Leaf } from 'lucide-react-native';
 import { NotificationPreferencesCard } from '../../components/NotificationPreferencesCard';
 import { SnoozeControls } from '../../components/SnoozeControls';
@@ -41,8 +42,8 @@ export default function OnboardingReview() {
             const link = habitLinks[p];
             if (link.enabled && link.time) {
                 const [h, m] = link.time.split(':').map(Number);
-                const title = `Time to BE (${p.toUpperCase()})`;
-                const body = `${link.relation === 'before' ? 'Before' : 'After'} you ${link.anchor}, take 3 minutes.`;
+                const title = NOTIFICATION_COPY[p].title;
+                const body = bodyFor(p, link.relation, link.anchor);
 
                 await NotificationService.scheduleHabitReminder(p, title, body, h, m);
             }

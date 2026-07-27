@@ -8,6 +8,7 @@ import { BE333Logo } from '../../components/BE333Logo';
 import { Leaf, Clock, Sun, Moon, Coffee } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NotificationService } from '../../services/NotificationService';
+import { NOTIFICATION_COPY, bodyFor } from '../../content/notifications';
 
 export default function OnboardingSetup() {
     const { colors } = useTheme();
@@ -88,8 +89,8 @@ export default function OnboardingSetup() {
                         const dateObj = parseTime(link.time);
                         const h = dateObj.getHours();
                         const m = dateObj.getMinutes();
-                        const title = `Time to BE (${p.toUpperCase()})`;
-                        const body = `${link.relation === 'before' ? 'Before' : 'After'} you ${link.anchor}, take 3 minutes.`;
+                        const title = NOTIFICATION_COPY[p].title;
+                        const body = bodyFor(p, link.relation, link.anchor);
 
                         await NotificationService.scheduleHabitReminder(p, title, body, h, m);
                     }

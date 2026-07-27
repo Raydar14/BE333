@@ -12,7 +12,7 @@ export function SnoozeControls() {
     const handleSnooze30 = async () => {
         const until = Date.now() + 30 * 60 * 1000;
         await setSnoozeUntil(until);
-        await NotificationService.snooze30Min('BE Reminder', 'Time to take your pause.');
+        await NotificationService.snooze30Min('BE333 · Ready when you are', 'Three minutes. Exhale first.');
         Alert.alert('Snoozed', 'Reminders paused for 30 minutes.');
     };
 
