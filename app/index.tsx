@@ -311,17 +311,21 @@ export default function Home() {
                     user_id: string;
                     duration_seconds: number;
                     completed_at: Date;
+                    practice_stage?: string;
                     biofeedback?: {
                         startHR: number; endHR: number;
                         startHRV: number | null; endHRV: number | null;
                         avgHR: number; avgHRV: number;
                         hrChange: number; hrvChange: number;
+                        hrSamples: number[];
+                        hrvSamples: number[];
                     };
                 }
                 const sessionData: SessionRecord = {
                     user_id: userId,
                     duration_seconds: durationLogged,
                     completed_at: new Date(),
+                    practice_stage: stats?.practiceStage,
                 };
 
                 if (bioSummary) {
@@ -331,13 +335,20 @@ export default function Home() {
                         startHRV: bioSummary.startReading.hrv ?? null,
                         endHRV: bioSummary.endReading.hrv ?? null,
                         avgHR: bioSummary.avgHr,
-                        avgHRV: bioSummary.avgHrv,
+                        avgHRV: bioSummary.avgHrv ?? 0,
                         hrChange: bioSummary.hrChange,
-                        hrvChange: bioSummary.hrvChange,
+                        hrvChange: bioSummary.hrvChange ?? 0,
+                        // Full time-series samples so the history detail page can redraw
+                        // the in-session HR/HRV curve after the fact.
+                        hrSamples: bioSummary.allHrSamples || [],
+                        hrvSamples: bioSummary.allHrvSamples || [],
                     };
                 }
 
-                await addDoc(collection(db, 'sessions'), sessionData);
+                // Scoped under the user's own doc: users/{uid}/sessions/{id}
+                // (Older root-level `sessions/` writes still exist in Firestore
+                // but new writes land here; the history hook reads from here.)
+                await addDoc(collection(db, 'users', userId, 'sessions'), sessionData);
                 const result = await registerPause();
                 if (result?.petalAwarded) setShowPetalAward(true);
 

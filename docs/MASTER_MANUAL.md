@@ -184,6 +184,7 @@ The three daily Pauses are framed around the body's natural energy arc.
 - Self-compassion prompts — a gentle affirmation after each session, drawn from a 60-line library across six buckets.
 - Mantra library — psychologist-curated affirmations for self-compassion and resilience, one for each day of the practice.
 - **My Work** — every writing session (Journaling, Poetry, Gratitude, Day Planning) saves to a personal, filterable archive; users pick one of four categories per entry (see Part 5).
+- **History & Trends** — every completed BE Pause and habit-stack session lands in `/history` (reverse chronological, filterable, exportable). Tap a BE Pause to see its detail page with the in-session HR/HRV curve redrawn from the stored samples. Dashboard shows long-arc trend cards for average HR per session, average HRV per session, and EMA mood trajectory.
 - **Letter to Yourself** — during onboarding, users write a kind letter to their future self for the day they lapse. Surfaced automatically the first BE Pause after a Missed Day; if the user skipped writing one, a warm default in the BE333 voice appears. Stored in My Work under Self-Advice.
 - **Clean-slate returns** — missed sessions and Rest Days never erase a Bloom Petal. The practice always resumes at the next Pause without penalty; the visual state (petals, chakras) stays intact.
 - **Associative-learning cues** — every daily reminder is tied to an existing habit the user chose (Pavlovian anchoring). The cue and the practice fire together until returning to the breath feels automatic.

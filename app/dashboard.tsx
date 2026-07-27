@@ -18,7 +18,8 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'expo-router';
 import { usePurchase } from '../contexts/PurchaseContext';
-import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen } from 'lucide-react-native';
+import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen, LineChart } from 'lucide-react-native';
+import { TrendCards } from '../components/TrendCards';
 import * as ImagePicker from 'expo-image-picker';
 import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -199,6 +200,14 @@ export default function Dashboard() {
                         <Text style={styles.guideNavText}>Open My Work</Text>
                     </TouchableOpacity>
 
+                    <TouchableOpacity
+                        style={styles.guideNav}
+                        onPress={() => router.push('/history')}
+                    >
+                        <LineChart size={16} color="#FFD700" />
+                        <Text style={styles.guideNavText}>View History</Text>
+                    </TouchableOpacity>
+
                     {/* Practice complete → offer next stage or restart */}
                     {stats && stats.dayOfPractice > 21 && (
                         <View style={styles.stageAdvanceCard}>
@@ -260,6 +269,11 @@ export default function Dashboard() {
                         currentPauses={stats.currentPauses}
                         history={stats.recentHistory || []}
                     />
+                </View>
+
+                {/* 2b. Longer-arc trends (HR, HRV, EMA mood) */}
+                <View style={styles.section}>
+                    <TrendCards />
                 </View>
 
                 {/* 3. Challenge Section */}
