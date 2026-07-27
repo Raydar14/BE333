@@ -734,6 +734,9 @@ BE333 is a psychologist-created mindfulness app that makes calm practical, compa
 | Visual guidance to keep you on track. | Three minutes, three times a day. |
 | A busy brain isn't the obstacle. It's the equipment. | Wandering isn't failing. Returning is the rep. |
 | Do the thing you said you couldn't. | It takes three minutes. |
+| You can't fail at noticing. | Noticing *is* the practice. |
+| Size and frequency matters. | Small doses, done often. |
+| Ground down into the present moment. | Feet on the floor. Breath in the body. |
 
 ### App Store Copy
 
@@ -822,6 +825,8 @@ A rotating bank for social, ads, and in-app moments — the BE333 voice at its m
 - "Wandering isn't failing. Returning is the rep."
 - "You can't fail at noticing."
 - "Do the thing you said you couldn't. It takes three minutes."
+- "Size and frequency matters."
+- "Ground down into the present moment."
 
 ### Ad Concept · The BE Still Challenge
 
