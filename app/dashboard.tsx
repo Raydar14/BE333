@@ -20,6 +20,7 @@ import { useRouter } from 'expo-router';
 import { usePurchase } from '../contexts/PurchaseContext';
 import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen, LineChart } from 'lucide-react-native';
 import { TrendCards } from '../components/TrendCards';
+import { RollupCards } from '../components/RollupCards';
 import * as ImagePicker from 'expo-image-picker';
 import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -271,7 +272,12 @@ export default function Dashboard() {
                     />
                 </View>
 
-                {/* 2b. Longer-arc trends (HR, HRV, EMA mood) */}
+                {/* 2b. Week / month rollups — numeric summary */}
+                <View style={styles.section}>
+                    <RollupCards />
+                </View>
+
+                {/* 2c. Longer-arc trends (HR, HRV, EMA mood) */}
                 <View style={styles.section}>
                     <TrendCards />
                 </View>
