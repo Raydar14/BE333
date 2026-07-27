@@ -131,6 +131,9 @@ function PromptWrite({
                 textAlignVertical="top"
             />
             <Text style={[styles.counter, text.length > maxLen && { color: '#E57373' }]}>
+                {activity === 'Poetry' && (
+                    <>{text.length === 0 ? 0 : text.split('\n').length} lines · </>
+                )}
                 {text.length} / {maxLen}
             </Text>
         </View>
