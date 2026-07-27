@@ -8,7 +8,8 @@ import {
     TouchableOpacity,
     Platform,
 } from 'react-native';
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, RefreshCw, ArrowDownToLine } from 'lucide-react-native';
+import { useYesterdayDayPlan } from '../hooks/useYesterdayDayPlan';
 import {
     HabitStackActivity,
     contentKindFor,
@@ -140,7 +141,9 @@ function PromptWrite({
     );
 }
 
-// Day Planning — pick a template, fill fields.
+// Day Planning — pick a template, fill fields. Optionally carry yesterday's
+// plan forward: matching labels pre-fill; extra labels show as a read-only
+// "Notes from yesterday" strip so nothing is lost.
 function DayPlanning({
     onEntryChange,
     onCategoryChange,
@@ -150,24 +153,82 @@ function DayPlanning({
 }) {
     const [templateIdx, setTemplateIdx] = useState(0);
     const [fields, setFields] = useState<Record<string, string>>({});
+    const [carriedNotes, setCarriedNotes] = useState<Record<string, string>>({});
+    const [yesterdayCollapsed, setYesterdayCollapsed] = useState(true);
     const template = DAY_PLAN_TEMPLATES[templateIdx];
+    const { plan: yesterday } = useYesterdayDayPlan();
 
     const cycleTemplate = () => {
         setTemplateIdx((i) => (i + 1) % DAY_PLAN_TEMPLATES.length);
         setFields({});
+        setCarriedNotes({});
+    };
+
+    const pushCombined = (next: Record<string, string>, notes: Record<string, string>) => {
+        const combined = template.fields
+            .map((f) => `${f.label}: ${next[f.label] || ''}`)
+            .join('\n');
+        const notesBlock = Object.entries(notes)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('\n');
+        onEntryChange?.(notesBlock ? `${combined}\n\n(Carried from yesterday)\n${notesBlock}` : combined);
     };
 
     const updateField = (label: string, value: string) => {
         const next = { ...fields, [label]: value };
         setFields(next);
-        const combined = template.fields
-            .map((f) => `${f.label}: ${next[f.label] || ''}`)
-            .join('\n');
-        onEntryChange?.(combined);
+        pushCombined(next, carriedNotes);
+    };
+
+    const carryForward = () => {
+        if (!yesterday) return;
+        const templateLabels = new Set(template.fields.map((f) => f.label));
+        const matched: Record<string, string> = { ...fields };
+        const leftover: Record<string, string> = {};
+        for (const [label, value] of Object.entries(yesterday.fields)) {
+            if (templateLabels.has(label)) {
+                // Don't overwrite anything the user already typed today.
+                if (!matched[label]) matched[label] = value;
+            } else {
+                leftover[label] = value;
+            }
+        }
+        setFields(matched);
+        setCarriedNotes(leftover);
+        pushCombined(matched, leftover);
     };
 
     return (
         <View style={styles.card}>
+            {yesterday && (
+                <View style={styles.carryCard}>
+                    <TouchableOpacity
+                        onPress={() => setYesterdayCollapsed((v) => !v)}
+                        style={styles.row}
+                        activeOpacity={0.7}
+                    >
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.carryTitle}>
+                                Yesterday's plan{' '}
+                                <Text style={styles.carrySubtitle}>
+                                    · {yesterday.date.toLocaleDateString(undefined, { weekday: 'long' })}
+                                </Text>
+                            </Text>
+                            <Text style={styles.carrySubtitle}>
+                                {yesterdayCollapsed ? 'Tap to view' : 'Tap to hide'}
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={carryForward} style={styles.carryBtn}>
+                            <ArrowDownToLine size={14} color="#0B0F14" />
+                            <Text style={styles.carryBtnText}>Carry forward</Text>
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+                    {!yesterdayCollapsed && (
+                        <Text style={styles.carryText}>{yesterday.text}</Text>
+                    )}
+                </View>
+            )}
+
             <View style={styles.row}>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.templateTitle}>{template.title}</Text>
@@ -192,6 +253,17 @@ function DayPlanning({
                     />
                 </View>
             ))}
+
+            {Object.keys(carriedNotes).length > 0 && (
+                <View style={styles.leftoverCard}>
+                    <Text style={styles.leftoverTitle}>Notes from yesterday</Text>
+                    {Object.entries(carriedNotes).map(([label, value]) => (
+                        <Text key={label} style={styles.leftoverLine}>
+                            <Text style={styles.leftoverLabel}>{label}: </Text>{value}
+                        </Text>
+                    ))}
+                </View>
+            )}
         </View>
     );
 }
@@ -699,5 +771,72 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.4)',
         fontSize: 11,
         fontWeight: '600',
+    },
+    carryCard: {
+        marginBottom: 14,
+        padding: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(74,153,119,0.4)',
+        backgroundColor: 'rgba(74,153,119,0.12)',
+    },
+    carryTitle: {
+        color: '#B7E4C7',
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    carrySubtitle: {
+        color: 'rgba(255,255,255,0.55)',
+        fontSize: 11,
+        marginTop: 2,
+        fontWeight: '500',
+    },
+    carryBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderRadius: 14,
+        backgroundColor: '#B7E4C7',
+    },
+    carryBtnText: {
+        color: '#0B0F14',
+        fontSize: 11,
+        fontWeight: '700',
+        letterSpacing: 0.3,
+    },
+    carryText: {
+        marginTop: 10,
+        color: 'rgba(255,255,255,0.85)',
+        fontSize: 13,
+        lineHeight: 20,
+        fontStyle: 'italic',
+    },
+    leftoverCard: {
+        marginTop: 14,
+        padding: 10,
+        borderRadius: 8,
+        borderLeftWidth: 3,
+        borderLeftColor: '#B7E4C7',
+        backgroundColor: 'rgba(74,153,119,0.08)',
+    },
+    leftoverTitle: {
+        color: '#B7E4C7',
+        fontSize: 10,
+        fontWeight: '700',
+        letterSpacing: 0.8,
+        textTransform: 'uppercase',
+        marginBottom: 4,
+    },
+    leftoverLine: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 12,
+        lineHeight: 18,
+        marginTop: 2,
+    },
+    leftoverLabel: {
+        color: '#B7E4C7',
+        fontWeight: '700',
     },
 });
