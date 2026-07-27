@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-    ChevronRight, ArrowLeft, Users, Copy, RefreshCw, Lock,
+    ChevronRight, ArrowLeft, Users, Copy, RefreshCw, Lock, StickyNote,
 } from 'lucide-react-native';
 import { Colors } from '../../constants/Colors';
 import {
@@ -164,6 +164,16 @@ export default function GuideIndex() {
                         </TouchableOpacity>
                     )}
                 </View>
+
+                <TouchableOpacity
+                    style={styles.notesNav}
+                    onPress={() => router.push('/guide/notes')}
+                    activeOpacity={0.75}
+                >
+                    <StickyNote size={16} color={Colors.secondary} />
+                    <Text style={styles.notesNavText}>Recent notes across all clients</Text>
+                    <ChevronRight size={16} color={Colors.textSecondary} />
+                </TouchableOpacity>
 
                 <Text style={styles.subheader}>
                     Linked clients — tap a name to see their Lotus Bloom Map, snapshot stats,
@@ -334,6 +344,25 @@ const styles = StyleSheet.create({
         minHeight: 34,
     },
     generateBtnText: { color: Colors.secondary, fontSize: 13, fontWeight: '600' },
+
+    notesNav: {
+        marginTop: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(225,183,37,0.35)',
+        backgroundColor: 'rgba(26,67,49,0.4)',
+    },
+    notesNavText: {
+        flex: 1,
+        color: Colors.text,
+        fontSize: 13,
+        fontWeight: '600',
+    },
 
     capacityWarn: {
         padding: 12,

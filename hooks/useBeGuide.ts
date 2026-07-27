@@ -350,6 +350,55 @@ export function useClientNotes(clientUid: string | undefined) {
     return { text, loading, savedAt, save };
 }
 
+// Guide-side: subscribe to every client note this guide has written, most
+// recent first. Powers the /guide/notes list view — one screen to scan
+// what was said about whom across the whole roster.
+export interface ClientNoteSummary {
+    clientUid: string;
+    clientDisplayName: string;
+    text: string;
+    updatedAt: Date | null;
+}
+export function useAllClientNotes(enabled: boolean) {
+    const { user } = useAuth();
+    const [notes, setNotes] = useState<ClientNoteSummary[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!enabled || !user) {
+            setNotes([]);
+            setLoading(false);
+            return;
+        }
+        const col = collection(db, 'users', user.uid, 'clientNotes');
+        const unsub = onSnapshot(col, (snap) => {
+            const list: ClientNoteSummary[] = [];
+            snap.forEach((d) => {
+                const data = d.data();
+                if (!data.text || !String(data.text).trim()) return;
+                const updated = data.updatedAt && typeof data.updatedAt.toDate === 'function'
+                    ? data.updatedAt.toDate() as Date
+                    : null;
+                list.push({
+                    clientUid: d.id,
+                    clientDisplayName: data.clientDisplayName || 'Client',
+                    text: data.text,
+                    updatedAt: updated,
+                });
+            });
+            list.sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0));
+            setNotes(list);
+            setLoading(false);
+        }, (e) => {
+            console.warn('useAllClientNotes snapshot error:', e);
+            setLoading(false);
+        });
+        return () => unsub();
+    }, [enabled, user]);
+
+    return { notes, loading };
+}
+
 // Guide-side: manage a persistent invite code (one active code at a time).
 export function useGuideInviteCode() {
     const { user } = useAuth();
