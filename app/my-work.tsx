@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Platform, Share,
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Platform, Share, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, BookOpen, Download } from 'lucide-react-native';
@@ -25,6 +25,7 @@ interface WorkEntry {
     category: WorkCategory;
     createdAt: { toDate?: () => Date } | null;
     startedAt: number | null;
+    photoUrl?: string | null;
 }
 
 type FilterKey = 'all' | WorkCategory;
@@ -61,6 +62,7 @@ export default function MyWorkScreen() {
                         || defaultCategoryFor((data.activity as HabitStackActivity) || 'Journaling'),
                     createdAt: data.createdAt || null,
                     startedAt: typeof data.startedAt === 'number' ? data.startedAt : null,
+                    photoUrl: typeof data.photoUrl === 'string' ? data.photoUrl : null,
                 });
             });
             setEntries(list);
@@ -204,7 +206,14 @@ export default function MyWorkScreen() {
                                         {e.activity}{when ? ` · ${when.toLocaleDateString()}` : ''}
                                     </Text>
                                 </View>
-                                <Text style={styles.cardBody}>{e.text}</Text>
+                                {!!e.text && <Text style={styles.cardBody}>{e.text}</Text>}
+                                {e.photoUrl && (
+                                    <Image
+                                        source={{ uri: e.photoUrl }}
+                                        style={styles.entryPhoto}
+                                        resizeMode="cover"
+                                    />
+                                )}
                                 <TouchableOpacity onPress={() => handleDelete(e)} style={styles.deleteBtn}>
                                     <Text style={styles.deleteText}>Delete</Text>
                                 </TouchableOpacity>
@@ -370,5 +379,11 @@ const styles = StyleSheet.create({
         color: '#E57373',
         fontSize: 12,
         fontWeight: '600',
+    },
+    entryPhoto: {
+        marginTop: 10,
+        width: '100%',
+        aspectRatio: 4 / 3,
+        borderRadius: 10,
     },
 });

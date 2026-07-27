@@ -8,7 +8,12 @@ import {
     TouchableOpacity,
     Platform,
 } from 'react-native';
-import { ChevronLeft, ChevronRight, RefreshCw, ArrowDownToLine } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, RefreshCw, ArrowDownToLine, Camera, X, Image as ImageIcon } from 'lucide-react-native';
+import { Image as RNImage, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../lib/firebase';
+import { useAuth } from '../contexts/AuthContext';
 import { useYesterdayDayPlan } from '../hooks/useYesterdayDayPlan';
 import {
     HabitStackActivity,
@@ -37,6 +42,7 @@ interface HabitStackContentProps {
     totalDurationSec: number;
     onEntryChange?: (text: string) => void;
     onCategoryChange?: (category: WorkCategory) => void;
+    onPhotoAttach?: (url: string | null) => void;
     hidePrayers?: boolean;
 }
 
@@ -91,17 +97,20 @@ function PromptWrite({
     prompts,
     onEntryChange,
     onCategoryChange,
+    onPhotoAttach,
     maxLen = 500,
 }: {
     activity: HabitStackActivity;
     prompts: string[];
     onEntryChange?: (text: string) => void;
     onCategoryChange?: (cat: WorkCategory) => void;
+    onPhotoAttach?: (url: string | null) => void;
     maxLen?: number;
 }) {
     const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * prompts.length));
     const [text, setText] = useState('');
     const prompt = prompts[promptIdx];
+    const showPhoto = activity === 'Gratitude' && !!onPhotoAttach;
 
     const cycle = useCallback(() => {
         setPromptIdx((i) => (i + 1) % prompts.length);
@@ -137,7 +146,86 @@ function PromptWrite({
                 )}
                 {text.length} / {maxLen}
             </Text>
+            {showPhoto && <PhotoAttach onPhoto={onPhotoAttach!} />}
         </View>
+    );
+}
+
+// Gratitude-only photo attach. Uploads to users/{uid}/gratitudePhotos/,
+// hands back the download URL for the reflection saver to persist.
+function PhotoAttach({ onPhoto }: { onPhoto: (url: string | null) => void }) {
+    const { user } = useAuth();
+    const [uploading, setUploading] = useState(false);
+    const [previewUri, setPreviewUri] = useState<string | null>(null);
+    const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+
+    const pick = async () => {
+        if (!user) return;
+        try {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!perm.granted) return;
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            });
+            if (result.canceled || !result.assets?.[0]) return;
+            const asset = result.assets[0];
+            setPreviewUri(asset.uri);
+            setUploading(true);
+            const res = await fetch(asset.uri);
+            const blob = await res.blob();
+            const filename = `${Date.now()}-${Math.floor(Math.random() * 1e6)}.jpg`;
+            const path = `users/${user.uid}/gratitudePhotos/${filename}`;
+            const ref = storageRef(storage, path);
+            await uploadBytes(ref, blob);
+            const url = await getDownloadURL(ref);
+            setUploadedUrl(url);
+            onPhoto(url);
+        } catch (e) {
+            console.warn('Gratitude photo upload failed:', e);
+            setPreviewUri(null);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const remove = () => {
+        setPreviewUri(null);
+        setUploadedUrl(null);
+        onPhoto(null);
+    };
+
+    if (previewUri) {
+        return (
+            <View style={styles.photoPreview}>
+                <RNImage source={{ uri: previewUri }} style={styles.photoImg} />
+                {uploading && (
+                    <View style={styles.photoUploading}>
+                        <ActivityIndicator color="#FFD700" />
+                        <Text style={styles.photoUploadText}>Saving…</Text>
+                    </View>
+                )}
+                {!uploading && (
+                    <TouchableOpacity onPress={remove} style={styles.photoRemoveBtn}>
+                        <X size={14} color="#0B0F14" />
+                    </TouchableOpacity>
+                )}
+                {!uploading && uploadedUrl && (
+                    <View style={styles.photoDone}>
+                        <Text style={styles.photoDoneText}>Attached to this entry</Text>
+                    </View>
+                )}
+            </View>
+        );
+    }
+
+    return (
+        <TouchableOpacity onPress={pick} style={styles.photoAddBtn} activeOpacity={0.75}>
+            <Camera size={14} color="#DAA520" />
+            <Text style={styles.photoAddText}>Attach a photo</Text>
+        </TouchableOpacity>
     );
 }
 
@@ -536,6 +624,7 @@ export function HabitStackContent({
     totalDurationSec,
     onEntryChange,
     onCategoryChange,
+    onPhotoAttach,
     hidePrayers,
 }: HabitStackContentProps) {
     const kind = contentKindFor(activity);
@@ -553,6 +642,7 @@ export function HabitStackContent({
                     prompts={prompts}
                     onEntryChange={onEntryChange}
                     onCategoryChange={onCategoryChange}
+                    onPhotoAttach={onPhotoAttach}
                     maxLen={maxLen}
                 />
             );
@@ -838,5 +928,70 @@ const styles = StyleSheet.create({
     leftoverLabel: {
         color: '#B7E4C7',
         fontWeight: '700',
+    },
+    photoAddBtn: {
+        marginTop: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 10,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: 'rgba(218,165,32,0.5)',
+        backgroundColor: 'rgba(218,165,32,0.06)',
+    },
+    photoAddText: {
+        color: '#DAA520',
+        fontSize: 12,
+        fontWeight: '600',
+        letterSpacing: 0.3,
+    },
+    photoPreview: {
+        marginTop: 12,
+        position: 'relative',
+        alignItems: 'center',
+    },
+    photoImg: {
+        width: '100%',
+        aspectRatio: 4 / 3,
+        borderRadius: 10,
+    },
+    photoUploading: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0, bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        borderRadius: 10,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+    },
+    photoUploadText: {
+        color: '#FFD700',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    photoRemoveBtn: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        width: 26, height: 26, borderRadius: 13,
+        alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#FFD700',
+    },
+    photoDone: {
+        position: 'absolute',
+        bottom: 8,
+        alignSelf: 'center',
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        backgroundColor: 'rgba(0,0,0,0.65)',
+    },
+    photoDoneText: {
+        color: '#B7E4C7',
+        fontSize: 11,
+        fontWeight: '600',
     },
 });

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
+import { stashPendingInvite } from '../../hooks/usePendingInvite';
 import { Mail, Lock, User, Award, Sparkles, ShieldCheck } from 'lucide-react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
@@ -21,6 +22,15 @@ export default function Signup() {
     const [specialty, setSpecialty] = useState('');
     const [hipaaAgreed, setHipaaAgreed] = useState(false);
     const router = useRouter();
+    const params = useLocalSearchParams();
+
+    // If the user arrived from a BE Guide's invite link (e.g. /signup?invite=AB2CDE9F),
+    // stash the code so it can be consumed after signup completes.
+    useEffect(() => {
+        const raw = (params.invite ?? params.code);
+        const code = Array.isArray(raw) ? raw[0] : raw;
+        if (code) stashPendingInvite(String(code));
+    }, [params.invite, params.code]);
 
     async function signUpWithEmail() {
         if (role === 'therapist' && !hipaaAgreed) {

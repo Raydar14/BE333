@@ -34,7 +34,7 @@ export default function HabitTimerScreen() {
     const [bioSummary, setBioSummary] = useState<SessionSummary | null>(null);
 
     const { showBreathingGuide, showNatureVisuals, hidePrayers } = useSettings();
-    const { onEntryChange, flushNow, setCategory } = useReflectionSaver(activity as HabitStackActivity);
+    const { onEntryChange, flushNow, setCategory, setPhotoUrl } = useReflectionSaver(activity as HabitStackActivity);
     const {
         isConnected: isBioConnected,
         startSessionTracking,
@@ -234,6 +234,7 @@ export default function HabitTimerScreen() {
                             totalDurationSec={mode === 'timer' ? initialDuration : Math.max(secondsElapsed, 180)}
                             onEntryChange={onEntryChange}
                             onCategoryChange={setCategory}
+                            onPhotoAttach={setPhotoUrl}
                             hidePrayers={hidePrayers}
                         />
                     )}

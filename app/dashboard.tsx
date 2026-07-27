@@ -21,6 +21,7 @@ import { usePurchase } from '../contexts/PurchaseContext';
 import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen, LineChart, GraduationCap } from 'lucide-react-native';
 import { TrendCards } from '../components/TrendCards';
 import { RollupCards } from '../components/RollupCards';
+import { useLegacySessionsMigration } from '../hooks/useLegacySessionsMigration';
 import * as ImagePicker from 'expo-image-picker';
 import { Share, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -30,7 +31,7 @@ import { storage } from '../lib/firebase';
 export default function Dashboard() {
     const { user } = useAuth();
     const { stats, loading: practiceLoading, startNewPractice, completeStageAndAdvance } = useBePractice();
-    const { buddyState, buddyStats } = useBeBuddy();
+    const { buddyState, buddyStats, rematchBuddy, endBuddy } = useBeBuddy();
     const role = useUserRole();
     const { isPro } = usePurchase();
     const { socialLinks } = useSettings();
@@ -38,6 +39,8 @@ export default function Dashboard() {
     const router = useRouter();
     const [uploading, setUploading] = useState(false);
     useProtectedRoute();
+    // Best-effort one-time migration of pre-scoped root sessions.
+    useLegacySessionsMigration();
 
     const handlePickImage = async () => {
         try {
@@ -307,6 +310,8 @@ export default function Dashboard() {
                                     myMissedSessions: stats.streakBreaksUsed
                                 }}
                                 buddyName={buddyState.buddyName}
+                                onRematch={rematchBuddy}
+                                onEndBuddy={endBuddy}
                             />
                             <View style={styles.challengeStats}>
                                 <Text style={styles.statLine}>Current Streak: <Text style={{ fontWeight: 'bold', color: Colors.primary }}>{stats.streakBreaksUsed === 0 ? 'Perfect' : 'Active'}</Text></Text>

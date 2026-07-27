@@ -43,7 +43,8 @@ items ship or new ones surface.
   One-tap carryover from yesterday's plan (matching labels prefill,
   extras appear as "Notes from yesterday").
 - [x] **Gratitude** — 30 rotating micro-prompts. Autosave shipped.
-  - [ ] Optional photo attach.
+  Optional photo attach via ImagePicker + Firebase Storage;
+  photo appears on the entry card in My Work.
 - [x] **Mantra practices** — 20 mantras with meanings; 6 flagged
   `hasAudio: true` awaiting audio files.
 - [x] **Stretching** — 3 sequences × 6 moves × 30 sec each, with per-pose
@@ -61,7 +62,9 @@ items ship or new ones surface.
   during the day-rollover check in `useBePractice.checkDailyLogic`.
   At 3 misses the Round is marked lost and the buddy's Round is
   marked won.
-  - [ ] Rematch offer flow after a completed Practice.
+  - [x] Rematch offer flow — BuddyBoard now shows a "Start a new Round"
+    button + "End pairing" option once a Round resolves. Both sides
+    reset atomically via `useBeBuddy.rematchBuddy` / `endBuddy`.
 - [x] **BE Guide View (level-up)** — full therapist product shipped:
   extended signup (license, specialty, HIPAA acknowledgment); Pro
   paywall gate on `/guide`; client capacity display + enforcement
@@ -76,22 +79,31 @@ items ship or new ones surface.
     read from live subscription status. Currently defaults to `'pro'`
     when the field is missing, so live guides can accept clients while
     the sync is pending.
-  - [ ] Referral flow that works pre-signup (invite code creates a
-    pending link that fires when the client first signs up).
+  - [x] Referral flow that works pre-signup — invite code from a
+    `/signup?invite=CODE` deep link is stashed via `stashPendingInvite`
+    and auto-consumed by `usePendingInviteConsumer` on first Home
+    mount after signup.
 - [x] **EMA check-in** — three-tap stress / mood / focus + one-word
   capture on session completion; writes to `users/{uid}/emaEntries`.
-- [ ] **Implementation-intention notifications** — dynamic reminders
-  keyed to a user's chosen anchor ("After I make coffee, I will…").
-  Copy is voice-consistent, but the anchor-driven reminder logic
-  (fire around the anchor event, not just fixed time) is not built.
+- [x] **Implementation-intention notifications (text-level)** — anchored
+  bodies are now written as Gollwitzer if-then statements ("After I
+  make coffee, I will BE"). Comment in `content/notifications.ts`
+  documents the pattern. Event-driven firing (fire when the anchor
+  actually happens, not at fixed clock time) still needs a native
+  module and is out of scope for the current stack.
 - [x] **Progression stages 333 / 666 / 999** — `practiceStage` +
   `completedStages` on `bePractice`; dashboard shows current stage;
   Practice-complete card offers "Advance" (333 → 666 → 999) or
   "Repeat". Timer duration now auto-follows the stage for non-Pro
   users; Pro users keep the manual override.
-  - [ ] Onboarding review screen previews the tier ladder.
-- [ ] **Day 1 launch coupon** — code redemption flow granting free
-  User Pro annual or Therapist monthly.
+  - [x] Onboarding review screen previews the 333 → 666 → 999
+    ladder card so users see the arc.
+- [x] **Day 1 launch coupon** — Settings → "Redeem a code" input +
+  `useCoupon.redeem` validates against `coupons/{CODE}` docs and
+  sets `couponEntitlement` on the user. PurchaseContext picks the
+  higher of RevenueCat tier vs coupon tier, so a coupon-granted
+  seat unlocks Pro/Therapist features immediately. Create coupon
+  docs in Firestore with `{ type: 'user'|'therapist', active: true }`.
 - [x] **Session history + trends** — `/history` reverse-chron feed
   (BE Pauses + habit-stack merged, filterable, plain-text export via
   Share); per-session detail `/history/[id]` with in-session HR/HRV
@@ -103,9 +115,10 @@ items ship or new ones surface.
   - [x] Weekly / monthly rollup summary cards on Dashboard
     (`RollupCards` — BE Pause count, habit stacks, total minutes,
     avg ΔHR for This Week and This Month).
-  - [ ] Migrate old root-level `sessions/` writes into
-    `users/{uid}/sessions/` (currently the read hooks only see new
-    writes; old data is orphaned but still in Firestore).
+  - [x] Migrate old root-level `sessions/` writes into
+    `users/{uid}/sessions/` — best-effort one-time client-side
+    migration in `useLegacySessionsMigration`, called from Dashboard.
+    Skips gracefully if Firestore rules deny root reads.
 - [x] **Letter to Yourself** — onboarding writing prompt shipped
   (`app/onboarding/letter.tsx`). Stored on the user doc
   (`letterToSelf`), surfaced at the top of the first BE Pause after a

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -87,6 +87,42 @@ export default function OnboardingReview() {
                     })}
                 </View>
 
+                <View style={[styles.ladderCard, { backgroundColor: colors.surface, borderColor: '#D4AF37' }]}>
+                    <Text style={[styles.ladderTitle, { color: colors.secondary }]}>
+                        The 21-day ladder
+                    </Text>
+                    <Text style={[styles.ladderSubtitle, { color: colors.textSecondary }]}>
+                        You start here. When each Practice is steady, the next stage opens.
+                    </Text>
+                    <View style={styles.ladderRow}>
+                        {[
+                            { key: '333', label: '3 min × 3', hint: 'Start here' },
+                            { key: '666', label: '6 min × 3', hint: 'After 21 days' },
+                            { key: '999', label: '9 min × 3', hint: 'When ready' },
+                        ].map((tier, i) => (
+                            <React.Fragment key={tier.key}>
+                                {i > 0 && (
+                                    <Text style={[styles.ladderArrow, { color: colors.textSecondary }]}>›</Text>
+                                )}
+                                <View style={[styles.ladderTier, i === 0 && {
+                                    borderColor: '#FFD700',
+                                    backgroundColor: 'rgba(255,215,0,0.1)',
+                                }]}>
+                                    <Text style={[styles.ladderNum, { color: i === 0 ? '#FFD700' : colors.text }]}>
+                                        {tier.key}
+                                    </Text>
+                                    <Text style={[styles.ladderLabel, { color: colors.textSecondary }]}>
+                                        {tier.label}
+                                    </Text>
+                                    <Text style={[styles.ladderHint, { color: i === 0 ? '#FFD700' : colors.textSecondary }]}>
+                                        {tier.hint}
+                                    </Text>
+                                </View>
+                            </React.Fragment>
+                        ))}
+                    </View>
+                </View>
+
                 <NotificationPreferencesCard />
 
                 <SnoozeControls />
@@ -148,5 +184,57 @@ const styles = StyleSheet.create({
     time: {
         marginTop: 5,
         fontSize: 14,
-    }
+    },
+    ladderCard: {
+        marginTop: 20,
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+    },
+    ladderTitle: {
+        fontSize: 11,
+        fontWeight: '700',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+        marginBottom: 4,
+    },
+    ladderSubtitle: {
+        fontSize: 12,
+        lineHeight: 18,
+        marginBottom: 12,
+    },
+    ladderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 4,
+    },
+    ladderTier: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+    },
+    ladderNum: {
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: 1,
+    },
+    ladderLabel: {
+        fontSize: 10,
+        marginTop: 2,
+        fontWeight: '600',
+    },
+    ladderHint: {
+        fontSize: 10,
+        marginTop: 4,
+        fontStyle: 'italic',
+    },
+    ladderArrow: {
+        fontSize: 18,
+        fontWeight: '700',
+        opacity: 0.6,
+    },
 });

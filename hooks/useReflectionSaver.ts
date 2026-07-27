@@ -15,12 +15,14 @@ export function useReflectionSaver(activity: HabitStackActivity) {
     const savedTextRef = useRef<string>('');
     const categoryRef = useRef<WorkCategory>(defaultCategoryFor(activity));
     const startedAtRef = useRef<number>(Date.now());
+    const photoUrlRef = useRef<string | null>(null);
 
     // Reset the start marker and default category each time the activity changes.
     useEffect(() => {
         startedAtRef.current = Date.now();
         latestTextRef.current = '';
         savedTextRef.current = '';
+        photoUrlRef.current = null;
         categoryRef.current = defaultCategoryFor(activity);
         return () => {
             if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -30,17 +32,21 @@ export function useReflectionSaver(activity: HabitStackActivity) {
     const flush = useCallback(async () => {
         if (!user) return;
         const text = latestTextRef.current.trim();
-        if (!text) return;
-        if (text === savedTextRef.current) return;
+        const photoUrl = photoUrlRef.current;
+        // Save if there's either text OR a photo (photo-only entries are fine).
+        if (!text && !photoUrl) return;
+        if (text === savedTextRef.current && !photoUrl) return;
         savedTextRef.current = text;
         try {
-            await addDoc(collection(db, 'users', user.uid, 'reflections'), {
+            const payload: Record<string, unknown> = {
                 activity,
                 text,
                 category: categoryRef.current,
                 createdAt: serverTimestamp(),
                 startedAt: startedAtRef.current,
-            });
+            };
+            if (photoUrl) payload.photoUrl = photoUrl;
+            await addDoc(collection(db, 'users', user.uid, 'reflections'), payload);
         } catch (e) {
             console.warn('Failed to save reflection:', e);
         }
@@ -60,10 +66,18 @@ export function useReflectionSaver(activity: HabitStackActivity) {
         categoryRef.current = cat;
     }, []);
 
+    // Attach a photo URL to the current entry (Gratitude, primarily).
+    // Force-flushes so the photo doesn't wait 1.5s to persist.
+    const setPhotoUrl = useCallback((url: string | null) => {
+        photoUrlRef.current = url;
+        flush();
+    }, [flush]);
+
     return {
         onEntryChange,
         flushNow: flush,
         setCategory,
+        setPhotoUrl,
         defaultCategory: defaultCategoryFor(activity),
     };
 }

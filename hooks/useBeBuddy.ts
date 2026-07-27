@@ -189,12 +189,64 @@ export function useBeBuddy() {
         }
     };
 
+    // Rematch: reset the current buddy pairing to a fresh ongoing round
+    // for both sides. Called from the BuddyBoard when a round finishes
+    // (won/lost). Preserves the buddy pairing itself — only the
+    // per-round counters and status are cleared.
+    const rematchBuddy = async () => {
+        if (!user || !buddyState || !buddyState.buddyUid) return;
+        try {
+            const myRef = doc(db, 'users', user.uid);
+            const buddyRef = doc(db, 'users', buddyState.buddyUid);
+            const freshMine: BuddyChallengeState = {
+                active: true,
+                buddyUid: buddyState.buddyUid,
+                buddyName: buddyState.buddyName,
+                myMissedSessions: 0,
+                buddyMissedSessions: 0,
+                status: 'ongoing',
+            };
+            const freshTheirs: BuddyChallengeState = {
+                active: true,
+                buddyUid: user.uid,
+                buddyName: user.displayName || 'Friend',
+                myMissedSessions: 0,
+                buddyMissedSessions: 0,
+                status: 'ongoing',
+            };
+            await Promise.all([
+                updateDoc(myRef, { buddyChallenge: freshMine }),
+                updateDoc(buddyRef, { buddyChallenge: freshTheirs }),
+            ]);
+        } catch (e: any) {
+            console.warn('rematchBuddy error:', e);
+            Alert.alert('Rematch failed', 'Try again in a moment.');
+        }
+    };
+
+    // End the buddy pairing entirely. Both sides return to no-buddy state.
+    const endBuddy = async () => {
+        if (!user || !buddyState || !buddyState.buddyUid) return;
+        try {
+            const myRef = doc(db, 'users', user.uid);
+            const buddyRef = doc(db, 'users', buddyState.buddyUid);
+            await Promise.all([
+                updateDoc(myRef, { buddyChallenge: null }),
+                updateDoc(buddyRef, { buddyChallenge: null }),
+            ]);
+        } catch (e: any) {
+            console.warn('endBuddy error:', e);
+        }
+    };
+
     return {
         buddyState,
         buddyStats,
         incomingRequests,
         loading,
         sendBuddyInvite,
-        acceptBuddyRequest
+        acceptBuddyRequest,
+        rematchBuddy,
+        endBuddy,
     };
 }

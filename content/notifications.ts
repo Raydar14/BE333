@@ -5,6 +5,15 @@
 //
 // {anchor} is the user's chosen habit anchor for that period (Coffee,
 // Lunch, Dinner…). If unset, the body falls back to a self-contained line.
+//
+// Anchored bodies are written as Gollwitzer-style "if-then" implementation
+// intentions — "After I make coffee, I will BE" — the phrasing that
+// research on habit formation shows most reliably converts intention into
+// action. This is the text-level solution to the Manual's
+// "implementation-intention notifications" goal; the deeper feature
+// (firing when the anchor event actually happens, not just at the
+// scheduled clock time) would need native event detection and is out of
+// scope for the current push-notification stack.
 
 export type NotificationPeriod = 'morning' | 'midday' | 'evening';
 

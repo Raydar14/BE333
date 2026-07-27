@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useGuideLink } from '../hooks/useBeGuide';
 import { useLetterToYourself, DEFAULT_LETTER, ONBOARDING_PROMPT } from '../hooks/useLetterToYourself';
+import { useCoupon } from '../hooks/useCoupon';
 
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
@@ -73,6 +74,16 @@ export default function Settings() {
         await clearLetter();
         setLetterSaving(false);
         setLetterDraft(null);
+    };
+
+    // Coupon redemption (Day 1 launch codes, referral codes, etc.)
+    const { redeem: redeemCoupon, pending: couponPending } = useCoupon();
+    const [couponInput, setCouponInput] = useState('');
+    const handleRedeemCoupon = async () => {
+        if (!couponInput.trim()) return;
+        const { ok, message } = await redeemCoupon(couponInput);
+        Alert.alert(ok ? 'Redeemed' : 'Could not redeem', message);
+        if (ok) setCouponInput('');
     };
 
     const handleLinkGuide = async () => {
@@ -323,6 +334,50 @@ export default function Settings() {
                             </Text>
                         </View>
                     )}
+                </View>
+
+                {/* Redeem code — launch coupons, referral codes, etc. */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Redeem a code</Text>
+                    <Text style={[styles.hint, { color: colors.textSecondary, marginBottom: 8, lineHeight: 18 }]}>
+                        Have a launch code or referral code? Enter it here to unlock the
+                        matching plan.
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TextInput
+                            value={couponInput}
+                            onChangeText={(v) => setCouponInput(v.toUpperCase())}
+                            autoCapitalize="characters"
+                            placeholder="e.g. LAUNCH333"
+                            placeholderTextColor="rgba(255,255,255,0.35)"
+                            style={{
+                                flex: 1,
+                                color: colors.text,
+                                fontSize: 14,
+                                padding: 10,
+                                borderRadius: 8,
+                                borderWidth: 1,
+                                borderColor: colors.border,
+                                backgroundColor: colors.surface,
+                                letterSpacing: 1,
+                                fontFamily: 'monospace',
+                            }}
+                        />
+                        <TouchableOpacity
+                            onPress={handleRedeemCoupon}
+                            disabled={!couponInput.trim() || couponPending}
+                            style={[styles.optionButton, {
+                                backgroundColor: !couponInput.trim() ? colors.surface : colors.primary,
+                                opacity: couponPending ? 0.6 : 1,
+                            }]}
+                        >
+                            <Text style={[styles.optionText, {
+                                color: !couponInput.trim() ? colors.textSecondary : '#fff',
+                            }]}>
+                                {couponPending ? '…' : 'Redeem'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {/* Letter to Yourself — Manual Part 5 */}

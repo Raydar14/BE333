@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Platform } from 'react-native';
 import Purchases, { PurchasesOffering, CustomerInfo } from 'react-native-purchases';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { useAuth } from './AuthContext';
 
 type SubscriptionTier = 'free' | 'user' | 'therapist';
@@ -28,9 +30,22 @@ export const usePurchase = () => useContext(PurchaseContext);
 export function PurchaseProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
     const [tier, setTier] = useState<SubscriptionTier>('free');
+    const [couponTier, setCouponTier] = useState<SubscriptionTier>('free');
     const [loading, setLoading] = useState(true);
     const [offerings, setOfferings] = useState<PurchasesOffering | null>(null);
     const [isConfigured, setIsConfigured] = useState(false);
+
+    // Watch the user doc for coupon-based entitlement (set by useCoupon.redeem).
+    // Coupon acts as an override until RevenueCat mirrors real subscription state.
+    useEffect(() => {
+        if (!user) { setCouponTier('free'); return; }
+        const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
+            const raw = snap.data()?.couponEntitlement;
+            if (raw === 'user' || raw === 'therapist') setCouponTier(raw);
+            else setCouponTier('free');
+        }, () => setCouponTier('free'));
+        return () => unsub();
+    }, [user]);
 
     useEffect(() => {
         initializePurchases();
@@ -143,11 +158,16 @@ export function PurchaseProvider({ children }: { children: React.ReactNode }) {
         }
     }, [isConfigured]);
 
-    const isPro = tier === 'user' || tier === 'therapist';
+    // Effective tier = whichever of RevenueCat tier or coupon-granted tier is
+    // higher. Therapist > user > free. Coupons never revoke a paid subscription.
+    const rankOf = (t: SubscriptionTier) => (t === 'therapist' ? 2 : t === 'user' ? 1 : 0);
+    const effectiveTier: SubscriptionTier =
+        rankOf(couponTier) > rankOf(tier) ? couponTier : tier;
+    const isPro = effectiveTier === 'user' || effectiveTier === 'therapist';
 
     const value = useMemo(
-        () => ({ tier, isPro, loading, offerings, purchasePackage, restorePurchases }),
-        [tier, isPro, loading, offerings, purchasePackage, restorePurchases]
+        () => ({ tier: effectiveTier, isPro, loading, offerings, purchasePackage, restorePurchases }),
+        [effectiveTier, isPro, loading, offerings, purchasePackage, restorePurchases]
     );
 
     return (

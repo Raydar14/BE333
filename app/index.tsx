@@ -15,6 +15,7 @@ import { ShimmerButton } from '../components/ShimmerButton';
 import { GuestBanner } from '../components/GuestBanner';
 import { LetterCard } from '../components/LetterCard';
 import { justReturnedFromMissedDay } from '../hooks/useLetterToYourself';
+import { usePendingInviteConsumer } from '../hooks/usePendingInvite';
 import { BreathingLeaves } from '../components/BreathingLeaves';
 import { BiofeedbackChart } from '../components/BiofeedbackChart';
 import { SessionPhaseGuide } from '../components/SessionPhaseGuide';
@@ -59,6 +60,8 @@ export default function Home() {
     const params = useLocalSearchParams();
 
     useProtectedRoute();
+    // Consume any invite code stashed from a pre-signup /signup?invite=… deep link.
+    usePendingInviteConsumer();
 
     // Initialized from the Settings value; the useEffect below adjusts to
     // the stage-following effective timerDuration once bePractice loads.

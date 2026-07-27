@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { BuddyChallengeState } from '../hooks/useBeBuddy';
 
@@ -8,11 +8,38 @@ interface BuddyBoardProps {
     buddyPetals: number;
     challengeState: BuddyChallengeState;
     buddyName?: string;
+    onRematch?: () => Promise<void> | void;
+    onEndBuddy?: () => Promise<void> | void;
 }
 
-export function BuddyBoard({ myPetals, buddyPetals, challengeState, buddyName }: BuddyBoardProps) {
-    const isLost = challengeState.myMissedSessions >= 3;
-    const isWon = challengeState.buddyMissedSessions >= 3; // Simplified logic, assumes update from backend or hook
+export function BuddyBoard({ myPetals, buddyPetals, challengeState, buddyName, onRematch, onEndBuddy }: BuddyBoardProps) {
+    // Prefer the status the hook wrote (canonical), falling back to inferred.
+    const isLost = challengeState.status === 'lost' || challengeState.myMissedSessions >= 3;
+    const isWon = challengeState.status === 'won' || challengeState.buddyMissedSessions >= 3;
+    const roundOver = isLost || isWon;
+    const [busy, setBusy] = useState(false);
+
+    const handleRematch = async () => {
+        if (!onRematch) return;
+        setBusy(true);
+        await onRematch();
+        setBusy(false);
+    };
+    const handleEnd = () => {
+        if (!onEndBuddy) return;
+        Alert.alert(
+            'End buddy pairing?',
+            `You and ${buddyName || 'your buddy'} will each return to solo practice. You can pair up again later.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'End pairing', style: 'destructive', onPress: async () => {
+                    setBusy(true);
+                    await onEndBuddy();
+                    setBusy(false);
+                } },
+            ]
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -55,6 +82,30 @@ export function BuddyBoard({ myPetals, buddyPetals, challengeState, buddyName }:
             {isWon && (
                 <View style={[styles.banner, styles.wonBanner]}>
                     <Text style={styles.bannerText}>You Won this Round!</Text>
+                </View>
+            )}
+
+            {/* Rematch controls surface when a round has resolved */}
+            {roundOver && (onRematch || onEndBuddy) && (
+                <View style={styles.rematchRow}>
+                    {onRematch && (
+                        <TouchableOpacity
+                            style={[styles.rematchBtn, busy && { opacity: 0.6 }]}
+                            onPress={handleRematch}
+                            disabled={busy}
+                        >
+                            <Text style={styles.rematchBtnText}>Start a new Round</Text>
+                        </TouchableOpacity>
+                    )}
+                    {onEndBuddy && (
+                        <TouchableOpacity
+                            style={[styles.endBtn, busy && { opacity: 0.6 }]}
+                            onPress={handleEnd}
+                            disabled={busy}
+                        >
+                            <Text style={styles.endBtnText}>End pairing</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             )}
         </View>
@@ -140,5 +191,36 @@ const styles = StyleSheet.create({
     bannerText: {
         color: Colors.text,
         fontWeight: 'bold',
-    }
+    },
+    rematchRow: {
+        marginTop: 12,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    rematchBtn: {
+        flex: 2,
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        backgroundColor: Colors.secondary,
+    },
+    rematchBtnText: {
+        color: Colors.primary,
+        fontWeight: '700',
+        fontSize: 13,
+        letterSpacing: 0.3,
+    },
+    endBtn: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    endBtnText: {
+        color: Colors.textSecondary,
+        fontWeight: '600',
+        fontSize: 12,
+    },
 });
