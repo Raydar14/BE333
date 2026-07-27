@@ -310,7 +310,18 @@ function ChantingRenderer() {
 }
 
 // Sequence renderer for Yoga & Stretching — highlights current pose
-// based on elapsed session time relative to the sequence total.
+// based on elapsed session time relative to the sequence total. Also
+// lets the practitioner filter by posture (standing / sitting / mixed)
+// so movement stays accessible at a desk, in an airport, or anywhere
+// the floor isn't an option.
+type PostureFilter = 'all' | 'standing' | 'sitting' | 'mixed';
+const POSTURE_FILTERS: { key: PostureFilter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'standing', label: 'Standing' },
+    { key: 'sitting', label: 'Sitting' },
+    { key: 'mixed', label: 'Mixed' },
+];
+
 function SequenceRenderer({
     activity,
     elapsedSec,
@@ -320,9 +331,16 @@ function SequenceRenderer({
     elapsedSec: number;
     totalDurationSec: number;
 }) {
-    const sequences = activity === 'Yoga' ? YOGA_SEQUENCES : STRETCHING_SEQUENCES;
+    const allSequences = activity === 'Yoga' ? YOGA_SEQUENCES : STRETCHING_SEQUENCES;
+    const [posture, setPosture] = useState<PostureFilter>('all');
+    const sequences = useMemo(
+        () => posture === 'all' ? allSequences : allSequences.filter((s) => s.posture === posture),
+        [allSequences, posture]
+    );
     const [seqIdx, setSeqIdx] = useState(0);
-    const seq = sequences[seqIdx];
+    // Filter may drop the current index; clamp.
+    const safeIdx = sequences.length === 0 ? 0 : seqIdx % sequences.length;
+    const seq = sequences[safeIdx] ?? allSequences[0];
 
     // Total step time within the sequence
     const stepTotal = useMemo(
@@ -349,6 +367,38 @@ function SequenceRenderer({
 
     return (
         <View style={styles.card}>
+            <View style={styles.postureRow}>
+                <Text style={styles.categoryLabel}>Practice</Text>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryScroll}
+                >
+                    {POSTURE_FILTERS.map((p) => {
+                        const isActive = posture === p.key;
+                        return (
+                            <TouchableOpacity
+                                key={p.key}
+                                onPress={() => {
+                                    setPosture(p.key);
+                                    setSeqIdx(0);
+                                }}
+                                style={[styles.categoryPill, isActive && styles.categoryPillActive]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.categoryPillText,
+                                        isActive && styles.categoryPillTextActive,
+                                    ]}
+                                >
+                                    {p.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            </View>
+
             <View style={styles.row}>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.templateTitle}>{seq.name}</Text>
@@ -358,12 +408,14 @@ function SequenceRenderer({
                     <TouchableOpacity
                         onPress={() => setSeqIdx((i) => (i - 1 + sequences.length) % sequences.length)}
                         style={styles.iconBtn}
+                        disabled={sequences.length === 0}
                     >
                         <ChevronLeft size={16} color="#DAA520" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setSeqIdx((i) => (i + 1) % sequences.length)}
                         style={styles.iconBtn}
+                        disabled={sequences.length === 0}
                     >
                         <ChevronRight size={16} color="#DAA520" />
                     </TouchableOpacity>
@@ -511,6 +563,9 @@ const styles = StyleSheet.create({
     categoryRow: {
         marginTop: 12,
         marginBottom: 4,
+    },
+    postureRow: {
+        marginBottom: 10,
     },
     categoryLabel: {
         color: 'rgba(255,255,255,0.55)',

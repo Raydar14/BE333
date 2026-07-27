@@ -18,6 +18,7 @@ const STORAGE_KEYS = {
     LAST_DEVICE_NAME: 'biofeedback_last_device_name',
     AUDIO_ENABLED: 'biofeedback_audio_enabled',
     AUDIO_METRIC: 'biofeedback_audio_metric',
+    SHOW_LIVE: 'biofeedback_show_live',
 };
 
 export type AudioFeedbackMetric = 'hr' | 'hrv';
@@ -40,6 +41,10 @@ interface BiofeedbackContextType {
     audioFeedbackEnabled: boolean;
     audioFeedbackMetric: AudioFeedbackMetric;
 
+    // Whether to render the live HR/HRV panel during a session. Data is
+    // still collected in the background; this only controls visibility.
+    showLiveBiofeedback: boolean;
+
     // Demo mode for testing without device
     isDemoMode: boolean;
 
@@ -57,6 +62,7 @@ interface BiofeedbackContextType {
     // Settings
     setAudioFeedback: (enabled: boolean) => Promise<void>;
     setAudioFeedbackMetric: (metric: AudioFeedbackMetric) => Promise<void>;
+    setShowLiveBiofeedback: (show: boolean) => Promise<void>;
 
     // Demo mode
     toggleDemoMode: () => void;
@@ -74,6 +80,7 @@ const BiofeedbackContext = createContext<BiofeedbackContextType>({
     recentReadings: [],
     audioFeedbackEnabled: false,
     audioFeedbackMetric: 'hr',
+    showLiveBiofeedback: true,
     isDemoMode: false,
     startScan: async () => { },
     stopScan: () => { },
@@ -84,6 +91,7 @@ const BiofeedbackContext = createContext<BiofeedbackContextType>({
     stopSessionTracking: () => null,
     setAudioFeedback: async () => { },
     setAudioFeedbackMetric: async () => { },
+    setShowLiveBiofeedback: async () => { },
     toggleDemoMode: () => { },
 });
 
@@ -106,6 +114,7 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
     // Audio feedback
     const [audioFeedbackEnabled, setAudioFeedbackEnabled] = useState(false);
     const [audioFeedbackMetric, setAudioFeedbackMetricState] = useState<AudioFeedbackMetric>('hr');
+    const [showLiveBiofeedback, setShowLiveBiofeedbackState] = useState(true);
     const lastAudioPlayTime = useRef<number>(0);
     const audioSoundRef = useRef<Audio.Sound | null>(null);
 
@@ -147,17 +156,19 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
 
     const loadSettings = async () => {
         try {
-            const [deviceId, deviceName, audioEnabled, audioMetric] = await Promise.all([
+            const [deviceId, deviceName, audioEnabled, audioMetric, showLive] = await Promise.all([
                 AsyncStorage.getItem(STORAGE_KEYS.LAST_DEVICE_ID),
                 AsyncStorage.getItem(STORAGE_KEYS.LAST_DEVICE_NAME),
                 AsyncStorage.getItem(STORAGE_KEYS.AUDIO_ENABLED),
                 AsyncStorage.getItem(STORAGE_KEYS.AUDIO_METRIC),
+                AsyncStorage.getItem(STORAGE_KEYS.SHOW_LIVE),
             ]);
 
             if (deviceId) setLastDeviceId(deviceId);
             if (deviceName) setLastDeviceName(deviceName);
             if (audioEnabled) setAudioFeedbackEnabled(audioEnabled === 'true');
             if (audioMetric) setAudioFeedbackMetricState(audioMetric as AudioFeedbackMetric);
+            if (showLive !== null) setShowLiveBiofeedbackState(showLive === 'true');
         } catch (e) {
             console.error('Error loading biofeedback settings:', e);
         }
@@ -306,6 +317,11 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
         await AsyncStorage.setItem(STORAGE_KEYS.AUDIO_METRIC, metric);
     };
 
+    const setShowLiveBiofeedback = async (show: boolean) => {
+        setShowLiveBiofeedbackState(show);
+        await AsyncStorage.setItem(STORAGE_KEYS.SHOW_LIVE, show.toString());
+    };
+
     // Demo mode for testing UI without a physical device
     const toggleDemoMode = () => {
         if (isDemoMode) {
@@ -359,17 +375,19 @@ export function BiofeedbackProvider({ children }: { children: React.ReactNode })
     const value = useMemo(() => ({
         isConnected, connectedDevice, isScanning, discoveredDevices,
         lastDeviceId, lastDeviceName, currentReading, baselineReading,
-        recentReadings, audioFeedbackEnabled, audioFeedbackMetric, isDemoMode,
+        recentReadings, audioFeedbackEnabled, audioFeedbackMetric,
+        showLiveBiofeedback, isDemoMode,
         startScan, stopScan, connectToDevice, disconnectDevice, reconnectLastDevice,
         startSessionTracking, stopSessionTracking, setAudioFeedback,
-        setAudioFeedbackMetric, toggleDemoMode,
+        setAudioFeedbackMetric, setShowLiveBiofeedback, toggleDemoMode,
     }), [
         isConnected, connectedDevice, isScanning, discoveredDevices,
         lastDeviceId, lastDeviceName, currentReading, baselineReading,
-        recentReadings, audioFeedbackEnabled, audioFeedbackMetric, isDemoMode,
+        recentReadings, audioFeedbackEnabled, audioFeedbackMetric,
+        showLiveBiofeedback, isDemoMode,
         startScan, stopScan, connectToDevice, disconnectDevice, reconnectLastDevice,
         startSessionTracking, stopSessionTracking, setAudioFeedback,
-        setAudioFeedbackMetric, toggleDemoMode,
+        setAudioFeedbackMetric, setShowLiveBiofeedback, toggleDemoMode,
     ]);
 
     return (

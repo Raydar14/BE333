@@ -65,7 +65,6 @@ export const SELF_COMPASSION_PROMPTS: Record<PromptBucket, string[]> = {
         'My shoulders can soften.',
         'My body is a home.',
         'I thank my body for staying.',
-        'Softness is welcome here.',
         'My jaw can rest.',
         'I let my chest fall gently.',
         'My hands can be still.',

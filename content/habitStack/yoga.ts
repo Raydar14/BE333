@@ -1,14 +1,40 @@
-// Yoga sequences — Sun Salutation A + 3 vinyasas per Master Manual Part 6.
+// Yoga sequences — Sun Salutation A + 3 vinyasas per Master Manual Part 6,
+// plus a fully-standing sequence for practice at a desk, in an airport,
+// or anywhere getting on the floor isn't an option.
 // Names use both Sanskrit and English for accessibility.
 
 import { Sequence } from './types';
 
 export const YOGA_SEQUENCES: Sequence[] = [
     {
+        id: 'standing-anywhere',
+        name: 'Standing Anywhere Flow',
+        purpose: 'Move at a desk, in an airport, or between meetings — no floor needed.',
+        totalMinutes: 3,
+        posture: 'standing',
+        steps: [
+            { name: 'Tadasana (Mountain)', durationSec: 15, cue: 'Feet planted. Long spine. One centering breath.' },
+            { name: 'Uttanasana (Forward Fold)', durationSec: 15, cue: 'Exhale, hinge from the hips. Let the head hang. Soft knees are fine.' },
+            { name: 'Warrior 1 (Right)', durationSec: 20, cue: 'Rise up. Step right foot back, bend front knee, arms overhead.' },
+            { name: 'Tadasana (Mountain)', durationSec: 10, cue: 'Return to center. One breath.' },
+            { name: 'Warrior 1 (Left)', durationSec: 20, cue: 'Step left foot back this time. Arms lift. Steady gaze.' },
+            { name: 'Mountain on Tippy Toes', durationSec: 15, cue: 'Feet together. Rise onto the balls of the feet. Reach the crown up.' },
+            { name: 'Twist, Reach & Look Right', durationSec: 15, cue: 'Heels down. Twist through the ribs. Right arm reaches, gaze follows.' },
+            { name: 'Twist, Reach & Look Left', durationSec: 15, cue: 'Unwind through center. Twist the other way. Long side body.' },
+            { name: 'Twist, Reach & Look Right (again)', durationSec: 10, cue: 'Second pass, deeper. Move at the speed of your breath.' },
+            { name: 'Twist, Reach & Look Left (again)', durationSec: 10, cue: 'One more time. Notice what softens.' },
+            { name: 'Chin to Chest', durationSec: 10, cue: 'Head heavy, all the way down. Let the back of the neck lengthen.' },
+            { name: 'Head Back', durationSec: 10, cue: 'Slowly lift and tilt back as far as feels safe. Open the throat.' },
+            { name: 'Head Circles', durationSec: 20, cue: 'Slow circles one direction, then the other. No forcing.' },
+            { name: 'Long Gaze (Standing Rest)', durationSec: 15, cue: 'Feet still. Find something far away and rest your eyes there. This is your shavasana.' },
+        ],
+    },
+    {
         id: 'sun-salutation-a',
         name: 'Sun Salutation A',
         purpose: 'Full-body energizing and mental focus.',
         totalMinutes: 3,
+        posture: 'mixed',
         steps: [
             { name: 'Tadasana (Mountain)', durationSec: 15, cue: 'Ground the feet. Long spine. Centering breath.' },
             { name: 'Urdhva Hastasana (Upward Salute)', durationSec: 10, cue: 'Inhale, arms sweep up overhead.' },
@@ -28,6 +54,7 @@ export const YOGA_SEQUENCES: Sequence[] = [
         name: 'Vinyasa 1 · Clear the Mind',
         purpose: 'Mental clarity, light energy boost.',
         totalMinutes: 3,
+        posture: 'mixed',
         steps: [
             { name: 'Tadasana', durationSec: 15, cue: 'Centering breath. Set a light intention.' },
             { name: 'Flow to Downward Dog', durationSec: 60, cue: 'Urdhva → fold → halfway → plank → chaturanga → up dog → down dog. One breath per pose.' },
@@ -43,6 +70,7 @@ export const YOGA_SEQUENCES: Sequence[] = [
         name: 'Vinyasa 2 · Nervous System Reset',
         purpose: 'Calm the mind and body, relieve stress.',
         totalMinutes: 3,
+        posture: 'sitting',
         steps: [
             { name: 'Sukhasana (Easy Seat)', durationSec: 30, cue: 'Sit cross-legged. One hand on belly, one on chest. Long exhales.' },
             { name: 'Cat–Cow (5 rounds)', durationSec: 60, cue: 'Move at the speed of your breath. Inhale arch, exhale round.' },
@@ -56,6 +84,7 @@ export const YOGA_SEQUENCES: Sequence[] = [
         name: 'Vinyasa 3 · Root & Rise',
         purpose: 'Grounding, strength, confidence.',
         totalMinutes: 3,
+        posture: 'standing',
         steps: [
             { name: 'Tadasana', durationSec: 15, cue: 'Ground the feet. Steady breath. Set an intention.' },
             { name: 'Chair (Utkatasana)', durationSec: 30, cue: 'Sit back into imaginary chair. Arms overhead. Keep chest lifted.' },

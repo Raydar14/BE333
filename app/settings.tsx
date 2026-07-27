@@ -33,6 +33,8 @@ export default function Settings() {
         setAudioFeedback,
         audioFeedbackMetric,
         setAudioFeedbackMetric,
+        showLiveBiofeedback,
+        setShowLiveBiofeedback,
         isDemoMode,
         toggleDemoMode
     } = useBiofeedback();
@@ -317,6 +319,22 @@ export default function Settings() {
                 {/* Biofeedback Settings */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>Biofeedback</Text>
+
+                    <View style={styles.settingRow}>
+                        <View style={{ flex: 1, paddingRight: 10 }}>
+                            <Text style={[styles.label, { color: colors.text }]}>Show Live Data In Session</Text>
+                            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+                                Display HR & HRV on screen during practice. Data is still recorded either way.
+                            </Text>
+                        </View>
+                        <Switch
+                            value={showLiveBiofeedback}
+                            onValueChange={setShowLiveBiofeedback}
+                            trackColor={{ false: "#767577", true: colors.primary }}
+                            thumbColor={showLiveBiofeedback ? "#fff" : "#f4f3f4"}
+                        />
+                    </View>
+
                     <View style={styles.settingRow}>
                         <View style={{ flex: 1, paddingRight: 10 }}>
                             <Text style={[styles.label, { color: colors.text }]}>Audio Feedback</Text>

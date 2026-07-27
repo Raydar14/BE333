@@ -99,6 +99,8 @@ export default function Home() {
         stopSessionTracking,
         currentReading,
         recentReadings,
+        showLiveBiofeedback,
+        setShowLiveBiofeedback,
     } = useBiofeedback();
     const { stats, registerPause } = useBePractice();
 
@@ -489,8 +491,21 @@ export default function Home() {
                                 {/* 1. Green Glowing Box (Timer, 3-min line, Start Button) */}
                                 <View style={[styles.glowBox, { borderColor: '#4A9977', shadowColor: '#4A9977' }]}>
 
-                                    {/* BIOFEEDBACK DISPLAY (rendered ABOVE timer when connected) */}
+                                    {/* BIOFEEDBACK DISPLAY (rendered ABOVE timer when connected).
+                                        Data keeps recording either way — the toggle only
+                                        controls what's on screen mid-session. */}
                                     {isBiofeedbackConnected && !isCompleted && (
+                                        <TouchableOpacity
+                                            onPress={() => setShowLiveBiofeedback(!showLiveBiofeedback)}
+                                            style={styles.bioEyeBtn}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={styles.bioEyeText}>
+                                                {showLiveBiofeedback ? '👁 Hide biofeedback' : '👁 Show biofeedback'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {isBiofeedbackConnected && !isCompleted && showLiveBiofeedback && (
                                         <>
                                             <View style={styles.bioRow}>
                                                 <View style={styles.bioItem}>
@@ -1090,5 +1105,18 @@ const styles = StyleSheet.create({
         color: '#E8F5E9',
         fontWeight: 'bold',
         fontSize: 14,
+    },
+    bioEyeBtn: {
+        alignSelf: 'flex-end',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        marginBottom: 4,
+    },
+    bioEyeText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 11,
+        fontWeight: '600',
     },
 });
