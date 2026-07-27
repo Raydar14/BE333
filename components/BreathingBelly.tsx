@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, withRepeat, withSequence } from 'react-native-reanimated';
 import { BreathingCircle } from './BreathingCircle';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings, breathDurationsFor } from '../contexts/SettingsContext';
 
 interface BreathingBellyProps {
     isActive: boolean;
@@ -17,8 +17,7 @@ export function BreathingBelly({ isActive, phase, phaseDuration }: BreathingBell
     const opacity = useSharedValue(0.8);
 
     // Fallback durations if parent doesn't pass phaseDuration (older callers, idle state)
-    const fallbackInhale = breathingPattern === '3-1-5' ? 3000 : 4000;
-    const fallbackExhale = breathingPattern === '3-1-5' ? 5000 : 6000;
+    const { inhaleMs: fallbackInhale, exhaleMs: fallbackExhale } = breathDurationsFor(breathingPattern);
 
     useEffect(() => {
         if (!isActive) {

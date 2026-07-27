@@ -44,8 +44,8 @@ type SettingsContextType = {
     setShowNatureVisuals: (show: boolean) => void;
     socialLinks: SocialLinks;
     updateSocialLink: (platform: keyof SocialLinks, handle: string) => void;
-    breathingPattern: '4-1-6' | '3-1-5';
-    setBreathingPattern: (pattern: '4-1-6' | '3-1-5') => void;
+    breathingPattern: '4-1-6' | '3-1-5' | '6-1-4';
+    setBreathingPattern: (pattern: '4-1-6' | '3-1-5' | '6-1-4') => void;
     deep3Enabled: boolean;
     setDeep3Enabled: (enabled: boolean) => void;
     deep3Duration: number;
@@ -106,6 +106,21 @@ const SettingsContext = createContext<SettingsContextType>({
 
 export const useSettings = () => useContext(SettingsContext);
 
+// Breath-pattern durations in ms. Central so the timer engine and the
+// visualization components stay in lockstep. 4-1-6 and 3-1-5 are calming
+// (exhale longer than inhale); 6-1-4 is activating (inhale longer than
+// exhale) — used for morning "Rise" sessions, not for panic/acute anxiety.
+export function breathDurationsFor(pattern: '4-1-6' | '3-1-5' | '6-1-4'): {
+    inhaleMs: number; pauseMs: number; exhaleMs: number;
+} {
+    switch (pattern) {
+        case '3-1-5': return { inhaleMs: 3000, pauseMs: 1000, exhaleMs: 5000 };
+        case '6-1-4': return { inhaleMs: 6000, pauseMs: 1000, exhaleMs: 4000 };
+        case '4-1-6':
+        default:      return { inhaleMs: 4000, pauseMs: 1000, exhaleMs: 6000 };
+    }
+}
+
 async function persist(key: string, value: string) {
     try {
         await AsyncStorage.setItem(key, value);
@@ -125,7 +140,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [showHabitStacking, setShowHabitStackingState] = useState(true);
     const [timerMode, setTimerModeState] = useState<'countdown' | 'open'>('countdown');
     const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
-    const [breathingPattern, setBreathingPatternState] = useState<'4-1-6' | '3-1-5'>('4-1-6');
+    const [breathingPattern, setBreathingPatternState] = useState<'4-1-6' | '3-1-5' | '6-1-4'>('4-1-6');
     const [deep3Enabled, setDeep3EnabledState] = useState(true);
     const [deep3Duration, setDeep3DurationState] = useState(15);
     const [showBreathingLotus, setShowBreathingLotusState] = useState(false);
@@ -166,7 +181,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             if (map.showHabitStacking !== null) setShowHabitStackingState(JSON.parse(map.showHabitStacking!));
             if (map.timerMode) setTimerModeState(map.timerMode as 'countdown' | 'open');
             if (map.socialLinks) setSocialLinks(JSON.parse(map.socialLinks));
-            if (map.breathingPattern) setBreathingPatternState(map.breathingPattern as '4-1-6' | '3-1-5');
+            if (map.breathingPattern) setBreathingPatternState(map.breathingPattern as '4-1-6' | '3-1-5' | '6-1-4');
             if (map.deep3Enabled !== null) setDeep3EnabledState(JSON.parse(map.deep3Enabled!));
             if (map.deep3Duration) setDeep3DurationState(parseInt(map.deep3Duration, 10));
             if (map.showBreathingLotus !== null) setShowBreathingLotusState(JSON.parse(map.showBreathingLotus!));
@@ -238,7 +253,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         });
     }, []);
 
-    const setBreathingPattern = useCallback((pattern: '4-1-6' | '3-1-5') => {
+    const setBreathingPattern = useCallback((pattern: '4-1-6' | '3-1-5' | '6-1-4') => {
         setBreathingPatternState(pattern);
         persist('breathingPattern', pattern);
     }, []);

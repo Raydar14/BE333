@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings, breathDurationsFor } from '../contexts/SettingsContext';
 import { usePurchase } from '../contexts/PurchaseContext';
 import { useProtectedRoute } from '../hooks/useProtectedRoute';
 import { useBePractice } from '../hooks/useBePractice';
@@ -144,9 +144,11 @@ export default function Home() {
             return;
         }
 
-        const inhaleDur = breathingPattern === '3-1-5' ? 3000 : 4000;
-        const exhaleDur = breathingPattern === '3-1-5' ? 5000 : 6000;
-        const pauseDur = 1000;
+        const { inhaleMs: inhaleDur, exhaleMs: exhaleDur, pauseMs: pauseDur } = breathDurationsFor(breathingPattern);
+        // 6-1-4 is activating (inhale > exhale). For activating we lead with
+        // Inhale so the user starts with the energizing side of the cycle; the
+        // calming patterns still lead with Exhale to release before drawing in.
+        const isActivating = breathingPattern === '6-1-4';
 
         // DEEP3 coaching pace is fixed regardless of selected pattern
         const DEEP3_EXHALE = 8000;
@@ -203,15 +205,24 @@ export default function Home() {
             if (!isActiveRef.current) return;
             setIsDeep3Active(false);
 
-            setPhase('exhale', exhaleDur);
-            setGuideText("Breathe Out");
+            // Activating pattern (6-1-4) leads with Inhale (energizing);
+            // calming patterns (4-1-6, 3-1-5) lead with Exhale (release).
+            const firstPhase: 'exhale' | 'inhale' = isActivating ? 'inhale' : 'exhale';
+            const secondPhase: 'exhale' | 'inhale' = isActivating ? 'exhale' : 'inhale';
+            const firstDur = isActivating ? inhaleDur : exhaleDur;
+            const secondDur = isActivating ? exhaleDur : inhaleDur;
+            const firstText = isActivating ? 'Breathe In' : 'Breathe Out';
+            const secondText = isActivating ? 'Breathe Out' : 'Breathe In';
+
+            setPhase(firstPhase, firstDur);
+            setGuideText(firstText);
             setSubGuideText("");
 
             breathingTimeoutRef.current = setTimeout(() => {
                 if (!isActiveRef.current) return;
 
-                setPhase('inhale', inhaleDur);
-                setGuideText("Breathe In");
+                setPhase(secondPhase, secondDur);
+                setGuideText(secondText);
                 setSubGuideText("");
 
                 breathingTimeoutRef.current = setTimeout(() => {
@@ -224,8 +235,8 @@ export default function Home() {
                     breathingTimeoutRef.current = setTimeout(() => {
                         if (isActiveRef.current) startNormalCycle();
                     }, pauseDur);
-                }, inhaleDur);
-            }, exhaleDur);
+                }, secondDur);
+            }, firstDur);
         };
 
         if (deep3Enabled) {

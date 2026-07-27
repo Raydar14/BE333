@@ -345,8 +345,15 @@ export default function Settings() {
                         <View style={{ flex: 1, paddingRight: 10 }}>
                             <Text style={[styles.label, { color: colors.text }]}>Find & Set your Breathing Frequency</Text>
                             <Text style={[styles.hint, { color: colors.textSecondary }]}>
-                                {breathingPattern === '4-1-6' ? '4s In - 1s Pause - 6s Out' : '3s In - 1s Pause - 5s Out'}
+                                {breathingPattern === '4-1-6' && '4s In · 1s Pause · 6s Out — calming'}
+                                {breathingPattern === '3-1-5' && '3s In · 1s Pause · 5s Out — calming'}
+                                {breathingPattern === '6-1-4' && '6s In · 1s Pause · 4s Out — activating (Rise)'}
                             </Text>
+                            {breathingPattern === '6-1-4' && (
+                                <Text style={[styles.hint, { color: '#DAA520', marginTop: 4 }]}>
+                                    Energizing, not calming. Skip during panic or acute anxiety.
+                                </Text>
+                            )}
                         </View>
                         <View style={{ flexDirection: 'row', gap: 5 }}>
                             <TouchableOpacity
@@ -360,6 +367,12 @@ export default function Settings() {
                                 style={[styles.optionButton, breathingPattern === '3-1-5' && { backgroundColor: colors.primary }]}
                             >
                                 <Text style={[styles.optionText, { color: breathingPattern === '3-1-5' ? '#fff' : colors.text }]}>3-1-5</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setBreathingPattern('6-1-4')}
+                                style={[styles.optionButton, breathingPattern === '6-1-4' && { backgroundColor: colors.primary }]}
+                            >
+                                <Text style={[styles.optionText, { color: breathingPattern === '6-1-4' ? '#fff' : colors.text }]}>6-1-4</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
