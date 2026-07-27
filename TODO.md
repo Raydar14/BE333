@@ -95,6 +95,19 @@ Each activity now surfaces real content. Polish items below.
   - [ ] Onboarding review screen previews the tier ladder.
 - [ ] **Day 1 launch coupon** — code redemption flow granting free
   User Pro annual or Therapist monthly.
+- [x] **Session history + trends** — `/history` reverse-chron feed
+  (BE Pauses + habit-stack merged, filterable, plain-text export via
+  Share); per-session detail `/history/[id]` with in-session HR/HRV
+  chart redrawn from stored samples; Dashboard `TrendCards` with
+  sparklines for average HR per session, average HRV per session, and
+  EMA mood over time. Sessions now write to `users/{uid}/sessions/`
+  (scoped) with `hrSamples` + `hrvSamples` arrays for time-series
+  playback.
+  - [ ] Weekly / monthly rollup summary cards ("This week: X BE
+    Pauses, avg ΔHR −Y").
+  - [ ] Migrate old root-level `sessions/` writes into
+    `users/{uid}/sessions/` (currently the read hooks only see new
+    writes; old data is orphaned but still in Firestore).
 - [ ] **Letter to Yourself** — onboarding writing prompt ("kind letter
   to future me for the day I lapse") stored in My Work under
   Self-Advice; auto-surfaced at the top of the first BE Pause after a
