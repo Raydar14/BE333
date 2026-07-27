@@ -18,7 +18,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useRouter } from 'expo-router';
 import { usePurchase } from '../contexts/PurchaseContext';
-import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen, LineChart } from 'lucide-react-native';
+import { Users, Trophy, Camera, Share2, Instagram, Facebook, Settings as SettingsIcon, BookOpen, LineChart, GraduationCap } from 'lucide-react-native';
 import { TrendCards } from '../components/TrendCards';
 import { RollupCards } from '../components/RollupCards';
 import * as ImagePicker from 'expo-image-picker';
@@ -207,6 +207,14 @@ export default function Dashboard() {
                     >
                         <LineChart size={16} color="#FFD700" />
                         <Text style={styles.guideNavText}>View History</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.guideNav}
+                        onPress={() => router.push('/learn')}
+                    >
+                        <GraduationCap size={16} color="#FFD700" />
+                        <Text style={styles.guideNavText}>Learn & SOS</Text>
                     </TouchableOpacity>
 
                     {/* Practice complete → offer next stage or restart */}
