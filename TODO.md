@@ -66,7 +66,7 @@ items ship or new ones surface.
     button + "End pairing" option once a Round resolves. Both sides
     reset atomically via `useBeBuddy.rematchBuddy` / `endBuddy`.
 - [x] **BE Guide View (level-up)** — full therapist product shipped:
-  extended signup (license, specialty, HIPAA acknowledgment); Pro
+  extended signup (license / registration #, HIPAA acknowledgment); Pro
   paywall gate on `/guide`; client capacity display + enforcement
   (free 0, Pro 25, Lifetime 100); private per-client notes with
   autosave; guide-generated invite codes with share and revoke;

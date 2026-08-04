@@ -18,8 +18,9 @@ import type { BePracticeStats } from './useBePractice';
  *
  *  Guide user doc (users/{guideUid}):
  *      role: 'therapist'
- *      licenseInfo?: string     (self-attested)
- *      specialty?: string       (optional)
+ *      licenseInfo?: string     (self-attested; license/registration/intern # a
+ *                                client can look them up by — LMFT, LCSW,
+ *                                registered intern, associate SW, board reg, etc.)
  *      hipaaAgreedAt?: string   (ISO date of acknowledgment)
  *
  *  Client notes (users/{guideUid}/clientNotes/{clientUid}):
