@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput } from 'react-native';
 import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { stashPendingInvite } from '../../hooks/usePendingInvite';
-import { Mail, Lock, User, Award, Sparkles, ShieldCheck } from 'lucide-react-native';
+import { Mail, Lock, User, Award, ShieldCheck } from 'lucide-react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
@@ -19,7 +19,6 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
     // Therapist-only fields (see Manual Part 3 · Therapist Layer)
     const [licenseInfo, setLicenseInfo] = useState('');
-    const [specialty, setSpecialty] = useState('');
     const [hipaaAgreed, setHipaaAgreed] = useState(false);
     const router = useRouter();
     const params = useLocalSearchParams();
@@ -62,7 +61,6 @@ export default function Signup() {
 
             if (role === 'therapist') {
                 baseDoc.licenseInfo = licenseInfo.trim() || null;
-                baseDoc.specialty = specialty.trim() || null;
                 baseDoc.hipaaAgreedAt = new Date().toISOString();
                 // Free tier by default; upgrading to Pro through PaywallModal
                 baseDoc.purchaseTier = 'free';
@@ -143,19 +141,17 @@ export default function Signup() {
                             </Text>
 
                             <Input
-                                placeholder="License / certification (e.g., LMFT #12345, CA)"
+                                placeholder="License / registration # (LMFT, LCSW, intern, etc.)"
                                 value={licenseInfo}
                                 onChangeText={setLicenseInfo}
                                 autoCapitalize="characters"
                                 icon={Award}
                             />
-                            <Input
-                                placeholder="Primary specialty (optional)"
-                                value={specialty}
-                                onChangeText={setSpecialty}
-                                autoCapitalize="words"
-                                icon={Sparkles}
-                            />
+                            <Text style={styles.therapistBlockHint}>
+                                Any number a client can look you up by — LMFT/LCSW license,
+                                registered intern number, associate social worker number, board
+                                registration, etc. Your name works too, but it's less specific.
+                            </Text>
 
                             <TouchableOpacity
                                 style={styles.hipaaRow}
@@ -185,7 +181,9 @@ export default function Signup() {
                     <View style={styles.footer}>
                         <Text style={styles.footerText}>Already have an account? </Text>
                         <Link href="/(auth)/login" asChild>
-                            <Text style={styles.link}>Sign In</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.link}>Sign In</Text>
+                            </TouchableOpacity>
                         </Link>
                     </View>
                 </View>

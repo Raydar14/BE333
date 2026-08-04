@@ -263,7 +263,9 @@ export default function Login() {
                     <View style={styles.footer}>
                         <Text style={styles.footerText}>Don't have an account? </Text>
                         <Link href="/(auth)/signup" asChild>
-                            <Text style={styles.link}>Sign Up</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.link}>Sign Up</Text>
+                            </TouchableOpacity>
                         </Link>
                     </View>
                 </View>

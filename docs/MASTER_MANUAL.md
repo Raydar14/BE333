@@ -284,10 +284,9 @@ Therapists get a role name and a feature that fit the app. The therapist role in
 
 #### Signing up as a BE Guide
 
-At sign-up, choose the **Therapist** role. This unlocks the Guide View section of the app and adds three fields to the sign-up form:
+At sign-up, choose the **Therapist** role. This unlocks the Guide View section of the app and adds two fields to the sign-up form:
 
-- **License / certification** (free-text, self-attested) — e.g., *"LMFT #12345, CA"* or *"ICF-PCC coach."* Not verified by BE333; used only to help clients decide whether to link with you.
-- **Primary specialty** (optional free-text) — e.g., *"Trauma-informed CBT,"* *"Adolescents,"* *"Somatic."*
+- **License / registration #** (free-text, self-attested) — any number a client can look you up by. LMFT/LCSW license, registered intern number, associate social worker number, board registration, ICF-PCC coach ID, etc. Your name works too, but it's less specific. Not verified by BE333; used only to help clients decide whether to link with you.
 - **Data-handling acknowledgment** (required checkbox) — see *Privacy & data* below.
 
 Anyone who signs up as a therapist can browse the Guide View, but **linking clients requires the Therapist Pro subscription** (see Plans & Pricing). A therapist without an active Pro tier sees a paywall on the client dashboard.
