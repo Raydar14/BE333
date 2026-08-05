@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Mail, Lock, Phone, KeyRound } from 'lucide-react-native';
 import { signInWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
@@ -262,11 +262,9 @@ export default function Login() {
 
                     <View style={styles.footer}>
                         <Text style={styles.footerText}>Don't have an account? </Text>
-                        <Link href="/(auth)/signup" asChild>
-                            <TouchableOpacity>
-                                <Text style={styles.link}>Sign Up</Text>
-                            </TouchableOpacity>
-                        </Link>
+                        <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
+                            <Text style={styles.link}>Sign Up</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </ScrollView>
