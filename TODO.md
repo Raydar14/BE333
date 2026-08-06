@@ -169,6 +169,18 @@ items ship or new ones surface.
   → General → Your apps → Web app → SDK setup and configuration,
   put it in `.env` under `EXPO_PUBLIC_FIREBASE_API_KEY`, then
   `npm run build && npm run deploy`. Optional cleanup — not urgent.
+- [ ] **Initialize App Check in the client with reCAPTCHA v3** so real
+  users get valid tokens and bots/scripts are rejected. This is the
+  proper fix for the `auth/firebase-app-check-token-is-invalid` errors
+  we hit at launch; we currently ship with App Check enforcement OFF
+  for Authentication in `be333ag` as a workaround. To do it right:
+  create a reCAPTCHA v3 site key in the reCAPTCHA admin console (or
+  auto-provision one from Firebase Console → App Check → Register app),
+  call `initializeAppCheck(app, { provider: new ReCaptchaV3Provider(SITE_KEY), isTokenAutoRefreshEnabled: true })` in `lib/firebase.ts` right after
+  `initializeApp`, redeploy, then re-enforce App Check for Authentication
+  (and Firestore) in Firebase Console. Optional but recommended before
+  scaling — turning enforcement back on without this will break signup
+  again.
 
 ## Notes
 Every task ends in a link to be tested end-to-end in the browser preview
