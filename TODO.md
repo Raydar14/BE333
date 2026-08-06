@@ -160,6 +160,15 @@ items ship or new ones surface.
   local build, or keep tracked as a snapshot mirror.
 - [ ] Decide fate of the `claude/website-clarity-access-64e9ar`
   branch (Microsoft Clarity analytics — merge or delete).
+- [ ] **Swap Firebase web API key to the standard "Browser key (auto
+  created by Firebase)"** in the `be333ag` project. Current build uses
+  the custom "BE" key (`AIzaSy…dIg`), which needed its Google Cloud
+  API-key restrictions loosened to unblock signup. The auto-created
+  Browser key is pre-scoped correctly by Firebase and is the intended
+  client key. Get its value from Firebase Console → Project settings
+  → General → Your apps → Web app → SDK setup and configuration,
+  put it in `.env` under `EXPO_PUBLIC_FIREBASE_API_KEY`, then
+  `npm run build && npm run deploy`. Optional cleanup — not urgent.
 
 ## Notes
 Every task ends in a link to be tested end-to-end in the browser preview
