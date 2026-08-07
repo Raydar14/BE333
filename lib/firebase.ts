@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
     apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -14,6 +15,23 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
+// App Check with reCAPTCHA v3 (web only). Runs only in a real browser
+// (has `window`) and only when the site key is provided at build time.
+// If enforcement is turned on in the Firebase console without this key
+// set, every auth call will 401 with `firebase-app-check-token-is-invalid`.
+const recaptchaSiteKey = process.env.EXPO_PUBLIC_RECAPTCHA_V3_SITE_KEY;
+if (typeof window !== 'undefined' && recaptchaSiteKey) {
+    try {
+        initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+            isTokenAutoRefreshEnabled: true,
+        });
+    } catch (e) {
+        // Init can throw if it runs twice during Fast Refresh; not fatal.
+        console.warn('App Check init failed:', e);
+    }
+}
 
 const auth = getAuth(app);
 const db = getFirestore(app);
