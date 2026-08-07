@@ -8,6 +8,7 @@ import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
+import { friendlyAuthError } from '../../lib/authErrors';
 
 declare global {
     interface Window {
@@ -50,7 +51,8 @@ export default function Login() {
             await signInWithEmailAndPassword(auth, email, password);
             router.replace('/');
         } catch (error: unknown) {
-            Alert.alert('Error', error instanceof Error ? error.message : 'Sign in failed');
+            const { title, message } = friendlyAuthError(error);
+            Alert.alert(title, message);
         } finally {
             setLoading(false);
         }
@@ -68,7 +70,8 @@ export default function Login() {
             await sendPasswordResetEmail(auth, email);
             Alert.alert('Email Sent', 'Check your email for a link to reset your password.');
         } catch (error: unknown) {
-            Alert.alert('Error', error instanceof Error ? error.message : 'Failed to send reset email');
+            const { title, message } = friendlyAuthError(error);
+            Alert.alert(title, message);
         } finally {
             setLoading(false);
         }
@@ -89,7 +92,8 @@ export default function Login() {
             router.replace('/');
         } catch (error: unknown) {
             console.error('Google Sign-In Error:', error);
-            Alert.alert('Error', error instanceof Error ? error.message : 'Google sign in failed');
+            const { title, message } = friendlyAuthError(error);
+            Alert.alert(title, message);
         } finally {
             setLoading(false);
         }
@@ -114,7 +118,8 @@ export default function Login() {
             setPhoneStep('otp');
             Alert.alert('Code Sent', 'Check your SMS for the verification code.');
         } catch (error: unknown) {
-            Alert.alert('Error Sending Code', error instanceof Error ? error.message : 'Could not send code');
+            const { title, message } = friendlyAuthError(error);
+            Alert.alert(title, message);
             // Reset recaptcha on error so user can try again
             if (window.recaptchaVerifier) {
                 window.recaptchaVerifier.render().then((widgetId: number) => window.recaptchaVerifier.reset(widgetId));
