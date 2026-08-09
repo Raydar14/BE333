@@ -181,6 +181,22 @@ items ship or new ones surface.
   (and Firestore) in Firebase Console. Optional but recommended before
   scaling — turning enforcement back on without this will break signup
   again.
+- [ ] **Add `be333.app` (and `www.be333.app`) to Firebase Auth →
+  Settings → Authorized domains** so Google Sign-In works on the custom
+  domain. Symptom when missing: `auth/unauthorized-domain` on the "Sign
+  in with Google" button on the login screen, with the console info
+  message telling you which domain to add. Config-only change in the
+  Firebase Console (project `be333ag`); no rebuild needed.
+- [ ] **Consent gate for Google Analytics + Microsoft Clarity.** Both
+  trackers in `app/+html.tsx` (gtag `G-2RSMKC21N0` and Clarity
+  `xwdgl8puwu`) fire on every page load with no consent banner. Fine
+  for a US-only audience; required for EU/UK users under GDPR/UK-DPA
+  (Clarity's session recordings are especially load-bearing here). If
+  BE333 will serve those regions, add a lightweight consent banner
+  (Google Consent Mode v2 + a `clarity('consent')` call, or a
+  simple "Accept / Decline" that gates injecting the two `<script>`
+  tags in the first place). At minimum, disclose both trackers in the
+  Privacy & Data screen.
 
 ## Notes
 Every task ends in a link to be tested end-to-end in the browser preview
