@@ -160,6 +160,43 @@ items ship or new ones surface.
   local build, or keep tracked as a snapshot mirror.
 - [ ] Decide fate of the `claude/website-clarity-access-64e9ar`
   branch (Microsoft Clarity analytics — merge or delete).
+- [ ] **Swap Firebase web API key to the standard "Browser key (auto
+  created by Firebase)"** in the `be333ag` project. Current build uses
+  the custom "BE" key (`AIzaSy…dIg`), which needed its Google Cloud
+  API-key restrictions loosened to unblock signup. The auto-created
+  Browser key is pre-scoped correctly by Firebase and is the intended
+  client key. Get its value from Firebase Console → Project settings
+  → General → Your apps → Web app → SDK setup and configuration,
+  put it in `.env` under `EXPO_PUBLIC_FIREBASE_API_KEY`, then
+  `npm run build && npm run deploy`. Optional cleanup — not urgent.
+- [ ] **Initialize App Check in the client with reCAPTCHA v3** so real
+  users get valid tokens and bots/scripts are rejected. This is the
+  proper fix for the `auth/firebase-app-check-token-is-invalid` errors
+  we hit at launch; we currently ship with App Check enforcement OFF
+  for Authentication in `be333ag` as a workaround. To do it right:
+  create a reCAPTCHA v3 site key in the reCAPTCHA admin console (or
+  auto-provision one from Firebase Console → App Check → Register app),
+  call `initializeAppCheck(app, { provider: new ReCaptchaV3Provider(SITE_KEY), isTokenAutoRefreshEnabled: true })` in `lib/firebase.ts` right after
+  `initializeApp`, redeploy, then re-enforce App Check for Authentication
+  (and Firestore) in Firebase Console. Optional but recommended before
+  scaling — turning enforcement back on without this will break signup
+  again.
+- [ ] **Add `be333.app` (and `www.be333.app`) to Firebase Auth →
+  Settings → Authorized domains** so Google Sign-In works on the custom
+  domain. Symptom when missing: `auth/unauthorized-domain` on the "Sign
+  in with Google" button on the login screen, with the console info
+  message telling you which domain to add. Config-only change in the
+  Firebase Console (project `be333ag`); no rebuild needed.
+- [ ] **Consent gate for Google Analytics + Microsoft Clarity.** Both
+  trackers in `app/+html.tsx` (gtag `G-2RSMKC21N0` and Clarity
+  `xwdgl8puwu`) fire on every page load with no consent banner. Fine
+  for a US-only audience; required for EU/UK users under GDPR/UK-DPA
+  (Clarity's session recordings are especially load-bearing here). If
+  BE333 will serve those regions, add a lightweight consent banner
+  (Google Consent Mode v2 + a `clarity('consent')` call, or a
+  simple "Accept / Decline" that gates injecting the two `<script>`
+  tags in the first place). At minimum, disclose both trackers in the
+  Privacy & Data screen.
 
 ## Notes
 Every task ends in a link to be tested end-to-end in the browser preview

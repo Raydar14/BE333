@@ -9,6 +9,7 @@ import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
+import { friendlyAuthError } from '../../lib/authErrors';
 
 export default function Signup() {
     useProtectedRoute();
@@ -72,7 +73,8 @@ export default function Signup() {
             router.replace('/');
         } catch (error: unknown) {
             console.error("Signup Error:", error);
-            Alert.alert('Error', error instanceof Error ? error.message : 'Sign up failed');
+            const { title, message } = friendlyAuthError(error);
+            Alert.alert(title, message);
         } finally {
             setLoading(false);
         }
