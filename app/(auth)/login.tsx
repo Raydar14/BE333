@@ -66,7 +66,7 @@ export default function Login() {
         if (!email) {
             setFormMessage({
                 type: 'error',
-                message: 'Ingresá tu correo arriba primero para poder enviarte el enlace.',
+                message: 'Enter your email above first so we can send you the link.',
             });
             return;
         }
@@ -77,7 +77,7 @@ export default function Login() {
             await sendPasswordResetEmail(auth, email);
             setFormMessage({
                 type: 'success',
-                message: 'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.',
+                message: "If an account exists with that email, we've sent a link to reset the password.",
             });
         } catch (error: unknown) {
             const code = typeof error === 'object' && error !== null && 'code' in error
@@ -88,7 +88,7 @@ export default function Login() {
                 // anti-enumeración) — mismo mensaje que el caso de éxito.
                 setFormMessage({
                     type: 'success',
-                    message: 'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.',
+                    message: "If an account exists with that email, we've sent a link to reset the password.",
                 });
             } else {
                 const { title, message } = friendlyAuthError(error);
@@ -101,7 +101,7 @@ export default function Login() {
 
     async function signInWithGoogle() {
         if (Platform.OS !== 'web') {
-            setFormMessage({ type: 'error', title: 'No disponible', message: 'Google Sign-In todavía solo está disponible en la Web.' });
+            setFormMessage({ type: 'error', title: 'Not available', message: 'Google Sign-In is currently only available on the web.' });
             return;
         }
 
@@ -124,12 +124,12 @@ export default function Login() {
 
     async function sendVerificationCode() {
         if (Platform.OS !== 'web') {
-            setFormMessage({ type: 'error', title: 'No disponible', message: 'La verificación por teléfono por ahora solo está configurada para Web.' });
+            setFormMessage({ type: 'error', title: 'Not available', message: 'Phone verification is currently only set up for the web.' });
             return;
         }
 
         if (!phoneNumber) {
-            setFormMessage({ type: 'error', message: 'Ingresá un número de teléfono válido.' });
+            setFormMessage({ type: 'error', message: 'Enter a valid phone number.' });
             return;
         }
 
@@ -140,7 +140,7 @@ export default function Login() {
             const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
             setVerificationId(confirmationResult);
             setPhoneStep('otp');
-            setFormMessage({ type: 'success', message: 'Revisá tu SMS para ver el código de verificación.' });
+            setFormMessage({ type: 'success', message: 'Check your texts for the verification code.' });
         } catch (error: unknown) {
             const { title, message } = friendlyAuthError(error);
             setFormMessage({ type: 'error', title, message });
@@ -162,7 +162,7 @@ export default function Login() {
             await verificationId.confirm(verificationCode);
             router.replace('/');
         } catch {
-            setFormMessage({ type: 'error', title: 'Código inválido', message: 'El código que ingresaste es incorrecto.' });
+            setFormMessage({ type: 'error', title: 'Invalid code', message: 'The code you entered is incorrect.' });
         } finally {
             setLoading(false);
         }

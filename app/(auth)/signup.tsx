@@ -40,8 +40,8 @@ export default function Signup() {
         if (role === 'therapist' && !hipaaAgreed) {
             setFormMessage({
                 type: 'error',
-                title: 'Falta un paso',
-                message: 'Confirmá el acuerdo de manejo de datos antes de crear tu cuenta de BE Guide.',
+                title: 'One more step',
+                message: 'Confirm the data-handling agreement before creating your BE Guide account.',
             });
             return;
         }
@@ -74,7 +74,7 @@ export default function Signup() {
 
             await setDoc(doc(db, 'users', user.uid), baseDoc);
 
-            setFormMessage({ type: 'success', message: '¡Cuenta creada! Iniciando sesión...' });
+            setFormMessage({ type: 'success', message: 'Account created! Signing you in...' });
             router.replace('/');
         } catch (error: unknown) {
             console.error("Signup Error:", error);
@@ -142,7 +142,7 @@ export default function Signup() {
                         icon={Lock}
                     />
                     <Text style={styles.passwordHint}>
-                        Mínimo 6 caracteres, al menos una letra mayúscula
+                        At least 6 characters, including one uppercase letter
                     </Text>
 
                     {role === 'therapist' && (
