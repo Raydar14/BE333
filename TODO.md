@@ -198,6 +198,38 @@ items ship or new ones surface.
   tags in the first place). At minimum, disclose both trackers in the
   Privacy & Data screen.
 
+## Git & repo housekeeping
+Two-person team workflow follow-ups. Numbering below matches the order
+they were discussed; items marked [x] are already done.
+
+- [x] Auto-delete branches after merge (Settings → General → Pull Requests).
+- [x] Squash-only merges (Settings → General → Pull Requests → allow squash only).
+- [ ] **Enable Secret scanning + Push protection** in Settings → Code
+  security. Blocks pushes that contain an API key, token, or credential.
+  Especially valuable given how much Firebase / reCAPTCHA / Cloudflare
+  key material has been near this repo.
+- [ ] **Enable Dependabot alerts + security updates** in Settings → Code
+  security. GitHub watches `package.json` / `package-lock.json` for
+  vulnerable dependencies and auto-opens PRs to fix them.
+- [ ] **Require 2FA on both accounts.** Each person: avatar → Settings
+  → Password and authentication → Two-factor authentication → set up
+  with an authenticator app.
+- [ ] **Add `.github/CODEOWNERS`** so PRs auto-request review from the
+  right person. Simplest starter is `*  @Raydar14` — every PR routes to
+  the owner. Add coworker's `@` for paths they own once they've onboarded.
+- [ ] **Configure local git identity on each machine.** One-time per
+  computer: `git config --global user.name "Your Name"` and
+  `git config --global user.email "you@example.com"` (email must match
+  the one on the GitHub account so commits attribute correctly).
+- [ ] **Require conversation resolution before merging** in the `Protect
+  main` ruleset. Prevents merging while review comments are unresolved.
+- [ ] **Enable Issues + add issue templates** (Settings → General →
+  Features → Issues on; then create `.github/ISSUE_TEMPLATE/bug.md` and
+  `feature.md`). Beats tracking bugs in scattered notes.
+- [ ] **Add a minimal CI GitHub Action** — `.github/workflows/build.yml`
+  running `npm ci && npm run build` on every PR — so build failures are
+  caught before merging to `main`. Defer until the PR flow is habit.
+
 ## Notes
 Every task ends in a link to be tested end-to-end in the browser preview
 before shipping. Master Manual is the source of truth for terminology,

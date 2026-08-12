@@ -1,19 +1,15 @@
 # Node / npm / Yarn
 node_modules/
 yarn.lock
-package-lock.json
+# NOTE: package-lock.json IS committed — do not ignore it. Committing the
+# lockfile is what makes `npm install` reproducible for you and Raychel,
+# so a run on either machine resolves the same dependency versions.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Expo / React-Native
 .expo/
-.expo/web/
-.expo/web/cache/
-.expo/web/static/
-.expo/web/production/
-.expo/web/preview/
-.expo/web/dev/
-.expo/web/*.js
-.expo/web/*.json
-.expo/web/*.svg
 
 # iOS / Android native folders
 ios/
@@ -33,11 +29,19 @@ metro-config/
 # Fastlane
 fastlane/
 
-# Miscellaneous
+# OS junk
 .DS_Store
+Thumbs.db
+
+# Local env — never commit these. Secret scanning / push protection on
+# GitHub will also block a push that contains an API key, but keep the
+# ignore rule as belt-and-suspenders.
 .env
 .env.local
+.env.development
+.env.production
 .env.*.local
+
 # Firebase project config — contains project ID; keep out of version control
 .firebaserc
 
