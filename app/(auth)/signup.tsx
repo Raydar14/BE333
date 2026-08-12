@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { stashPendingInvite } from '../../hooks/usePendingInvite';
 import { Mail, Lock, User, Award, ShieldCheck } from 'lucide-react-native';
@@ -8,6 +8,7 @@ import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { FormMessage, FormMessageState } from '../../components/FormMessage';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 import { friendlyAuthError } from '../../lib/authErrors';
 
@@ -18,6 +19,7 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<'user' | 'therapist'>('user');
     const [loading, setLoading] = useState(false);
+    const [formMessage, setFormMessage] = useState<FormMessageState | null>(null);
     // Therapist-only fields (see Manual Part 3 · Therapist Layer)
     const [licenseInfo, setLicenseInfo] = useState('');
     const [hipaaAgreed, setHipaaAgreed] = useState(false);
@@ -33,11 +35,14 @@ export default function Signup() {
     }, [params.invite, params.code]);
 
     async function signUpWithEmail() {
+        setFormMessage(null);
+
         if (role === 'therapist' && !hipaaAgreed) {
-            Alert.alert(
-                'One thing left',
-                'Please confirm the data-handling acknowledgment before creating your BE Guide account.'
-            );
+            setFormMessage({
+                type: 'error',
+                title: 'Falta un paso',
+                message: 'Confirmá el acuerdo de manejo de datos antes de crear tu cuenta de BE Guide.',
+            });
             return;
         }
         setLoading(true);
@@ -69,12 +74,12 @@ export default function Signup() {
 
             await setDoc(doc(db, 'users', user.uid), baseDoc);
 
-            Alert.alert('Success', 'Account created! Signing you in...');
+            setFormMessage({ type: 'success', message: '¡Cuenta creada! Iniciando sesión...' });
             router.replace('/');
         } catch (error: unknown) {
             console.error("Signup Error:", error);
             const { title, message } = friendlyAuthError(error);
-            Alert.alert(title, message);
+            setFormMessage({ type: 'error', title, message });
         } finally {
             setLoading(false);
         }
@@ -94,6 +99,8 @@ export default function Signup() {
                 <View style={styles.form}>
                     <Text style={styles.title}>Create Account</Text>
                     <Text style={styles.subtitle}>Join the BE333 Community</Text>
+
+                    <FormMessage state={formMessage} />
 
                     <View style={styles.roleContainer}>
                         <Text style={styles.label}>I am a:</Text>
@@ -134,6 +141,9 @@ export default function Signup() {
                         secureTextEntry
                         icon={Lock}
                     />
+                    <Text style={styles.passwordHint}>
+                        Mínimo 6 caracteres, al menos una letra mayúscula
+                    </Text>
 
                     {role === 'therapist' && (
                         <View style={styles.therapistBlock}>
@@ -279,6 +289,13 @@ const styles = StyleSheet.create({
     roleTextActive: {
         color: Colors.secondary,
         fontWeight: 'bold',
+    },
+    passwordHint: {
+        color: Colors.textSecondary,
+        fontSize: 12,
+        marginTop: -4,
+        marginBottom: 10,
+        marginLeft: 4,
     },
     therapistBlock: {
         marginTop: 6,

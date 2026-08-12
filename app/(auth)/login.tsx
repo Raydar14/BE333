@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, Phone, KeyRound } from 'lucide-react-native';
 import { signInWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
@@ -7,6 +7,7 @@ import { auth } from '../../lib/firebase';
 import { Colors } from '../../constants/Colors';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { FormMessage, FormMessageState } from '../../components/FormMessage';
 import { useProtectedRoute } from '../../hooks/useProtectedRoute';
 import { friendlyAuthError } from '../../lib/authErrors';
 
@@ -21,6 +22,7 @@ export default function Login() {
     const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [formMessage, setFormMessage] = useState<FormMessageState | null>(null);
 
     // Phone Auth State
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -46,21 +48,26 @@ export default function Login() {
     }, [authMethod]);
 
     async function signInWithEmail() {
+        setFormMessage(null);
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
             router.replace('/');
         } catch (error: unknown) {
             const { title, message } = friendlyAuthError(error);
-            Alert.alert(title, message);
+            setFormMessage({ type: 'error', title, message });
         } finally {
             setLoading(false);
         }
     }
 
     async function handleForgotPassword() {
+        setFormMessage(null);
         if (!email) {
-            Alert.alert('Email Required', 'Please enter your email address first to reset your password.');
+            setFormMessage({
+                type: 'error',
+                message: 'Ingresá tu correo arriba primero para poder enviarte el enlace.',
+            });
             return;
         }
 
@@ -68,10 +75,25 @@ export default function Login() {
         try {
             const { sendPasswordResetEmail } = await import('firebase/auth');
             await sendPasswordResetEmail(auth, email);
-            Alert.alert('Email Sent', 'Check your email for a link to reset your password.');
+            setFormMessage({
+                type: 'success',
+                message: 'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.',
+            });
         } catch (error: unknown) {
-            const { title, message } = friendlyAuthError(error);
-            Alert.alert(title, message);
+            const code = typeof error === 'object' && error !== null && 'code' in error
+                ? String((error as { code: unknown }).code)
+                : '';
+            if (code === 'auth/user-not-found') {
+                // No confirmamos ni negamos que la cuenta exista (protección
+                // anti-enumeración) — mismo mensaje que el caso de éxito.
+                setFormMessage({
+                    type: 'success',
+                    message: 'Si existe una cuenta con ese correo, te enviamos un enlace para restablecer la contraseña.',
+                });
+            } else {
+                const { title, message } = friendlyAuthError(error);
+                setFormMessage({ type: 'error', title, message });
+            }
         } finally {
             setLoading(false);
         }
@@ -79,10 +101,11 @@ export default function Login() {
 
     async function signInWithGoogle() {
         if (Platform.OS !== 'web') {
-            Alert.alert('Not Supported', 'Google Sign-In is currently only supported on Web.');
+            setFormMessage({ type: 'error', title: 'No disponible', message: 'Google Sign-In todavía solo está disponible en la Web.' });
             return;
         }
 
+        setFormMessage(null);
         setLoading(true);
         try {
             const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
@@ -93,7 +116,7 @@ export default function Login() {
         } catch (error: unknown) {
             console.error('Google Sign-In Error:', error);
             const { title, message } = friendlyAuthError(error);
-            Alert.alert(title, message);
+            setFormMessage({ type: 'error', title, message });
         } finally {
             setLoading(false);
         }
@@ -101,25 +124,26 @@ export default function Login() {
 
     async function sendVerificationCode() {
         if (Platform.OS !== 'web') {
-            Alert.alert('Not Supported', 'Phone verification setup currently for Web only.');
+            setFormMessage({ type: 'error', title: 'No disponible', message: 'La verificación por teléfono por ahora solo está configurada para Web.' });
             return;
         }
 
         if (!phoneNumber) {
-            Alert.alert('Error', 'Please enter a valid phone number.');
+            setFormMessage({ type: 'error', message: 'Ingresá un número de teléfono válido.' });
             return;
         }
 
+        setFormMessage(null);
         setLoading(true);
         try {
             const appVerifier = window.recaptchaVerifier;
             const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
             setVerificationId(confirmationResult);
             setPhoneStep('otp');
-            Alert.alert('Code Sent', 'Check your SMS for the verification code.');
+            setFormMessage({ type: 'success', message: 'Revisá tu SMS para ver el código de verificación.' });
         } catch (error: unknown) {
             const { title, message } = friendlyAuthError(error);
-            Alert.alert(title, message);
+            setFormMessage({ type: 'error', title, message });
             // Reset recaptcha on error so user can try again
             if (window.recaptchaVerifier) {
                 window.recaptchaVerifier.render().then((widgetId: number) => window.recaptchaVerifier.reset(widgetId));
@@ -132,12 +156,13 @@ export default function Login() {
     async function confirmCode() {
         if (!verificationId) return;
 
+        setFormMessage(null);
         setLoading(true);
         try {
             await verificationId.confirm(verificationCode);
             router.replace('/');
         } catch {
-            Alert.alert('Invalid Code', 'The code you entered is incorrect.');
+            setFormMessage({ type: 'error', title: 'Código inválido', message: 'El código que ingresaste es incorrecto.' });
         } finally {
             setLoading(false);
         }
@@ -160,6 +185,8 @@ export default function Login() {
 
                 <View style={styles.form}>
                     <Text style={styles.title}>Welcome Back</Text>
+
+                    <FormMessage state={formMessage} />
 
                     {/* Auth Method Tabs */}
                     <View style={styles.tabs}>

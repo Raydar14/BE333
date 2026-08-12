@@ -1,144 +1,164 @@
-// Friendly translations of the Firebase Auth error codes we hit in the UI.
-// Firebase's raw errors look like "Firebase: Error (auth/user-not-found)."
-// which is not something we want a real person to read. This maps the
-// common codes to a title + message pair that says what happened in plain
-// language and, when useful, hints at the next step (sign up, reset,
-// retry, etc.).
+// Traducciones al español de los códigos de error de Firebase Auth que
+// usamos en la UI. Firebase tira mensajes crudos como
+// "Firebase: Error (auth/user-not-found)." que no queremos mostrarle a un
+// usuario real. Este archivo centraliza el mapeo código -> texto en
+// español para no duplicar esta lógica entre login.tsx y signup.tsx.
 //
-// Note on `auth/invalid-credential`: when a project has "Email enumeration
-// protection" turned on (recommended, and on for be333ag), Firebase no
-// longer distinguishes user-not-found from wrong-password on sign-in — it
-// returns this generic code instead so that a bot can't probe which
-// emails have accounts. That's why we merge both cases into one message.
+// Nota sobre `auth/invalid-credential`: con "Email enumeration protection"
+// activada (recomendado, y activo en be333ag), Firebase ya no distingue
+// cuenta-inexistente de contraseña-incorrecta al iniciar sesión — devuelve
+// este código genérico para que nadie pueda usarlo para averiguar qué
+// emails tienen cuenta. Por el mismo motivo, `fetchSignInMethodsForEmail`
+// siempre devuelve un array vacío en este proyecto: no sirve para
+// detectar que una cuenta se registró con Google. El mensaje de abajo
+// cubre esa posibilidad de forma genérica, sin confirmar ni negar nada.
 
 export interface FriendlyAuthError {
     title: string;
     message: string;
 }
 
+// El error de contraseña trae del servidor algo como:
+// "Firebase: Missing password requirements: [Password must contain an
+// upper case character] (auth/password-does-not-meet-requirements)."
+// Extraemos la lista entre corchetes y traducimos cada requisito conocido.
+// Los desconocidos se muestran tal cual — no los inventamos.
+function parsePasswordRequirements(raw: string): string {
+    const match = raw.match(/\[([^\]]+)\]/);
+    if (!match) {
+        return 'La contraseña no cumple con la política de seguridad. Revisá los requisitos debajo del campo.';
+    }
+    const items = match[1].split(',').map((s) => s.trim());
+    const translated = items.map((item) => {
+        const lower = item.toLowerCase();
+        if (lower.includes('upper case')) return 'falta al menos una letra mayúscula';
+        if (lower.includes('lower case')) return 'falta al menos una letra minúscula';
+        if (lower.includes('numeric')) return 'falta al menos un número';
+        if (lower.includes('non-alphanumeric') || lower.includes('special')) return 'falta al menos un carácter especial';
+        if (lower.includes('at least') && lower.includes('character')) return 'debe tener al menos 6 caracteres';
+        if ((lower.includes('at most') || lower.includes('no more than')) && lower.includes('character')) return 'excede la longitud máxima permitida';
+        return item;
+    });
+    return `La contraseña no cumple los requisitos: ${translated.join('; ')}.`;
+}
+
 export function friendlyAuthError(err: unknown): FriendlyAuthError {
     const code = typeof err === 'object' && err !== null && 'code' in err
         ? String((err as { code: unknown }).code)
         : '';
-    const raw = err instanceof Error ? err.message : 'Something went wrong.';
+    const raw = err instanceof Error ? err.message : 'Ocurrió un error.';
 
     switch (code) {
-        // --- Sign-in problems ---
+        // --- Inicio de sesión ---
+        // user-not-found, invalid-credential y wrong-password se muestran
+        // con el mismo mensaje ambiguo a propósito: con Email Enumeration
+        // Protection activa, Firebase ya los colapsa en invalid-credential,
+        // así que distinguirlos acá daría una falsa sensación de certeza.
         case 'auth/user-not-found':
         case 'auth/invalid-credential':
-            return {
-                title: 'Sign in failed',
-                message:
-                    "We couldn't find an account with that email and password. " +
-                    "Double-check them, or tap Sign Up below if you're new here.",
-            };
         case 'auth/wrong-password':
             return {
-                title: 'Wrong password',
+                title: 'No pudimos iniciar tu sesión',
                 message:
-                    "That password doesn't match this account. Try again, or " +
-                    'tap "Forgot Password?" to reset it.',
+                    'El correo y la contraseña no coinciden con ninguna cuenta. ' +
+                    'Si te registraste con Google, usá el botón "Continuar con ' +
+                    'Google" en vez del formulario. Si no, revisá tu contraseña o ' +
+                    'restablecela con "¿Olvidaste tu contraseña?".',
             };
         case 'auth/invalid-email':
             return {
-                title: 'Check that email',
-                message: "That doesn't look like a valid email address.",
+                title: 'Revisá el correo',
+                message: 'Ese correo no tiene un formato válido.',
             };
         case 'auth/user-disabled':
             return {
-                title: 'Account disabled',
-                message:
-                    "This account has been disabled. If you think that's a " +
-                    'mistake, contact support.',
+                title: 'Cuenta deshabilitada',
+                message: 'Esta cuenta fue deshabilitada. Si te parece un error, contactanos.',
             };
         case 'auth/too-many-requests':
             return {
-                title: 'Too many attempts',
+                title: 'Demasiados intentos',
                 message:
-                    'Too many sign-in tries in a row. Wait a minute and try ' +
-                    'again, or reset your password.',
+                    'Hubo demasiados intentos de inicio de sesión seguidos. Esperá ' +
+                    'un minuto e intentá de nuevo, o restablecé tu contraseña.',
             };
 
-        // --- Sign-up problems ---
+        // --- Registro ---
         case 'auth/email-already-in-use':
             return {
-                title: 'That email is taken',
+                title: 'Ese correo ya está registrado',
                 message:
-                    'An account with this email already exists. Try signing in ' +
-                    'instead, or use "Forgot Password?" if you need to reset it.',
+                    'Ya existe una cuenta con este correo. Probá iniciar sesión. Si ' +
+                    'te registraste con Google, usá el botón "Continuar con Google".',
             };
         case 'auth/weak-password':
             return {
-                title: 'Password too short',
-                message: 'Please use a password with at least 6 characters.',
+                title: 'Contraseña muy corta',
+                message: 'Usá una contraseña de al menos 6 caracteres.',
+            };
+        case 'auth/password-does-not-meet-requirements':
+            return {
+                title: 'La contraseña no cumple los requisitos',
+                message: parsePasswordRequirements(raw),
             };
 
-        // --- Popup / OAuth problems ---
+        // --- Popup / OAuth ---
         case 'auth/popup-closed-by-user':
         case 'auth/cancelled-popup-request':
             return {
-                title: 'Sign-in canceled',
-                message:
-                    'The sign-in window closed before you finished. Try again ' +
-                    "when you're ready.",
+                title: 'Inicio de sesión cancelado',
+                message: 'Cerraste la ventana antes de terminar. Intentá de nuevo cuando quieras.',
             };
         case 'auth/popup-blocked':
             return {
-                title: 'Popup blocked',
+                title: 'Ventana emergente bloqueada',
                 message:
-                    'Your browser blocked the sign-in popup. Allow popups for ' +
-                    'this site and try again.',
+                    'Tu navegador bloqueó la ventana de inicio de sesión. Permití ' +
+                    'pop-ups para este sitio e intentá de nuevo.',
             };
         case 'auth/unauthorized-domain':
             return {
-                title: "This domain isn't authorized",
+                title: 'Dominio no autorizado',
                 message:
-                    "Sign-in isn't enabled for this URL yet. If you're the admin, " +
-                    'add this domain in Firebase Console → Authentication → ' +
-                    'Settings → Authorized domains.',
+                    'El inicio de sesión no está habilitado todavía para esta URL. ' +
+                    'Si sos admin, agregá este dominio en Firebase Console → ' +
+                    'Authentication → Settings → Authorized domains.',
             };
         case 'auth/account-exists-with-different-credential':
             return {
-                title: 'Different sign-in method',
+                title: 'Otro método de inicio de sesión',
                 message:
-                    'An account with this email already exists but was created ' +
-                    'with a different sign-in method (e.g. email/password). Try ' +
-                    'that method instead.',
+                    'Ya existe una cuenta con este correo, pero se creó con otro ' +
+                    'método (por ejemplo, email y contraseña). Probá con ese método.',
             };
 
-        // --- Environment / infrastructure ---
+        // --- Entorno / infraestructura ---
         case 'auth/network-request-failed':
             return {
-                title: 'Connection lost',
-                message:
-                    'Network error. Check your internet connection and try again.',
+                title: 'Se perdió la conexión',
+                message: 'Error de red. Revisá tu conexión a internet e intentá de nuevo.',
             };
         case 'auth/firebase-app-check-token-is-invalid':
             return {
-                title: "Couldn't verify this device",
-                message:
-                    'Please refresh the page and try again. If this keeps ' +
-                    'happening, let support know.',
+                title: 'No pudimos verificar el dispositivo',
+                message: 'Actualizá la página e intentá de nuevo. Si sigue pasando, avisanos.',
             };
         case 'auth/operation-not-allowed':
             return {
-                title: 'Sign-in method disabled',
+                title: 'Método de inicio de sesión deshabilitado',
                 message:
-                    "This sign-in method isn't enabled for the app yet. If " +
-                    "you're the admin, enable it in the Firebase console.",
+                    'Este método de inicio de sesión no está habilitado todavía. Si ' +
+                    'sos admin, habilitalo en la consola de Firebase.',
             };
 
         default:
-            // Trim the Firebase noise off the raw message so if we do have to
-            // fall back to it, it reads at least a little better.
-            const cleaned = raw
-                .replace(/^Firebase:\s*/i, '')
-                .replace(/^Error\s*/i, '')
-                .replace(/\s*\(auth\/[a-z-]+\)\.?\s*$/i, '')
-                .trim();
+            // Fallback para cualquier código no contemplado — incluye el
+            // código crudo para poder diagnosticar.
             return {
-                title: 'Something went wrong',
-                message: cleaned || 'Please try again.',
+                title: 'Ocurrió un error inesperado',
+                message: code
+                    ? `Intentá de nuevo. Si el problema sigue, contanos este código: ${code}.`
+                    : `Intentá de nuevo. Detalle: ${raw}`,
             };
     }
 }
