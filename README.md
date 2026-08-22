@@ -212,4 +212,4 @@ See `legal/README.md` for the full checklist.
 
 For product, brand, or content questions: open an issue on this repo and tag [@Raydar14](https://github.com/Raydar14).
 
-For security concerns (please do not open a public issue): email the address in `SECURITY.md`.
+For security concerns: please do **not** open a public issue. Follow the reporting flow in [`SECURITY.md`](./SECURITY.md), which lists the intake channel, the response SLA, what's in and out of scope, and safe-harbor terms for good-faith research. The dedicated intake inbox is still being set up; the file names an interim address to use in the meantime.

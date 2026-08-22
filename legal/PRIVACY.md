@@ -61,7 +61,7 @@ This policy does *not* cover: any third-party website you reach by clicking a li
 We use the information we collect to:
 
 - **Provide the Service** — authenticate you, save your practice, sync between devices, deliver notifications you enabled.
-- **Enable the BE Guide relationship** — surface a linked client's practice-cadence summary to the guide they chose to link, subject to the client's `shareWithGuide` toggle.
+- **Enable the BE Guide relationship** — surface a linked client's practice-cadence summary to the guide they chose to link. The current app also exposes a `shareWithGuide` toggle that surfaces a *"Sharing paused"* warning to the guide, but as of this document's version the underlying practice data still reaches the guide when the toggle is off; server-side enforcement is a known gap tracked as engineering work. Until that is fixed, do not treat the toggle as a hard cut-off — unlink the guide if you want to fully stop the flow.
 - **Improve the product** — Google Analytics for aggregate usage patterns, Microsoft Clarity for session-level UX diagnostics.
 - **Communicate with you** — transactional emails (password reset, subscription receipts), and — if you opt in — product updates.
 - **Ensure security and prevent abuse** — Firebase Auth's built-in rate limiting, App Check (when enforced), reCAPTCHA on phone auth, and standard log-based anomaly detection.
@@ -94,7 +94,7 @@ We do not sell your personal information. We share it only with:
   - **RevenueCat** — subscription entitlement management.
   - **Apple / Google Play / Stripe** — payment processing.
   - **Google reCAPTCHA** — bot mitigation on phone auth and (when enabled) App Check.
-- **Other users, only as directed by you** — a BE Guide you link (subject to `shareWithGuide`), a BE Buddy you accept, or content you export via the Share feature.
+- **Other users, only as directed by you** — a BE Guide you link (see the note in Section 4 about `shareWithGuide` and the recommended "unlink" path), a BE Buddy you accept, or content you export via the Share feature.
 - **Legal recipients** — when required by valid legal process, or to protect the rights, safety, and property of BE333, our users, or others.
 - **Successors** — if BE333 is involved in a merger, acquisition, or asset sale, your information may be transferred as part of that transaction. We will notify you before your information becomes subject to a materially different privacy policy.
 

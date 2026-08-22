@@ -35,7 +35,7 @@ If you're looking for therapy and don't have a provider, resources in your area 
 - **European Emergency:** **112** for immediate danger.
 - **International directory:** [findahelpline.com](https://findahelpline.com) lists crisis lines by country.
 
-The trauma-sensitive grounding content in the app's "Grounding" tab specifically reminds users to seek professional care and lists these numbers; if you find yourself using SOS or grounding content frequently, please reach out to a clinician.
+The trauma-sensitive grounding content in the app's "Grounding" tab currently ends with a reminder to work with a trauma-informed clinician; the crisis-line numbers above are listed in this disclaimer document but are not yet surfaced inside that in-app screen — that is a known gap and is on the follow-up list. If you find yourself using SOS or grounding content frequently, please reach out to a clinician.
 
 ## 4. Physical practices — know your body
 
