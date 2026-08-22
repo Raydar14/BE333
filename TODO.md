@@ -184,6 +184,32 @@ their own calendar app, but it isn't the whole story:
   automatically when native builds ship. Nothing to do beyond
   shipping the native apps.
 
+## Surfaced during launch legal-docs review
+
+Bugs found while grounding the legal drafts against the real code — the
+drafts had to be softened to describe current behavior accurately, and
+these two need engineering fixes before we can tighten the language.
+
+- [ ] **Enforce `shareWithGuide=false` on the server side.** Right now
+  `useLinkedClients` and `useLinkedClient` in `hooks/useBeGuide.ts`
+  always copy `bePractice` into the guide's `LinkedClientSummary`
+  regardless of the toggle; the guide sees a *"Sharing paused"*
+  warning but the underlying practice data still flows. The privacy
+  policy currently has to disclose this; when it's fixed we can also
+  tighten the wording. Option A: gate the read in the hook so
+  `bePractice` returns `undefined` when the toggled-off client's doc
+  is snapshotted. Option B (cleaner): add a Firestore security rule
+  that redacts / denies read of the `bePractice` field for a
+  linked-guide query when the client has `shareWithGuide=false`.
+- [ ] **Surface crisis-line numbers in the in-app "Grounding" tab.**
+  `content/learn/trauma.ts` currently ends with a "work with a
+  trauma-informed clinician" reminder; the numbers (988, 116 123,
+  112, findahelpline.com, etc.) are only listed in
+  `legal/DISCLAIMERS.md`, not where a user in acute distress would see
+  them. Add a `resources` array to the trauma script and render it as
+  a footer in `app/learn.tsx`. Match the crisis-number list in
+  `legal/DISCLAIMERS.md` so the two never drift.
+
 ## Housekeeping still open
 - [ ] `dist/` output is currently tracked (many-file diffs on every
   build). Decide: untrack + rely on Firebase Hosting deploy from
