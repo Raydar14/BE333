@@ -15,7 +15,7 @@ import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 export default function OnboardingSetup() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { habitLinks, updateHabitLink } = useSettings();
+    const { habitLinks, updateHabitLink, notificationMethod } = useSettings();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -86,12 +86,33 @@ export default function OnboardingSetup() {
                 // daily reminders in it; the browser downloads it and
                 // any calendar app they import it into will do the
                 // reminding for them.
-                if (Platform.OS === 'web') {
+                //
+                // Respect the user's explicit choice: if they set
+                // notificationMethod === 'none', don't force a download.
+                // The button in Settings → Reminders is always there.
+                if (Platform.OS === 'web' && notificationMethod !== 'none') {
                     const ics = buildRemindersIcs(habitLinks, {
                         calendarName: 'BE333 · Rise · Reset · Rest',
                         ownerId: user?.uid,
                     });
-                    if (ics) downloadIcsWeb(ics);
+                    if (ics && downloadIcsWeb(ics)) {
+                        // react-native-web's Alert.alert is a no-op on
+                        // the web, so use the browser's native alert to
+                        // explain the required import step. Without this
+                        // the user could leave onboarding thinking
+                        // reminders are active when only a file was
+                        // saved to their Downloads folder.
+                        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+                            window.alert(
+                                "We downloaded a 'be333-reminders.ics' file to your device.\n\n" +
+                                'Open it in your calendar app (Google Calendar, Apple ' +
+                                "Calendar, Outlook, etc.) and confirm the import — that's " +
+                                'what actually schedules the reminders. Nothing is on your ' +
+                                'calendar until you do that step.\n\n' +
+                                'You can re-download this file anytime from Settings → Reminders.'
+                            );
+                        }
+                    }
                 }
                 finishRouting(); // Navigate anyway
             } else {

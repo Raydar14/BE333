@@ -15,7 +15,7 @@ import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 export default function OnboardingReview() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { habitLinks } = useSettings();
+    const { habitLinks, notificationMethod } = useSettings();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -31,13 +31,35 @@ export default function OnboardingReview() {
             // Google / Apple / Outlook Calendar — those apps do the actual
             // reminding. On native without permission we keep the classic
             // "enable later in settings" alert.
-            if (Platform.OS === 'web') {
+            //
+            // Respect the user's explicit choice: if they picked
+            // notificationMethod === 'none' on this screen, don't force a
+            // download on them. The button in Settings → Reminders is
+            // always available if they change their mind.
+            if (Platform.OS === 'web' && notificationMethod !== 'none') {
                 const ics = buildRemindersIcs(habitLinks, {
                     calendarName: 'BE333 · Rise · Reset · Rest',
                     ownerId: user?.uid,
                 });
-                if (ics) downloadIcsWeb(ics);
-            } else {
+                if (ics && downloadIcsWeb(ics)) {
+                    // react-native-web's Alert.alert is a no-op, but the
+                    // browser's native window.alert works fine and is the
+                    // simplest way to make sure the user knows the file
+                    // still needs to be opened in a calendar app to
+                    // actually schedule anything. Guarded on `typeof
+                    // window` for SSR safety.
+                    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+                        window.alert(
+                            "We downloaded a 'be333-reminders.ics' file to your device.\n\n" +
+                            'Open it in your calendar app (Google Calendar, Apple Calendar, ' +
+                            "Outlook, etc.) and confirm the import — that's what actually " +
+                            'schedules the reminders. Nothing is on your calendar until you ' +
+                            'do that step.\n\n' +
+                            "You can re-download this file anytime from Settings → Reminders."
+                        );
+                    }
+                }
+            } else if (Platform.OS !== 'web') {
                 Alert.alert(
                     "Notifications Disabled",
                     "We can't send you reminders without permission. You can enable them later in settings.",
