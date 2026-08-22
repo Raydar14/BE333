@@ -9,11 +9,14 @@ import { Leaf, Clock, Sun, Moon, Coffee } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NotificationService } from '../../services/NotificationService';
 import { NOTIFICATION_COPY, bodyFor } from '../../content/notifications';
+import { useAuth } from '../../contexts/AuthContext';
+import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 
 export default function OnboardingSetup() {
     const { colors } = useTheme();
     const router = useRouter();
     const { habitLinks, updateHabitLink } = useSettings();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
     // DatePicker State
@@ -76,7 +79,20 @@ export default function OnboardingSetup() {
             const granted = await NotificationService.registerForPushNotificationsAsync();
 
             if (!granted) {
-                // If denied or simulator, just warn but allow play
+                // Notifications didn't get scheduled — either the user
+                // denied permission on native, or we're on the web build
+                // where expo-notifications is a no-op. On web we can at
+                // least hand the user a calendar file with their three
+                // daily reminders in it; the browser downloads it and
+                // any calendar app they import it into will do the
+                // reminding for them.
+                if (Platform.OS === 'web') {
+                    const ics = buildRemindersIcs(habitLinks, {
+                        calendarName: 'BE333 · Rise · Reset · Rest',
+                        ownerId: user?.uid,
+                    });
+                    if (ics) downloadIcsWeb(ics);
+                }
                 finishRouting(); // Navigate anyway
             } else {
                 // 2. Schedule Notifications
