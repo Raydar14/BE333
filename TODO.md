@@ -18,8 +18,44 @@ items ship or new ones surface.
   anywhere, tough day, calm focus). Voice: warm, neutral accent, no reverb.
 
 ## Illustrations (needs Raychel)
-- [ ] Pose illustrations for **Stretching** (3 sequences × 6 moves).
-- [ ] Pose illustrations for **Yoga** (Sun Salutation A + 3 vinyasas).
+
+_Log every new illustration in `docs/ILLUSTRATION_CREDITS.md` when it
+lands (file · category · source · license · date · code path)._
+
+### Habit-stack category icons (priority: highest)
+Nine gold line-art icons, one per habit stack, matching the
+`golden_lotus.png` line-weight / gold-fill style. Ships in
+`components/HabitStackContent.tsx` and the habit-stack picker on the
+Dashboard. Filename convention: `stack-{name}.svg`.
+
+- [ ] `stack-chanting.svg` — sound wave / mouth silhouette / OM glyph
+- [ ] `stack-prayer.svg` — folded hands or open hands
+- [ ] `stack-journaling.svg` — open book with a soft pen line
+- [ ] `stack-poetry.svg` — quill / feather / stanza mark
+- [ ] `stack-dayplanning.svg` — small sun with a horizon line
+- [ ] `stack-gratitude.svg` — heart with a leaf accent
+- [ ] `stack-mantra.svg` — mala bead loop
+- [ ] `stack-stretching.svg` — abstract figure mid-stretch
+- [ ] `stack-yoga.svg` — lotus-seated figure silhouette
+
+### Pose illustrations (priority: later wave)
+- [ ] Pose illustrations for **Stretching** (3 sequences × 6 moves = 18 poses).
+- [ ] Pose illustrations for **Yoga** (Sun Salutation A + 3 vinyasas ≈ 12 poses).
+
+### Milestone / Petal badges (priority: optional)
+- [ ] 7 gold badges for Days **1, 3, 7, 11, 14, 19, 21** — wire into
+  `PetalAwardModal`. Small (~64 px). Filename: `badge-day{n}.svg`.
+
+### Chakra glyphs (priority: optional)
+- [ ] 7 traditional chakra symbols for Bloom Map days 15-21 (Root, Sacral,
+  Solar, Heart, Throat, Third Eye, Crown). Public-domain source art on
+  Wikimedia Commons — trace and restyle in brand gold. Filename:
+  `chakra-{name}.svg`.
+
+### App-icon SVG exports (priority: nice-to-have)
+- [ ] SVG exports of `assets/images/golden_lotus.png` and
+  `assets/images/brand_logo_text.png` so future exports at any size stay
+  crisp. Drop into `assets/images/` next to the PNGs.
 
 ## Wave 1 — Bloom, milestones, bells (all shipped)
 - [x] Fix Bloom Day pauses to 3 for everyone (manual override of Pro perk).
