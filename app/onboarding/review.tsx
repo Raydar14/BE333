@@ -15,7 +15,7 @@ import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 export default function OnboardingReview() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { habitLinks, notificationMethod } = useSettings();
+    const { habitLinks, notificationMethod, snoozeUntil } = useSettings();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -40,6 +40,7 @@ export default function OnboardingReview() {
                 const ics = buildRemindersIcs(habitLinks, {
                     calendarName: 'BE333 · Rise · Reset · Rest',
                     ownerId: user?.uid,
+                    snoozeUntilMs: snoozeUntil,
                 });
                 if (ics && downloadIcsWeb(ics)) {
                     // react-native-web's Alert.alert is a no-op, but the

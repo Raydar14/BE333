@@ -29,7 +29,7 @@ interface CalendarReminderButtonProps {
 type Status = 'idle' | 'success' | 'empty' | 'error' | 'native';
 
 export function CalendarReminderButton({ colors }: CalendarReminderButtonProps) {
-    const { habitLinks } = useSettings();
+    const { habitLinks, snoozeUntil } = useSettings();
     const { user } = useAuth();
     const [status, setStatus] = useState<Status>('idle');
 
@@ -41,6 +41,7 @@ export function CalendarReminderButton({ colors }: CalendarReminderButtonProps) 
         const ics = buildRemindersIcs(habitLinks, {
             calendarName: 'BE333 · Rise · Reset · Rest',
             ownerId: user?.uid,
+            snoozeUntilMs: snoozeUntil,
         });
         if (!ics) {
             setStatus('empty');
