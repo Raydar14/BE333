@@ -17,6 +17,24 @@ items ship or new ones surface.
 - [ ] **Core session audio** — 6 scripts (morning, midday, evening,
   anywhere, tough day, calm focus). Voice: warm, neutral accent, no reverb.
 
+## Audio sourcing + credits (before shipping any real files)
+- [ ] For every real audio file that lands, add a row to
+  `docs/AUDIO_CREDITS.md` (file · category · duration · source URL ·
+  license · download date · code path that uses it). Even for CC0 —
+  provenance stays with the app.
+- [ ] Prefer sources in this order: Freesound (filter CC0) → Pixabay
+  Audio → YouTube Audio Library (attribution-not-required) → Wikimedia
+  Commons / Internet Archive for public-domain religious content.
+- [ ] Never bundle CC-BY-SA (ShareAlike infects the app),
+  CC-NC (disqualifies the Pro / Lifetime tier), or "free with signup"
+  audio without confirming the terms allow paid-app use.
+- [ ] The moment the first CC-BY track goes in, add a Settings →
+  About → **Sound credits** screen that renders the credits table
+  from `docs/AUDIO_CREDITS.md` (or a JSON mirror of it) so attribution
+  travels with the app.
+- [ ] Match filename convention (`{category}-{short-name}.{ext}`) and
+  the -12 dBFS peak spec called out in `docs/AUDIO_CREDITS.md`.
+
 ## Illustrations (needs Raychel)
 
 _Log every new illustration in `docs/ILLUSTRATION_CREDITS.md` when it
