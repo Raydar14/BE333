@@ -12,6 +12,7 @@ import { Alert } from 'react-native';
 import { useGuideLink } from '../hooks/useBeGuide';
 import { useLetterToYourself, DEFAULT_LETTER, ONBOARDING_PROMPT } from '../hooks/useLetterToYourself';
 import { useCoupon } from '../hooks/useCoupon';
+import { CalendarReminderButton } from '../components/CalendarReminderButton';
 
 export default function Settings() {
     const { colors, setPrimaryColor, setSecondaryColor, resetTheme } = useTheme();
@@ -132,6 +133,15 @@ export default function Settings() {
                         <Text style={[styles.menuItemText, { color: colors.text }]}>View Profile & Stats</Text>
                         <ArrowLeft size={16} color={colors.textSecondary} style={{ transform: [{ rotate: '180deg' }] }} />
                     </TouchableOpacity>
+                </View>
+
+                {/* Reminders — .ics fallback for the web build, since expo-notifications
+                    on web only fires while the tab is open. On native this section is still
+                    visible but the button is inert (the OS notification scheduler is the
+                    primary path there). */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Reminders</Text>
+                    <CalendarReminderButton colors={colors} />
                 </View>
 
                 {/* Timer Settings (Pro) */}
