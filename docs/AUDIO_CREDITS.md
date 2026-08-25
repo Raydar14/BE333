@@ -61,7 +61,8 @@ Before adding a new sound to this table, confirm its license is one of:
 
 | File | Category | Duration | Source | License | Downloaded | Used in |
 |---|---|---|---|---|---|---|
-| _(none yet — replace this row when the first real file lands)_ | | | | | | |
+| `assets/audio/intro/chime-welcome.wav` | Onboarding welcome | 0:56 | [freesound.org/s/566579](https://freesound.org/s/566579/) by **bainmack** ("chime song mellow chill short2") | CC0 | 2026-08-25 | _(pending wire-in — target: onboarding welcome screen background)_ |
+| `assets/audio/ambient/water-birds.wav` | Ambient nature loop | 0:22 | [freesound.org/s/192648](https://freesound.org/s/192648/) by **pibborn** ("field recording edited water and birds") | CC0 | 2026-08-25 | _(pending wire-in — target: BE Pause background when `showNatureVisuals` is on)_ |
 
 <!--
 Add rows in this shape:

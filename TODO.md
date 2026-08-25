@@ -11,11 +11,31 @@ items ship or new ones surface.
   when it opens.
 - [ ] **Background nature loops** — stream, birdsong, room tone. Seamless
   over 3 min. Play behind the timer when `showNatureVisuals` is on.
-- [ ] **Chanting stack** — OM, So Hum, humming, silent mantra
-  (4 tracks × ~3 min).
-- [ ] **Mantra stack** — 20 mantras, audio narration for 6 of them.
-- [ ] **Core session audio** — 6 scripts (morning, midday, evening,
-  anywhere, tough day, calm focus). Voice: warm, neutral accent, no reverb.
+  *Batch 1 landed: `assets/audio/ambient/water-birds.wav` (22 s, CC0,
+  Freesound 192648). Still need: (a) at least one more variety —
+  stream / rain / room tone; (b) verify the water file loops
+  seamlessly, or crossfade the seams before shipping.*
+- [ ] **Onboarding welcome background** — plays behind the first
+  Welcome screen on new-user launch. Batch 1 landed:
+  `assets/audio/intro/chime-welcome.wav` (56 s, CC0, Freesound 566579).
+  *Still to wire: add a `useEffect` on the welcome screen that
+  starts the file at mount and stops on navigate.*
+
+### Removed from scope
+- ~~**Chanting stack** — audio tracks for OM / So Hum / humming /
+  silent mantra.~~ Replaced by on-screen scrolling text (see next
+  bullet); no audio to source.
+- ~~**Mantra stack** — 20 mantras, audio narration for 6 of them.~~
+  Text-only; users can chant aloud themselves from the on-screen text.
+- ~~**Core session audio** — 6 voice-over scripts.~~ Cut. Sessions
+  stay text-driven + optional ambient nature loop behind the timer.
+
+### Chanting — on-screen text (new)
+- [ ] **Show the chant words on screen** for each track (OM, So Hum,
+  humming, silent). Render the lines line-by-line with a subtle
+  highlight moving down the stack in rhythm; user chants aloud
+  themselves. Same for the 20 mantras — meaning + phrase on the
+  screen with a gentle pace indicator. No audio playback needed.
 
 ## Audio sourcing + credits (before shipping any real files)
 - [ ] For every real audio file that lands, add a row to
