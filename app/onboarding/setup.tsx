@@ -90,7 +90,12 @@ export default function OnboardingSetup() {
                 // Respect the user's explicit choice: if they set
                 // notificationMethod === 'none', don't force a download.
                 // The button in Settings → Reminders is always there.
-                if (Platform.OS === 'web' && notificationMethod !== 'none') {
+                // Only offer the calendar-file fallback when the user
+                // actually picked push notifications. Selecting SMS or
+                // Email should not silently switch them to a calendar
+                // download; those are their own TODOs (see 'Meditation
+                // reminders' in TODO.md).
+                if (Platform.OS === 'web' && notificationMethod === 'push') {
                     const ics = buildRemindersIcs(habitLinks, {
                         calendarName: 'BE333 · Rise · Reset · Rest',
                         ownerId: user?.uid,

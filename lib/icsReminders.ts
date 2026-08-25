@@ -129,6 +129,7 @@ function buildEvent(
     h: number,
     m: number,
     link: HabitLinkConfig,
+    sequence: number,
 ): string {
     // Floating local time (no TZ suffix). Per RFC 5545 §3.3.5, this
     // means "fires at the user's local wall-clock time no matter which
@@ -143,6 +144,19 @@ function buildEvent(
         'BEGIN:VEVENT',
         foldLine(`UID:${uid}`),
         foldLine(`DTSTAMP:${utcStamp(now)}`),
+        // RFC 5545 §3.8.7.4 SEQUENCE: strictly-increasing revision
+        // counter. Clients that apply revision semantics use it to
+        // decide whether a re-imported UID is a newer version of the
+        // existing event (SEQUENCE went up = replace) or a duplicate
+        // to ignore (SEQUENCE unchanged = keep the old one). Omitting
+        // it is treated as SEQUENCE:0, so every re-export would look
+        // identical and users who change reminder times would see
+        // strict clients (Outlook, some corporate mail apps) silently
+        // keep the old times. Passing the Unix-second timestamp gives
+        // every export a monotonically increasing sequence with no
+        // client-side state; occasional no-op re-exports still bump
+        // it, which is harmless.
+        `SEQUENCE:${sequence}`,
         foldLine(`DTSTART:${start}`),
         'DURATION:PT3M',
         'RRULE:FREQ=DAILY',
@@ -185,6 +199,12 @@ export function buildRemindersIcs(
     const now = new Date();
     const snoozeMs = opts?.snoozeUntilMs ?? null;
     const snoozeActive = snoozeMs !== null && snoozeMs > now.getTime();
+    // Unix-second timestamp is the sequence number for every VEVENT in
+    // this build. Same value across all three (Rise/Reset/Rest) events
+    // in one export — RFC 5545 tracks SEQUENCE per UID, and every UID
+    // here is unique per (owner, period), so parallel numbering is
+    // fine. A later re-export will always yield a larger value.
+    const sequence = Math.floor(now.getTime() / 1000);
 
     const periods: NotificationPeriod[] = ['morning', 'midday', 'evening'];
     const events: string[] = [];
@@ -214,7 +234,7 @@ export function buildRemindersIcs(
         // UID is stable per (owner, period) so re-importing replaces
         // rather than duplicates.
         const uid = `be333-${p}-${ownerId}@be333.app`;
-        events.push(buildEvent(uid, now, firstDay, p, parsed.h, parsed.m, link));
+        events.push(buildEvent(uid, now, firstDay, p, parsed.h, parsed.m, link, sequence));
     }
 
     if (events.length === 0) return null;

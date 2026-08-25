@@ -36,7 +36,13 @@ export default function OnboardingReview() {
             // notificationMethod === 'none' on this screen, don't force a
             // download on them. The button in Settings → Reminders is
             // always available if they change their mind.
-            if (Platform.OS === 'web' && notificationMethod !== 'none') {
+            // Only offer the calendar-file fallback when the user actually
+            // picked push notifications. If they chose SMS or Email in
+            // NotificationPreferencesCard, respect that (both are still
+            // TODOs on the server side — see 'Meditation reminders' in
+            // TODO.md — but downloading a .ics file is not the delivery
+            // channel they asked for).
+            if (Platform.OS === 'web' && notificationMethod === 'push') {
                 const ics = buildRemindersIcs(habitLinks, {
                     calendarName: 'BE333 · Rise · Reset · Rest',
                     ownerId: user?.uid,
