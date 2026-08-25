@@ -9,11 +9,14 @@ import { Leaf, Clock, Sun, Moon, Coffee } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { NotificationService } from '../../services/NotificationService';
 import { NOTIFICATION_COPY, bodyFor } from '../../content/notifications';
+import { useAuth } from '../../contexts/AuthContext';
+import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 
 export default function OnboardingSetup() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { habitLinks, updateHabitLink } = useSettings();
+    const { habitLinks, updateHabitLink, notificationMethod, snoozeUntil } = useSettings();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
     // DatePicker State
@@ -76,7 +79,42 @@ export default function OnboardingSetup() {
             const granted = await NotificationService.registerForPushNotificationsAsync();
 
             if (!granted) {
-                // If denied or simulator, just warn but allow play
+                // Notifications didn't get scheduled — either the user
+                // denied permission on native, or we're on the web build
+                // where expo-notifications is a no-op. On web we can at
+                // least hand the user a calendar file with their three
+                // daily reminders in it; the browser downloads it and
+                // any calendar app they import it into will do the
+                // reminding for them.
+                //
+                // Respect the user's explicit choice: if they set
+                // notificationMethod === 'none', don't force a download.
+                // The button in Settings → Reminders is always there.
+                if (Platform.OS === 'web' && notificationMethod !== 'none') {
+                    const ics = buildRemindersIcs(habitLinks, {
+                        calendarName: 'BE333 · Rise · Reset · Rest',
+                        ownerId: user?.uid,
+                        snoozeUntilMs: snoozeUntil,
+                    });
+                    if (ics && downloadIcsWeb(ics)) {
+                        // react-native-web's Alert.alert is a no-op on
+                        // the web, so use the browser's native alert to
+                        // explain the required import step. Without this
+                        // the user could leave onboarding thinking
+                        // reminders are active when only a file was
+                        // saved to their Downloads folder.
+                        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+                            window.alert(
+                                "We downloaded a 'be333-reminders.ics' file to your device.\n\n" +
+                                'Open it in your calendar app (Google Calendar, Apple ' +
+                                "Calendar, Outlook, etc.) and confirm the import — that's " +
+                                'what actually schedules the reminders. Nothing is on your ' +
+                                'calendar until you do that step.\n\n' +
+                                'You can re-download this file anytime from Settings → Reminders.'
+                            );
+                        }
+                    }
+                }
                 finishRouting(); // Navigate anyway
             } else {
                 // 2. Schedule Notifications

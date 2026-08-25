@@ -1,19 +1,22 @@
 import React, { useState, Fragment } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
 import { NotificationService } from '../../services/NotificationService';
 import { NOTIFICATION_COPY, bodyFor } from '../../content/notifications';
 import { Leaf } from 'lucide-react-native';
 import { NotificationPreferencesCard } from '../../components/NotificationPreferencesCard';
 import { SnoozeControls } from '../../components/SnoozeControls';
+import { buildRemindersIcs, downloadIcsWeb } from '../../lib/icsReminders';
 
 export default function OnboardingReview() {
     const { colors } = useTheme();
     const router = useRouter();
-    const { habitLinks } = useSettings();
+    const { habitLinks, notificationMethod, snoozeUntil } = useSettings();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
     const handleFinish = async () => {
@@ -22,11 +25,48 @@ export default function OnboardingReview() {
         const granted = await NotificationService.registerForPushNotificationsAsync();
 
         if (!granted) {
-            Alert.alert(
-                "Notifications Disabled",
-                "We can't send you reminders without permission. You can enable them later in settings.",
-                [{ text: "OK" }]
-            );
+            // Web fallback: expo-notifications on the web only fires while
+            // the tab is open, so pushing reminders that way is a dead end.
+            // Instead, auto-download a .ics file the user can import into
+            // Google / Apple / Outlook Calendar — those apps do the actual
+            // reminding. On native without permission we keep the classic
+            // "enable later in settings" alert.
+            //
+            // Respect the user's explicit choice: if they picked
+            // notificationMethod === 'none' on this screen, don't force a
+            // download on them. The button in Settings → Reminders is
+            // always available if they change their mind.
+            if (Platform.OS === 'web' && notificationMethod !== 'none') {
+                const ics = buildRemindersIcs(habitLinks, {
+                    calendarName: 'BE333 · Rise · Reset · Rest',
+                    ownerId: user?.uid,
+                    snoozeUntilMs: snoozeUntil,
+                });
+                if (ics && downloadIcsWeb(ics)) {
+                    // react-native-web's Alert.alert is a no-op, but the
+                    // browser's native window.alert works fine and is the
+                    // simplest way to make sure the user knows the file
+                    // still needs to be opened in a calendar app to
+                    // actually schedule anything. Guarded on `typeof
+                    // window` for SSR safety.
+                    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+                        window.alert(
+                            "We downloaded a 'be333-reminders.ics' file to your device.\n\n" +
+                            'Open it in your calendar app (Google Calendar, Apple Calendar, ' +
+                            "Outlook, etc.) and confirm the import — that's what actually " +
+                            'schedules the reminders. Nothing is on your calendar until you ' +
+                            'do that step.\n\n' +
+                            "You can re-download this file anytime from Settings → Reminders."
+                        );
+                    }
+                }
+            } else if (Platform.OS !== 'web') {
+                Alert.alert(
+                    "Notifications Disabled",
+                    "We can't send you reminders without permission. You can enable them later in settings.",
+                    [{ text: "OK" }]
+                );
+            }
             // Don't block - proceed to home anyway
             setLoading(false);
             router.replace('/');

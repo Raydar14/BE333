@@ -75,6 +75,36 @@ Dashboard. Filename convention: `stack-{name}.svg`.
   `assets/images/brand_logo_text.png` so future exports at any size stay
   crisp. Drop into `assets/images/` next to the PNGs.
 
+## Meditation reminders (real push story)
+
+The web build now has a `.ics` calendar-file fallback (see
+`lib/icsReminders.ts` + `components/CalendarReminderButton.tsx`,
+surfaced in Settings → Reminders and auto-triggered at the end of
+onboarding on web). That gets a user a working reminder path today via
+their own calendar app, but it isn't the whole story:
+
+- [ ] **Real web push via Firebase Cloud Messaging + a service worker.**
+  Needs a `firebase-messaging-sw.js` service worker in `public/`
+  (Firebase Hosting will serve it at the root scope), VAPID key
+  provisioning in the Firebase Console → Project Settings → Cloud
+  Messaging, and a client-side registration flow that swaps the
+  current `registerForPushNotificationsAsync` web bail-out for an
+  FCM Web token request. Send the three daily notifications from a
+  Cloud Function scheduled trigger (or FCM's own schedule). Only
+  worth building once native isn't the priority — coverage on iOS
+  Safari is 16.4+ and requires the user to install the PWA to the
+  home screen for it to work reliably.
+- [ ] **Email reminders as an alternate path.** Cheapest reliable
+  cross-platform reminder. Firebase Cloud Function on a cron trigger
+  reads users whose reminder times fall in the current 5-minute
+  window and sends via SendGrid / Postmark / Resend. Needs a
+  transactional-email vendor account, a template per period, and an
+  unsubscribe / manage-preferences flow.
+- [ ] **Native mobile reminders (iOS/Android) via expo-notifications.**
+  Already wired in `services/NotificationService.ts`; kicks in
+  automatically when native builds ship. Nothing to do beyond
+  shipping the native apps.
+
 ## Wave 1 — Bloom, milestones, bells (all shipped)
 - [x] Fix Bloom Day pauses to 3 for everyone (manual override of Pro perk).
 - [x] 60-line self-compassion prompt library, shown on completion.
