@@ -23,6 +23,7 @@ import { BreathingBelly } from '../components/BreathingBelly'; // Use new Belly 
 import { PetalAwardModal } from '../components/PetalAwardModal';
 import { getRandomPrompt } from '../content/selfCompassionPrompts';
 import { BellService } from '../services/BellService';
+import { startNatureLoop, stopNatureLoop } from '../services/AmbientAudioService';
 import { EMACheckIn } from '../components/EMACheckIn';
 import { BE333Logo } from '../components/BE333Logo';
 
@@ -291,6 +292,21 @@ export default function Home() {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
     }, [isActive, timerMode]); // Removed timeLeft dependency from interval setup
+
+    // Ambient nature loop: play the water + birds field recording in the
+    // background while a BE Pause is running and the user has nature
+    // visuals turned on. Toggling `showNatureVisuals` off mid-session
+    // stops the loop immediately; the same effect also unmounts cleanly
+    // if the user navigates away. See services/AmbientAudioService.ts.
+    useEffect(() => {
+        if (isActive && showNatureVisuals) {
+            startNatureLoop();
+            return () => {
+                stopNatureLoop();
+            };
+        }
+        return undefined;
+    }, [isActive, showNatureVisuals]);
 
     // Check for completion
     useEffect(() => {
