@@ -61,8 +61,8 @@ Before adding a new sound to this table, confirm its license is one of:
 
 | File | Category | Duration | Source | License | Downloaded | Used in |
 |---|---|---|---|---|---|---|
-| `assets/audio/intro/chime-welcome.wav` | Onboarding welcome | 0:56 | [freesound.org/s/566579](https://freesound.org/s/566579/) by **bainmack** ("chime song mellow chill short2") | CC0 | 2026-08-25 | _(pending wire-in — target: onboarding welcome screen background)_ |
-| `assets/audio/ambient/water-birds.wav` | Ambient nature loop | 0:22 | [freesound.org/s/192648](https://freesound.org/s/192648/) by **pibborn** ("field recording edited water and birds") | CC0 | 2026-08-25 | _(pending wire-in — target: BE Pause background when `showNatureVisuals` is on)_ |
+| `assets/audio/intro/chime-welcome.wav` | Onboarding welcome | 0:56 | [freesound.org/s/566579](https://freesound.org/s/566579/) by **bainmack** ("chime song mellow chill short2") | CC0 | 2026-08-25 | `services/AmbientAudioService.ts` → `playWelcomeChime` · called from `app/onboarding/index.tsx` |
+| `assets/audio/ambient/water-birds.wav` | Ambient nature loop | 0:22 | [freesound.org/s/192648](https://freesound.org/s/192648/) by **pibborn** ("field recording edited water and birds") | CC0 | 2026-08-25 | `services/AmbientAudioService.ts` → `startNatureLoop` · called from `app/index.tsx` while a BE Pause is active and `showNatureVisuals` is on |
 
 <!--
 Add rows in this shape:

@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ShimmerButton } from '../../components/ShimmerButton';
 import { BreathingLeaves } from '../../components/BreathingLeaves';
 import { BE333Logo } from '../../components/BE333Logo';
 import { Leaf } from 'lucide-react-native';
 import Svg, { Path, Line } from 'react-native-svg';
+import { playWelcomeChime, stopWelcomeChime } from '../../services/AmbientAudioService';
 
 // Tree Roots visual connector
 function TreeRoots({ color }: { color: string }) {
@@ -24,6 +26,16 @@ function TreeRoots({ color }: { color: string }) {
 export default function OnboardingIntro() {
     const router = useRouter();
     const { colors } = useTheme();
+
+    // Welcome chime (56 s, CC0, Freesound 566579). Plays once on mount
+    // and is torn down on unmount so it stops the moment the user
+    // moves to the next onboarding step. See services/AmbientAudioService.ts.
+    useEffect(() => {
+        playWelcomeChime();
+        return () => {
+            stopWelcomeChime();
+        };
+    }, []);
 
     return (
         <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
